@@ -33,6 +33,7 @@ src/server/    brain: lobby state, plugin discovery, static serving, QR
 src/shared/    types shared by brain and clients (manifest, lobby snapshot)
 src/client/    role views served to browsers (table, join)
 games/         game plugins — each fully self-contained
+tests/         browser e2e tests (playwright-core; see file headers)
 ```
 
 Games are discovered by scanning `games/<id>/` at startup; a plugin is

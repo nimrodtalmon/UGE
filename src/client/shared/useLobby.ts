@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { LobbySnapshot, SyncResponse } from '../../shared/types.js';
 
-const POLL_MS = 1500;
+const POLL_MS = 1000;
 
 async function post<T>(url: string, body: unknown): Promise<T> {
   const r = await fetch(url, {

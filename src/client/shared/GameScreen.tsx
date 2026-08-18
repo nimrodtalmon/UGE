@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ComponentType } from 'react';
 import type { GameViewProps } from '../../shared/plugin.js';
 import type { ActiveGame } from '../../shared/types.js';
@@ -11,6 +11,11 @@ export function GameScreen(props: {
   const { game } = props;
   const [View, setView] = useState<ComponentType<GameViewProps> | null>(null);
   const [failed, setFailed] = useState(false);
+
+  // hand views a stable `move` so their effects/timers can safely depend on it
+  const moveRef = useRef(props.move);
+  moveRef.current = props.move;
+  const move = useCallback((name: string, ...args: unknown[]) => moveRef.current(name, ...args), []);
 
   useEffect(() => {
     if (!game.role) return;
@@ -65,7 +70,7 @@ export function GameScreen(props: {
       me={game.me}
       players={game.players}
       over={game.over}
-      move={props.move}
+      move={move}
     />
   );
 }

@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { useLobby } from '../shared/useLobby.js';
 import { DeviceTiles } from '../shared/LobbyBits.js';
 import { GameScreen } from '../shared/GameScreen.js';
+import { avatarFor } from '../../shared/avatar.js';
 
 function NameEntry(props: { onJoin: (name: string) => void }) {
   const [draft, setDraft] = useState('');
@@ -11,7 +12,7 @@ function NameEntry(props: { onJoin: (name: string) => void }) {
   return (
     <div className="center-screen">
       <div className="stack">
-        <div className="ok">✓</div>
+        <div className="ok big-avatar">{draft.trim() ? avatarFor(draft.trim()) : '👋'}</div>
         <h1>UGE</h1>
         <p className="muted">You reached the table. Who are you?</p>
         <input
@@ -55,7 +56,7 @@ function PhoneLobby(props: { name: string; onRename: () => void }) {
       <header>
         <h1>UGE</h1>
         <a href="#" onClick={(e) => (e.preventDefault(), props.onRename())}>
-          {props.name} · rename
+          {avatarFor(props.name)} {props.name} · rename
         </a>
       </header>
       {offline && <p className="offline">connection to the brain lost — retrying…</p>}

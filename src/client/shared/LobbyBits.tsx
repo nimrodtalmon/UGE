@@ -1,4 +1,5 @@
 import type { DeviceTile, GameEntry } from '../../shared/types.js';
+import { avatarFor } from '../../shared/avatar.js';
 
 export function DeviceTiles(props: { devices: DeviceTile[]; myId: string | null }) {
   return (
@@ -8,7 +9,10 @@ export function DeviceTiles(props: { devices: DeviceTile[]; myId: string | null 
           key={d.id}
           className={['tile', d.id === props.myId && 'me', d.away && 'away'].filter(Boolean).join(' ')}
         >
-          <div className="who">{d.name}{d.away ? ' 💤' : ''}</div>
+          <div className="who">
+            <span className="avatar">{d.isTableScreen ? '🖥️' : avatarFor(d.name)}</span> {d.name}
+            {d.away ? ' 💤' : ''}
+          </div>
           {d.role && <span className={`badge ${d.role === 'table' ? 'table' : ''}`}>{d.role}</span>}
           {!d.role && d.isTableScreen && <span className="muted"> screen</span>}
         </div>
