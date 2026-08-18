@@ -8,11 +8,14 @@ const fail = (msg) => { console.error('FAIL:', msg); process.exit(1); };
 const table = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
 table.on('pageerror', (e) => fail(`table pageerror: ${e.message}`));
 await table.goto('http://localhost:8000/');
-// the game-night wizard comes first: 1 player, phones follow automatically
+// the game-night wizard comes first, defaulting to 1 player / 1 phone
 await table.waitForSelector('.st-players', { timeout: 10000 });
-for (let i = 0; i < 3; i++) await table.click('.st-players button:has-text("−")');
-const shown = await table.textContent('.st-phones strong');
-if (shown.trim() !== '1') fail(`phones did not follow players: ${shown}`);
+if ((await table.textContent('.st-players strong')).trim() !== '1') fail('players should default to 1');
+if ((await table.textContent('.st-phones strong')).trim() !== '1') fail('phones should default to 1');
+// phones follow players until touched
+await table.click('.st-players button:has-text("+")');
+if ((await table.textContent('.st-phones strong')).trim() !== '2') fail('phones did not follow players');
+await table.click('.st-players button:has-text("−")');
 await table.click('button:has-text("Continue")');
 await table.waitForSelector('img[alt^="Join QR"]', { timeout: 10000 });
 await table.waitForSelector('p:has-text("1 player · 1 phone")', { timeout: 5000 });

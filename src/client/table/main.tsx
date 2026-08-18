@@ -17,7 +17,7 @@ function Stepper(props: { value: number; min: number; max: number; onChange: (v:
 }
 
 function SetupWizard(props: { initial: GroupSetup | null; onDone: (s: GroupSetup) => void }) {
-  const [players, setPlayers] = useState(props.initial?.players ?? 4);
+  const [players, setPlayers] = useState(props.initial?.players ?? 1);
   // phones follow players until touched
   const [phones, setPhones] = useState<number | null>(props.initial ? props.initial.phones : null);
   const shownPhones = phones ?? players;
