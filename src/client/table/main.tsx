@@ -194,24 +194,22 @@ function Table() {
           onSelect={(gameId) => act('/api/lobby/select', { gameId })}
           fitChip
         />
-        {selected && selected.modes.length > 1 && (
+        {/* only genuine choices appear — the table auto-picks the mode that
+            best uses the group's devices */}
+        {selected && selected.modes.filter((mo) => mo.offered).length > 1 && (
           <div className="mode-row">
-            {selected.modes.map((mo) => (
-              <button
-                key={mo.id}
-                className={[
-                  'mode',
-                  snapshot.selectedModeId === mo.id && 'on',
-                  !mo.fits && 'dim',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                onClick={() => act('/api/lobby/mode', { modeId: mo.id })}
-              >
-                <strong>{mo.name}</strong>
-                <span className="meta">{mo.fits ? (mo.tagline ?? '') : (mo.reason ?? '')}</span>
-              </button>
-            ))}
+            {selected.modes
+              .filter((mo) => mo.offered)
+              .map((mo) => (
+                <button
+                  key={mo.id}
+                  className={['mode', snapshot.selectedModeId === mo.id && 'on'].filter(Boolean).join(' ')}
+                  onClick={() => act('/api/lobby/mode', { modeId: mo.id })}
+                >
+                  <strong>{mo.name}</strong>
+                  <span className="meta">{mo.tagline ?? ''}</span>
+                </button>
+              ))}
           </div>
         )}
         <div className="actions start-row">

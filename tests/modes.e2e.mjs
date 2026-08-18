@@ -38,8 +38,9 @@ async function endGame() {
 
 // ---------- Memory: pass the phone ----------
 await table.click('button.game:has-text("Memory")');
-await table.waitForSelector('.mode.on:has-text("Pass the phone")', { timeout: 10000 });
+// only one mode fits 3p/1phone — the table picks it silently, no picker
 await table.waitForSelector('button:has-text("Start Memory"):not([disabled])', { timeout: 10000 });
+if (await table.locator('.mode-row').count()) fail('mode picker shown though only one mode fits');
 await table.click('button:has-text("Start Memory")');
 await phone.waitForSelector('.mem-card.down:not([disabled])', { timeout: 10000 });
 await phone.waitForSelector('p:has-text("Player 1")', { timeout: 5000 });
@@ -50,8 +51,8 @@ await endGame();
 
 // ---------- UNO: hotseat ----------
 await table.click('button.game:has-text("UNO")');
-await table.waitForSelector('.mode.on:has-text("One shared phone")', { timeout: 10000 });
 await table.waitForSelector('button:has-text("Start UNO"):not([disabled])', { timeout: 10000 });
+if (await table.locator('.mode-row').count()) fail('mode picker shown though only one mode fits');
 await table.click('button:has-text("Start UNO")');
 // locked cover screen first — no cards visible
 await phone.waitForSelector('.wc-pass-name:has-text("Player 1")', { timeout: 10000 });
@@ -73,13 +74,15 @@ for (let i = 0; i < 6; i++) {
   }
   await phone.waitForTimeout(400);
 }
-await phone.waitForSelector('.wc-pass-name:has-text("Player 2")', { timeout: 10000 });
-console.log('ok: UNO hotseat — locked handoff between virtual players');
+// action cards can skip ahead — just require the lock screen for SOME other player
+await phone.waitForSelector('.wc-pass-name', { timeout: 10000 });
+const nextName = (await phone.textContent('.wc-pass-name')).trim();
+if (nextName === 'Player 1') fail('phone still shows Player 1 after their turn');
+console.log(`ok: UNO hotseat — locked handoff to ${nextName}`);
 await endGame();
 
 // ---------- Codenames: one shared phone ----------
 await table.click('button.game:has-text("Codenames")');
-await table.waitForSelector('.mode.on:has-text("One shared phone")', { timeout: 10000 });
 await phone.waitForSelector('button:has-text("Become spymasters")', { timeout: 10000 });
 await phone.click('button:has-text("Become spymasters")');
 await table.waitForSelector('button:has-text("Start Codenames"):not([disabled])', { timeout: 10000 });
@@ -94,7 +97,6 @@ await endGame();
 
 // ---------- Alias: pass the phone ----------
 await table.click('button.game:has-text("Alias")');
-await table.waitForSelector('.mode.on:has-text("Pass the phone")', { timeout: 10000 });
 await table.waitForSelector('button:has-text("Start Alias"):not([disabled])', { timeout: 10000 });
 await table.click('button:has-text("Start Alias")');
 await phone.waitForSelector('button:has-text("Start the round")', { timeout: 10000 });

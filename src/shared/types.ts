@@ -47,6 +47,12 @@ export interface ModeEntry {
   tagline?: string;
   fits: boolean;
   reason?: string;
+  /**
+   * Worth offering as a choice: fits AND makes best use of the group's
+   * devices. A shared-phone fallback is not offered when everyone has a
+   * phone — the table just picks; the picker shows only real choices.
+   */
+  offered: boolean;
 }
 
 /** The group declared on the table before anyone joins ("game night setup"). */

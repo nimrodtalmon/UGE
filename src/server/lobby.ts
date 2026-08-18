@@ -99,10 +99,22 @@ export class Lobby {
       return;
     }
     const modes = this.modesOf(m);
-    const fitting = this.groupSetup
-      ? modes.find((mo) => this.modeFit(m, mo, this.groupSetup!).fits)
+    const best = this.groupSetup
+      ? modes.find((mo) => this.modeOffer(m, mo, this.groupSetup!).offered)
       : undefined;
-    this.selectedModeId = (fitting ?? modes[0]!).id;
+    this.selectedModeId = (best ?? modes[0]!).id;
+  }
+
+  /** fits + offered: the picker only offers modes that best use the group's devices. */
+  private modeOffer(m: Manifest, mode: GameMode, setup: GroupSetup): { fits: boolean; reason?: string; offered: boolean } {
+    const fit = this.modeFit(m, mode, setup);
+    if (!fit.fits) return { ...fit, offered: false };
+    const maxNeed = Math.max(
+      ...this.modesOf(m)
+        .filter((mo) => this.modeFit(m, mo, setup).fits)
+        .map((mo) => this.neededPhones(m, mo, setup.players)),
+    );
+    return { ...fit, offered: this.neededPhones(m, mode, setup.players) === maxNeed };
   }
 
   private modesOf(m: Manifest): GameMode[] {
@@ -284,7 +296,13 @@ export class Lobby {
   /** Feasibility annotates the game list; it never blocks selecting a game. */
   private gameEntry(p: GamePlugin): GameEntry {
     const m = p.manifest;
-    const bare = (mo: GameMode): ModeEntry => ({ id: mo.id, name: mo.name, tagline: mo.tagline, fits: true });
+    const bare = (mo: GameMode): ModeEntry => ({
+      id: mo.id,
+      name: mo.name,
+      tagline: mo.tagline,
+      fits: true,
+      offered: true,
+    });
     if (!p.def) {
       return { manifest: m, feasible: false, reason: 'not playable yet', modes: this.modesOf(m).map(bare) };
     }
@@ -294,7 +312,7 @@ export class Lobby {
         id: mo.id,
         name: mo.name,
         tagline: mo.tagline,
-        ...this.modeFit(m, mo, this.groupSetup!),
+        ...this.modeOffer(m, mo, this.groupSetup!),
       }));
       const anyFit = modes.some((x) => x.fits);
       return {
