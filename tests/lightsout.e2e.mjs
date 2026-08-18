@@ -8,8 +8,15 @@ const fail = (msg) => { console.error('FAIL:', msg); process.exit(1); };
 const table = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
 table.on('pageerror', (e) => fail(`table pageerror: ${e.message}`));
 await table.goto('http://localhost:8000/');
+// the game-night wizard comes first: 1 player, phones follow automatically
+await table.waitForSelector('.st-players', { timeout: 10000 });
+for (let i = 0; i < 3; i++) await table.click('.st-players button:has-text("−")');
+const shown = await table.textContent('.st-phones strong');
+if (shown.trim() !== '1') fail(`phones did not follow players: ${shown}`);
+await table.click('button:has-text("Continue")');
 await table.waitForSelector('img[alt^="Join QR"]', { timeout: 10000 });
-console.log('ok: table page up with QR');
+await table.waitForSelector('p:has-text("1 player · 1 phone")', { timeout: 5000 });
+console.log('ok: setup wizard → 1 player / 1 phone, table page up with QR');
 
 const phone = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
 phone.on('pageerror', (e) => fail(`phone pageerror: ${e.message}`));
@@ -20,9 +27,11 @@ await phone.waitForSelector('h2:has-text("At the table")', { timeout: 10000 });
 await table.waitForSelector('.tile:has-text("Nimrod")', { timeout: 10000 });
 console.log('ok: phone joined, tile on table');
 
-// ready chip appears for the solo game once one phone is in
+// with the declared group, fitting games highlight and others explain why not
 await table.waitForSelector('button.game.ready:has-text("Lights Out")', { timeout: 10000 });
-console.log('ok: Lights Out marked ready with one phone');
+const memoryReason = (await table.textContent('button.game:has-text("Memory")')).trim();
+if (!memoryReason.includes('for 2+ players')) fail(`memory reason wrong: ${memoryReason}`);
+console.log('ok: Lights Out fits the group; Memory explains it needs more players');
 
 await table.click('button.game:has-text("Lights Out")');
 // auto-join: start enables without any claim tap

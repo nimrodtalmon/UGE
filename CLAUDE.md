@@ -152,6 +152,11 @@ any hardware.
   game: **Trivia** (1–8). Alias v0 is rotating-explainer with individual
   scores, 2+ players; the spec's team mode is deferred.
   TODO(nimrod): veto individual-scores Alias if team play is wanted for v0.
+- 2026-08: Lobby flow: the table opens with a game-night wizard ("N players,
+  M phones") and matches games against the declared group (manifest gains
+  optional `phones.min` for shared-device games); Start still gates on who
+  actually joined. Groundwork for "needs dice / NFC pieces" annotations via
+  the existing `pieces` field — display deferred.
 - 2026-08: Road mode: an optional gitignored `uge.config.json` can carry the
   WiFi credentials of whatever network the brain shares (phone hotspot /
   Internet Sharing); the table then shows a two-step QR (join WiFi → open

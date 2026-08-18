@@ -25,6 +25,8 @@ export function GameList(props: {
   games: GameEntry[];
   selectedGameId: string | null;
   onSelect?: (gameId: string | null) => void;
+  /** Feasibility is against the declared group ("fits") rather than joined devices ("ready"). */
+  fitChip?: boolean;
 }) {
   return (
     <div className="games">
@@ -47,7 +49,9 @@ export function GameList(props: {
                 : `${manifest.players.min}–${manifest.players.max} players`}
             </span>
             {feasible ? (
-              <span className="ready-chip">{selected ? 'selected' : 'ready'}</span>
+              <span className="ready-chip">
+                {selected ? 'selected' : props.fitChip ? 'fits your group' : 'ready'}
+              </span>
             ) : (
               <span className="meta reason">{reason}</span>
             )}

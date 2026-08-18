@@ -15,5 +15,8 @@
     "dynamic": 0
   },
   "icon": "🗣️",
-  "tagline": "explain it fast"
+  "tagline": "explain it fast",
+  "phones": {
+    "min": 2
+  }
 }

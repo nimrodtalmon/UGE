@@ -7,7 +7,13 @@ const fail = (msg) => { console.error('FAIL:', msg); process.exit(1); };
 
 const table = await (await browser.newContext({ viewport: { width: 1600, height: 900 } })).newPage();
 table.on('pageerror', (e) => fail(`table pageerror: ${e.message}`));
+const SETUP = { players: 4, phones: 4 };
 await table.goto('http://localhost:8000/');
+await table.evaluate(({ players, phones }) => fetch('/api/lobby/setup', {
+  method: 'POST', headers: { 'content-type': 'application/json' },
+  body: JSON.stringify({ players, phones }),
+}), SETUP);
+await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 10000 });
 
 const phones = [];
 for (const name of ['Nimrod', 'Dana', 'Ben', 'Noa']) {

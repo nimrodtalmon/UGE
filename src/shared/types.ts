@@ -16,6 +16,18 @@ export interface Manifest {
   icon?: string;
   /** One-liner shown on the lobby's game box. */
   tagline?: string;
+  /**
+   * Minimum client devices needed, when fewer than one per player works
+   * (e.g. Codenames: one spymasters device + one shared guessing phone).
+   * Default: one per player when hand is per-player, plus one per extra role.
+   */
+  phones?: { min: number };
+}
+
+/** The group declared on the table before anyone joins ("game night setup"). */
+export interface GroupSetup {
+  players: number;
+  phones: number;
 }
 
 export interface DeviceTile {
@@ -56,6 +68,7 @@ export interface LobbySnapshot {
   canStart: boolean;
   blockers: string[];
   game: ActiveGame | null;
+  setup: GroupSetup | null;
 }
 
 export interface SyncRequest {

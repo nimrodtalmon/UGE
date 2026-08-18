@@ -22,7 +22,9 @@ games/<id>/
   "name": "My Game",
   "icon": "🎯",                          // lobby box emoji (optional)
   "tagline": "one-liner for the lobby", // optional
-  "players": { "min": 2, "max": 6 },
+  "players": { "min": 2, "max": 6 },   // humans, not devices
+  "phones": { "min": 2 },              // optional: min client devices, when fewer
+                                       // than one per player works (see below)
   "roles": {
     "table": "required",                // required | optional | none
     "hand": "per-player",               // per-player | per-team | none
@@ -35,6 +37,11 @@ games/<id>/
 
 A manifest-only folder shows up in the lobby as "not playable yet" — useful
 for stubbing.
+
+The table asks for the group first ("N players, M phones") and matches games
+against it. Phone need defaults to one per player (when `hand` is
+per-player) plus one per extra role; set `phones.min` when devices can be
+shared (Codenames: one spymasters device + one shared guessing phone → 2).
 
 ## game.ts — the rules
 

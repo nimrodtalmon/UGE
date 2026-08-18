@@ -4,6 +4,7 @@ import type { PlayerInfo } from '../shared/plugin.js';
 import type {
   ActiveGame,
   GameEntry,
+  GroupSetup,
   LobbyPhase,
   LobbySnapshot,
   Manifest,
@@ -42,6 +43,7 @@ export class Lobby {
   private selectedGameId: string | null = null;
   private phase: LobbyPhase = 'lobby';
   private session: GameSession | null = null;
+  private groupSetup: GroupSetup | null = null;
 
   constructor(private readonly games: GamePlugin[]) {}
 
@@ -59,6 +61,13 @@ export class Lobby {
     });
     this.tick();
     return { deviceId: id, snapshot: this.snapshotFor(id) };
+  }
+
+  setSetup(players: number, phones: number): void {
+    const clamp = (v: number, lo: number, hi: number) =>
+      Number.isInteger(v) ? Math.max(lo, Math.min(hi, v)) : lo;
+    this.groupSetup = { players: clamp(players, 1, 12), phones: clamp(phones, 0, 12) };
+    this.tick();
   }
 
   select(gameId: string | null): void {
@@ -134,6 +143,7 @@ export class Lobby {
       canStart,
       blockers,
       game: this.activeGameFor(deviceId ?? null),
+      setup: this.groupSetup,
     };
   }
 
@@ -206,8 +216,33 @@ export class Lobby {
   /** Feasibility annotates the game list; it never blocks selecting a game. */
   private gameEntry(p: GamePlugin): GameEntry {
     const m = p.manifest;
-    const phones = [...this.devices.values()].filter((d) => !d.isTableScreen).length;
     if (!p.def) return { manifest: m, feasible: false, reason: 'not playable yet' };
+    // with a declared group, match games against the plan, not who's joined yet
+    if (this.groupSetup) {
+      const { players, phones } = this.groupSetup;
+      if (players < m.players.min) {
+        return { manifest: m, feasible: false, reason: `for ${m.players.min}+ players` };
+      }
+      if (players > m.players.max) {
+        return {
+          manifest: m,
+          feasible: false,
+          reason: `up to ${m.players.max} player${m.players.max === 1 ? '' : 's'}`,
+        };
+      }
+      const needed =
+        m.phones?.min ??
+        (m.roles.hand === 'per-player' ? players : 0) + m.roles.extras.length;
+      if (phones < needed) {
+        return {
+          manifest: m,
+          feasible: false,
+          reason: needed >= players ? 'needs a phone per player' : `needs ${needed}+ phones`,
+        };
+      }
+      return { manifest: m, feasible: true };
+    }
+    const phones = [...this.devices.values()].filter((d) => !d.isTableScreen).length;
     if (m.roles.hand !== 'none' && phones < m.players.min) {
       return {
         manifest: m,

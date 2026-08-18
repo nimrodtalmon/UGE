@@ -144,6 +144,31 @@ h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; color:
 .blockers { margin-top: 0.5rem; font-size: 0.9rem; color: #c9a04e; }
 .offline { color: #c96a4e; font-size: 0.85rem; }
 
+/* game-night setup wizard */
+.setup { max-width: 24rem; }
+.stepper-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.stepper { display: flex; align-items: center; gap: 0.9rem; }
+.stepper button {
+  width: 3.2rem;
+  height: 3.2rem;
+  font-size: 1.6rem;
+  font-weight: 800;
+  padding: 0;
+  border-radius: 50%;
+}
+.stepper strong { min-width: 2.2rem; text-align: center; font-size: 1.5rem; }
+.setup-hint { font-size: 0.85rem; }
+.setup-line { color: #8a8f98; margin-bottom: -0.6rem; }
+.setup-line a { color: #6fd08c; }
+.join-count { margin-top: 0.4rem; color: #c9a04e; font-size: 0.95rem; }
+.join-count.done { color: #6fd08c; }
+
 /* centered single-purpose screens */
 .center-screen {
   min-height: 100vh;

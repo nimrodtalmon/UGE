@@ -1,13 +1,24 @@
 {
   "id": "codenames",
   "name": "Codenames",
-  "players": { "min": 3, "max": 9 },
+  "players": {
+    "min": 3,
+    "max": 9
+  },
   "roles": {
     "table": "required",
     "hand": "per-player",
-    "extras": ["spymasters"]
+    "extras": [
+      "spymasters"
+    ]
   },
-  "pieces": { "static": 0, "dynamic": 0 },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
   "icon": "🕵️",
-  "tagline": "secret words, two teams"
+  "tagline": "secret words, two teams",
+  "phones": {
+    "min": 2
+  }
 }
