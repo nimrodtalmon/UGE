@@ -70,10 +70,14 @@ export class Lobby {
     return { deviceId: id, snapshot: this.snapshotFor(id) };
   }
 
-  setSetup(players: number, phones: number): void {
+  setSetup(players: number, phones: number, hasTable?: boolean): void {
     const clamp = (v: number, lo: number, hi: number) =>
       Number.isInteger(v) ? Math.max(lo, Math.min(hi, v)) : lo;
-    this.groupSetup = { players: clamp(players, 1, 12), phones: clamp(phones, 0, 12) };
+    this.groupSetup = {
+      players: clamp(players, 1, 12),
+      phones: clamp(phones, 0, 12),
+      hasTable: hasTable !== false,
+    };
     this.pickDefaultMode(); // the group changed — re-pick a mode that fits it
     this.tick();
   }
@@ -118,7 +122,10 @@ export class Lobby {
         .filter((mo) => this.modeFit(m, mo, setup).fits)
         .map((mo) => this.neededPhones(m, mo, setup.players)),
     );
-    return { ...fit, offered: this.neededPhones(m, mode, setup.players) === maxNeed };
+    return {
+      ...fit,
+      offered: mode.choice === true || this.neededPhones(m, mode, setup.players) === maxNeed,
+    };
   }
 
   private modesOf(m: Manifest): GameMode[] {
@@ -140,6 +147,9 @@ export class Lobby {
   }
 
   private modeFit(m: Manifest, mode: GameMode, setup: GroupSetup): { fits: boolean; reason?: string } {
+    if (m.roles.table === 'required' && !setup.hasTable) {
+      return { fits: false, reason: 'needs a table screen' };
+    }
     const pr = mode.players ?? m.players;
     if (setup.players < pr.min) return { fits: false, reason: `for ${pr.min}+ players` };
     if (setup.players > pr.max) {

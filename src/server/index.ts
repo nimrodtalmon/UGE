@@ -95,7 +95,7 @@ app.use('/static', express.static(clientDir));
 
 app.post('/api/lobby/sync', (req, res) => res.json(lobby.sync(req.body as SyncRequest)));
 app.post('/api/lobby/setup', (req, res) => {
-  lobby.setSetup(req.body.players, req.body.phones);
+  lobby.setSetup(req.body.players, req.body.phones, req.body.hasTable);
   res.json(lobby.snapshotFor(req.body.deviceId));
 });
 app.post('/api/lobby/mode', (req, res) => {

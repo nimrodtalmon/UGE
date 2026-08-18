@@ -17,6 +17,8 @@ export interface AliasState {
   playerIds: string[];
   /** "Pass the phone" mode: one shared device, anyone holding it explains. */
   pass: boolean;
+  /** Team mode: rounds alternate 🔴/🔵 and scores has two entries. */
+  teams: boolean;
   totalRounds: number;
 }
 
@@ -32,6 +34,7 @@ export interface AliasView {
   skips: number[];
   playerNames: string[];
   pass: boolean;
+  teams: boolean;
   totalRounds: number;
 }
 
@@ -48,12 +51,19 @@ function canExplain(state: AliasState, ctx: { playerId: string; role: string }):
   return state.pass ? ctx.role === 'hand' : state.playerIds[state.turn] === ctx.playerId;
 }
 
+/** Where a point lands: the team (round parity) in team mode, else the seat. */
+const scoreIdx = (state: AliasState): number => (state.teams ? state.turn % 2 : state.turn);
+
 const game: GameDef<AliasState, AliasView> = {
   setup({ players, random, mode, group }) {
     const pass = mode.config['pass'] === true;
-    const totalRounds = pass
-      ? Math.max(2, Math.min(12, group?.players ?? 4))
-      : players.length;
+    const teams = mode.config['teams'] === true;
+    // team mode: an even round count so both teams explain equally often
+    const totalRounds = teams
+      ? Math.min(12, Math.max(4, 2 * Math.floor((group?.players ?? 4) / 2)))
+      : pass
+        ? Math.max(2, Math.min(12, group?.players ?? 4))
+        : players.length;
     return {
       phase: 'ready',
       words: shuffle(WORDS, random),
@@ -61,11 +71,12 @@ const game: GameDef<AliasState, AliasView> = {
       turn: 0,
       roundsPlayed: 0,
       endsAt: 0,
-      scores: Array<number>(totalRounds).fill(0),
-      skips: Array<number>(totalRounds).fill(0),
+      scores: Array<number>(teams ? 2 : totalRounds).fill(0),
+      skips: Array<number>(teams ? 2 : totalRounds).fill(0),
       playerNames: players.map((p) => p.name),
       playerIds: players.map((p) => p.id),
       pass,
+      teams,
       totalRounds,
     };
   },
@@ -79,14 +90,14 @@ const game: GameDef<AliasState, AliasView> = {
     gotIt(state, ctx) {
       if (state.phase !== 'round' || !canExplain(state, ctx)) return state;
       const scores = [...state.scores];
-      scores[state.turn] = (scores[state.turn] ?? 0) + 1;
+      scores[scoreIdx(state)] = (scores[scoreIdx(state)] ?? 0) + 1;
       return { ...state, scores, ptr: state.ptr + 1 };
     },
 
     skip(state, ctx) {
       if (state.phase !== 'round' || !canExplain(state, ctx)) return state;
       const skips = [...state.skips];
-      skips[state.turn] = (skips[state.turn] ?? 0) + 1;
+      skips[scoreIdx(state)] = (skips[scoreIdx(state)] ?? 0) + 1;
       return { ...state, skips, ptr: state.ptr + 1 };
     },
 
@@ -117,12 +128,19 @@ const game: GameDef<AliasState, AliasView> = {
       skips: state.skips,
       playerNames: state.playerNames,
       pass: state.pass,
+      teams: state.teams,
       totalRounds: state.totalRounds,
     };
   },
 
   isOver(state) {
     if (state.phase !== 'done') return null;
+    if (state.teams) {
+      const [red = 0, blue = 0] = state.scores;
+      if (red > blue) return { text: `🔴 Red team wins ${red}–${blue}! 🏆` };
+      if (blue > red) return { text: `🔵 Blue team wins ${blue}–${red}! 🏆` };
+      return { text: `It's a tie — ${red}–${blue}!` };
+    }
     if (state.pass) {
       const total = state.scores.reduce((a, b) => a + b, 0);
       return { text: `Together you got ${total} words in ${state.totalRounds} rounds! 🎉` };

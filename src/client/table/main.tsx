@@ -20,6 +20,7 @@ function SetupWizard(props: { initial: GroupSetup | null; onDone: (s: GroupSetup
   const [players, setPlayers] = useState(props.initial?.players ?? 1);
   // phones follow players until touched
   const [phones, setPhones] = useState<number | null>(props.initial ? props.initial.phones : null);
+  const [hasTable, setHasTable] = useState(props.initial?.hasTable ?? true);
   const shownPhones = phones ?? players;
   return (
     <div className="center-screen">
@@ -34,12 +35,18 @@ function SetupWizard(props: { initial: GroupSetup | null; onDone: (s: GroupSetup
           <span>Phones</span>
           <Stepper value={shownPhones} min={0} max={12} onChange={setPhones} />
         </div>
+        <div className="stepper-row st-table">
+          <span>Table screen</span>
+          <button className={hasTable ? 'toggle on' : 'toggle'} onClick={() => setHasTable(!hasTable)}>
+            {hasTable ? '✓ yes' : '✗ no'}
+          </button>
+        </div>
         <p className="muted setup-hint">
-          phones = devices people play on · count this one if it plays too
+          phones = devices people play on · the table screen shows the shared board (this one, a TV…)
         </p>
         <button
           className="primary"
-          onClick={() => props.onDone({ players, phones: shownPhones })}
+          onClick={() => props.onDone({ players, phones: shownPhones, hasTable })}
         >
           Continue
         </button>
@@ -175,7 +182,8 @@ function Table() {
       <div className="lobby-main">
         <p className="setup-line">
           {snapshot.setup.players} player{snapshot.setup.players === 1 ? '' : 's'} ·{' '}
-          {snapshot.setup.phones} phone{snapshot.setup.phones === 1 ? '' : 's'}{' '}
+          {snapshot.setup.phones} phone{snapshot.setup.phones === 1 ? '' : 's'}
+          {snapshot.setup.hasTable ? '' : ' · no table screen'}{' '}
           <a
             href="#"
             onClick={(e) => (e.preventDefault(), setEditingSetup(true))}

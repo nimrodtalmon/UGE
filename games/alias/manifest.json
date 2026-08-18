@@ -8,18 +8,20 @@
   "tagline": "explain it fast",
   "modes": [
     {
-      "id": "phones",
-      "name": "Phone each",
-      "tagline": "your phone, your rounds",
-      "players": { "min": 2, "max": 8 },
-      "phones": { "min": 2 }
+      "id": "teams",
+      "name": "Teams — pass the phone",
+      "tagline": "🔴 vs 🔵 — explain to your team",
+      "players": { "min": 4, "max": 12 },
+      "phones": { "min": 1 },
+      "choice": true,
+      "config": { "pass": true, "teams": true }
     },
     {
-      "id": "pass",
-      "name": "Pass the phone",
-      "tagline": "one phone, hand to hand",
-      "phones": { "min": 1 },
-      "config": { "pass": true }
+      "id": "party",
+      "name": "Party — phone each",
+      "tagline": "everyone for themselves",
+      "players": { "min": 2, "max": 8 },
+      "choice": true
     }
   ]
 }

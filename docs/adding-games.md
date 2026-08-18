@@ -38,10 +38,26 @@ games/<id>/
 A manifest-only folder shows up in the lobby as "not playable yet" — useful
 for stubbing.
 
-The table asks for the group first ("N players, M phones") and matches games
-against it. Phone need defaults to one per player (when `hand` is
-per-player) plus one per extra role; set `phones.min` when devices can be
-shared (Codenames: one spymasters device + one shared guessing phone → 2).
+The table asks for the group first ("N players, M phones, table screen
+yes/no") and matches games against it. Phone need defaults to one per player
+(when `hand` is per-player) plus one per extra role; set `phones.min` when
+devices can be shared (Codenames: one spymasters device + one shared
+guessing phone → 2). `players` counts HUMANS, `phones` counts devices, and
+the table screen is its own question — keep the three separate when
+declaring requirements.
+
+Current audit of the built-in games (players × phones, + table always):
+
+| Game | Mode | Players | Phones |
+|---|---|---|---|
+| Lights Out | — | 1 | 1 |
+| Trivia | classic / quick | 1–8 | one per player |
+| Memory | phone each / pass | 2–6 | per player / 1 |
+| Alias | teams (pass) | 4–12 | 1 |
+| Alias | party | 2–8 | one per player |
+| UNO | phone each / hotseat | 2–8 | per player / 1 |
+| Codenames | map+phones / one phone | 4–9 | 2 / 1 |
+| Poker | — | 2–8 | one per player |
 
 ## Modes — several ways to play one game
 

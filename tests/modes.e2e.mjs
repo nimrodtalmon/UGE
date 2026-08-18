@@ -1,6 +1,6 @@
 // e2e test — needs a freshly started brain (UGE_NO_OPEN=1 npm run start:once) on :8000
 // and a Chromium binary (default /opt/pw-browsers/chromium, override with UGE_CHROMIUM).
-// Covers the shared-phone modes: 3 declared players, 1 declared phone.
+// Covers the shared-phone modes: 4 declared players, 1 declared phone.
 import { chromium } from 'playwright-core';
 
 const browser = await chromium.launch({ executablePath: process.env.UGE_CHROMIUM ?? '/opt/pw-browsers/chromium', headless: true });
@@ -11,7 +11,7 @@ table.on('pageerror', (e) => fail(`table pageerror: ${e.message}`));
 await table.goto('http://localhost:8000/');
 await table.evaluate(() => fetch('/api/lobby/setup', {
   method: 'POST', headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ players: 3, phones: 1 }),
+  body: JSON.stringify({ players: 4, phones: 1 }),
 }));
 await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 10000 });
 
@@ -21,15 +21,15 @@ await phone.goto('http://localhost:8000/join');
 await phone.fill('input', 'Nimrod');
 await phone.click('button:has-text("Join the lobby")');
 
-// pass-capable games fit 3 players / 1 phone; phone-per-player games hide
+// pass-capable games fit 4 players / 1 phone; phone-per-player games hide
 for (const name of ['Memory', 'Alias', 'UNO', 'Codenames']) {
   if (!(await table.locator(`button.game.ready:has-text("${name}")`).count())) {
     await table.waitForTimeout(1500);
-    if (!(await table.locator(`button.game.ready:has-text("${name}")`).count())) fail(`${name} should fit 3p/1phone`);
+    if (!(await table.locator(`button.game.ready:has-text("${name}")`).count())) fail(`${name} should fit 4p/1phone`);
   }
 }
 if (await table.locator('button.game:has-text("Poker")').count()) fail('Poker should be hidden (needs a phone per player)');
-console.log('ok: only shared-phone-capable games fit 3 players / 1 phone');
+console.log('ok: only shared-phone-capable games fit 4 players / 1 phone');
 
 async function endGame() {
   await table.click('button:has-text("End game")');
@@ -100,12 +100,13 @@ await table.click('button.game:has-text("Alias")');
 await table.waitForSelector('button:has-text("Start Alias"):not([disabled])', { timeout: 10000 });
 await table.click('button:has-text("Start Alias")');
 await phone.waitForSelector('button:has-text("Start the round")', { timeout: 10000 });
-await table.waitForSelector('h1:has-text("Round 1 of 3")', { timeout: 5000 });
+await table.waitForSelector('h1:has-text("Round 1 of 4")', { timeout: 5000 });
+if (!(await table.textContent('h1.al-big')).includes('Red team')) fail('team round banner missing');
 await phone.click('button:has-text("Start the round")');
 await phone.waitForSelector('.al-word', { timeout: 5000 });
 await phone.click('button:has-text("Got it")');
 await phone.waitForSelector('p:has-text("score this round: 1")', { timeout: 5000 });
-console.log('ok: alias pass mode — 3 virtual rounds, shared phone explains');
+console.log('ok: alias TEAM mode — 4 alternating team rounds, shared phone explains');
 await endGame();
 
 await browser.close();

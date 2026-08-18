@@ -38,6 +38,11 @@ export interface GameMode {
   players?: { min: number; max: number };
   phones?: { min: number };
   config?: Record<string, unknown>;
+  /**
+   * A genuine play-style choice (team vs solo, quick vs long): always offer it
+   * when it fits, even when another fitting mode uses more devices.
+   */
+  choice?: boolean;
 }
 
 /** A mode as shown in the lobby, matched against the declared group. */
@@ -59,6 +64,8 @@ export interface ModeEntry {
 export interface GroupSetup {
   players: number;
   phones: number;
+  /** A screen free to act as the table (TV, laptop, spare tablet). */
+  hasTable: boolean;
 }
 
 export interface DeviceTile {

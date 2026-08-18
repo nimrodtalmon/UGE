@@ -22,10 +22,15 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
     return (
       <div className="al-screen">
         <p className="al-over">{over?.text ?? 'Done!'}</p>
-        {view.myIndex >= 0 && (
-          <p className="al-hint">
-            you explained {view.scores[view.myIndex]} words ({view.skips[view.myIndex]} skips)
-          </p>
+        {view.teams ? (
+          <p className="al-hint">🔴 {view.scores[0]} — 🔵 {view.scores[1]}</p>
+        ) : (
+          view.myIndex >= 0 &&
+          !view.pass && (
+            <p className="al-hint">
+              you explained {view.scores[view.myIndex]} words ({view.skips[view.myIndex]} skips)
+            </p>
+          )
         )}
       </div>
     );
@@ -45,10 +50,18 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
         {iExplain ? (
           <>
             <h1 className="al-big">
-              {view.pass ? `Round ${view.turn + 1}/${view.totalRounds} — pass the phone! 🎤` : "You're up! 🎤"}
+              {view.teams
+                ? `Round ${view.turn + 1}/${view.totalRounds} — ${view.turn % 2 === 0 ? '🔴 Red' : '🔵 Blue'} team! 🎤`
+                : view.pass
+                  ? `Round ${view.turn + 1}/${view.totalRounds} — pass the phone! 🎤`
+                  : "You're up! 🎤"}
             </h1>
             <p className="al-hint">
-              {view.pass ? `${explainer} explains — ` : ''}
+              {view.teams
+                ? `a ${view.turn % 2 === 0 ? 'red' : 'blue'} player explains — only their team guesses! `
+                : view.pass
+                  ? `${explainer} explains — `
+                  : ''}
               explain as many words as you can in {Math.round(view.roundMs / 1000)}s — without saying the word!
             </p>
             <button className="al-start" onClick={() => move('startRound')}>
@@ -89,7 +102,9 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
           Skip ↷
         </button>
       </div>
-      <p className="al-hint">score this round: {view.scores[view.myIndex]}</p>
+      <p className="al-hint">
+        score this round: {view.scores[view.teams ? view.turn % 2 : view.pass ? view.turn : view.myIndex]}
+      </p>
     </div>
   );
 }

@@ -1,13 +1,21 @@
 {
   "id": "codenames",
   "name": "Codenames",
-  "players": { "min": 3, "max": 9 },
+  "players": {
+    "min": 4,
+    "max": 9
+  },
   "roles": {
     "table": "required",
     "hand": "per-player",
-    "extras": ["spymasters"]
+    "extras": [
+      "spymasters"
+    ]
   },
-  "pieces": { "static": 0, "dynamic": 0 },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
   "icon": "🕵️",
   "tagline": "secret words, two teams",
   "modes": [
@@ -15,14 +23,20 @@
       "id": "full",
       "name": "Map + phones",
       "tagline": "guessers tap on their own phones",
-      "phones": { "min": 2 }
+      "phones": {
+        "min": 2
+      }
     },
     {
       "id": "one",
       "name": "One shared phone",
       "tagline": "the map device also taps the guesses",
-      "phones": { "min": 1 },
-      "config": { "solo": true }
+      "phones": {
+        "min": 1
+      },
+      "config": {
+        "solo": true
+      }
     }
   ]
 }
