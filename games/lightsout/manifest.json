@@ -1,0 +1,7 @@
+{
+  "id": "lightsout",
+  "name": "Lights Out",
+  "players": { "min": 1, "max": 1 },
+  "roles": { "table": "required", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 }
+}

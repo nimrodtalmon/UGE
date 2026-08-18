@@ -35,7 +35,9 @@ src/client/    role views served to browsers (table, join)
 games/         game plugins — each fully self-contained
 ```
 
-Games are discovered by scanning `games/<id>/manifest.json` at startup; the
-lobby greys out games that aren't feasible with the connected devices. The
-largest connected screen is auto-assigned the `table` role; any device can
-claim it manually.
+Games are discovered by scanning `games/<id>/` at startup; a plugin is
+`manifest.json` + `game.ts` (pure functions: `setup`, `moves`, `playerView`,
+`isOver`) + one React view per role in `views/`. The lobby dims games that
+aren't feasible with the connected devices but any game can be selected;
+only Start waits for requirements. The largest connected screen is
+auto-assigned the `table` role; any device can claim it manually.

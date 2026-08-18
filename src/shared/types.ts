@@ -1,5 +1,7 @@
 /** Types shared between the brain (server) and all clients. */
 
+import type { GameResult, PlayerInfo } from './plugin.js';
+
 export type RoleRequirement = 'required' | 'optional' | 'none';
 export type HandMode = 'per-player' | 'per-team' | 'none';
 
@@ -27,7 +29,18 @@ export interface GameEntry {
   reason?: string;
 }
 
-export type LobbyPhase = 'lobby' | 'starting';
+export type LobbyPhase = 'lobby' | 'playing';
+
+/** The running game, as seen by one particular device. */
+export interface ActiveGame {
+  id: string;
+  name: string;
+  role: string | null;
+  view: unknown;
+  players: PlayerInfo[];
+  me: PlayerInfo | null;
+  over: GameResult | null;
+}
 
 export interface LobbySnapshot {
   phase: LobbyPhase;
@@ -36,6 +49,7 @@ export interface LobbySnapshot {
   selectedGameId: string | null;
   canStart: boolean;
   blockers: string[];
+  game: ActiveGame | null;
 }
 
 export interface SyncRequest {

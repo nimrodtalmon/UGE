@@ -1,7 +1,9 @@
+import '../shared/exposeReact.js';
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useLobby } from '../shared/useLobby.js';
 import { DeviceTiles, GameList } from '../shared/LobbyBits.js';
+import { GameScreen } from '../shared/GameScreen.js';
 
 function Table() {
   const [session, setSession] = useState<{ joinUrl: string; version: string } | null>(null);
@@ -44,6 +46,24 @@ function Table() {
     );
   }
 
+  if (snapshot?.phase === 'playing' && snapshot.game) {
+    return (
+      <div className="game-shell">
+        <GameScreen game={snapshot.game} move={(name, ...args) => act('/api/game/move', { name, args })} />
+        <div className="game-controls">
+          {snapshot.game.over && (
+            <button className="small primary" onClick={() => act('/api/lobby/start')}>
+              Play again
+            </button>
+          )}
+          <button className="small" onClick={() => act('/api/lobby/reset')}>
+            End game
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const selected = snapshot?.games.find((g) => g.manifest.id === snapshot.selectedGameId) ?? null;
 
   return (
@@ -67,39 +87,25 @@ function Table() {
         <h2>At the table</h2>
         <DeviceTiles devices={snapshot?.devices ?? []} myId={deviceId} />
 
-        {snapshot?.phase === 'starting' && selected ? (
-          <>
-            <p className="starting-banner">
-              {selected.manifest.name} — starting…{' '}
-              <span className="muted">(engine lands in stage 3)</span>
-            </p>
-            <div className="actions">
-              <button onClick={() => act('/api/lobby/reset')}>Back to lobby</button>
-            </div>
-          </>
-        ) : (
-          <>
-            <h2>Pick a game</h2>
-            <GameList
-              games={snapshot?.games ?? []}
-              selectedGameId={snapshot?.selectedGameId ?? null}
-              onSelect={(gameId) => act('/api/lobby/select', { gameId })}
-            />
-            {selected && (
-              <div className="actions">
-                <button
-                  className="primary"
-                  disabled={!snapshot?.canStart}
-                  onClick={() => act('/api/lobby/start')}
-                >
-                  Start {selected.manifest.name}
-                </button>
-                {snapshot && snapshot.blockers.length > 0 && (
-                  <p className="blockers">{snapshot.blockers.join(' · ')}</p>
-                )}
-              </div>
+        <h2>Pick a game</h2>
+        <GameList
+          games={snapshot?.games ?? []}
+          selectedGameId={snapshot?.selectedGameId ?? null}
+          onSelect={(gameId) => act('/api/lobby/select', { gameId })}
+        />
+        {selected && (
+          <div className="actions">
+            <button
+              className="primary"
+              disabled={!snapshot?.canStart}
+              onClick={() => act('/api/lobby/start')}
+            >
+              Start {selected.manifest.name}
+            </button>
+            {snapshot && snapshot.blockers.length > 0 && (
+              <p className="blockers">{snapshot.blockers.join(' · ')}</p>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>

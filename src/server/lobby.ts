@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import type { PlayerInfo } from '../shared/plugin.js';
 import type {
+  ActiveGame,
   GameEntry,
   LobbyPhase,
   LobbySnapshot,
@@ -7,6 +9,8 @@ import type {
   SyncRequest,
   SyncResponse,
 } from '../shared/types.js';
+import type { GamePlugin } from './games.js';
+import { GameSession } from './session.js';
 
 /**
  * Clients poll every ~1.5s. A device that misses a few polls (locked phone,
@@ -30,8 +34,9 @@ export class Lobby {
   private claims = new Map<string, string>(); // deviceId -> role
   private selectedGameId: string | null = null;
   private phase: LobbyPhase = 'lobby';
+  private session: GameSession | null = null;
 
-  constructor(private readonly games: Manifest[]) {}
+  constructor(private readonly games: GamePlugin[]) {}
 
   sync(req: SyncRequest): SyncResponse {
     const id = req.deviceId ?? randomUUID();
@@ -45,20 +50,19 @@ export class Lobby {
       lastSeen: Date.now(),
     });
     this.tick();
-    return { deviceId: id, snapshot: this.snapshot() };
+    return { deviceId: id, snapshot: this.snapshotFor(id) };
   }
 
-  select(gameId: string | null): LobbySnapshot {
-    if (this.phase === 'lobby' && (gameId === null || this.games.some((g) => g.id === gameId))) {
+  select(gameId: string | null): void {
+    if (this.phase === 'lobby' && (gameId === null || this.games.some((g) => g.manifest.id === gameId))) {
       this.selectedGameId = gameId;
       this.claims.clear();
     }
     this.tick();
-    return this.snapshot();
   }
 
-  claim(deviceId: string, role: string | null): LobbySnapshot {
-    const manifest = this.selectedManifest();
+  claim(deviceId: string, role: string | null): void {
+    const manifest = this.selectedPlugin()?.manifest;
     if (this.phase === 'lobby' && manifest && this.devices.has(deviceId)) {
       if (role === null) {
         this.claims.delete(deviceId);
@@ -70,19 +74,70 @@ export class Lobby {
       }
     }
     this.tick();
-    return this.snapshot();
   }
 
-  start(): LobbySnapshot {
+  /** Start from the lobby, or restart in place once a game is over. */
+  start(): void {
     this.tick();
-    if (this.phase === 'lobby' && this.startState().canStart) this.phase = 'starting';
-    return this.snapshot();
+    const plugin = this.selectedPlugin();
+    const canRestart = this.phase === 'playing' && this.session?.over;
+    if (!plugin?.def || !(this.phase === 'lobby' || canRestart) || !this.startState().canStart) return;
+    const players: PlayerInfo[] = [...this.devices.values()]
+      .filter((d) => this.claims.get(d.id) === 'hand')
+      .sort((a, b) => a.joinedAt - b.joinedAt)
+      .map((d) => ({ id: d.id, name: d.name }));
+    this.session = new GameSession(plugin.def, players);
+    this.phase = 'playing';
   }
 
-  reset(): LobbySnapshot {
+  move(deviceId: string, name: string, args: unknown[]): void {
+    const role = this.claims.get(deviceId);
+    if (this.phase === 'playing' && this.session && role) {
+      this.session.applyMove(deviceId, role, name, args);
+    }
+    this.tick();
+  }
+
+  reset(): void {
     this.phase = 'lobby';
+    this.session = null;
     this.tick();
-    return this.snapshot();
+  }
+
+  snapshotFor(deviceId?: string): LobbySnapshot {
+    const { canStart, blockers } = this.startState();
+    return {
+      phase: this.phase,
+      devices: [...this.devices.values()]
+        .sort((a, b) => a.joinedAt - b.joinedAt)
+        .map((d) => ({
+          id: d.id,
+          name: d.name,
+          isTableScreen: d.isTableScreen,
+          role: this.claims.get(d.id) ?? null,
+          away: Date.now() - d.lastSeen > AWAY_MS,
+        })),
+      games: this.games.map((p) => this.gameEntry(p)),
+      selectedGameId: this.selectedGameId,
+      canStart,
+      blockers,
+      game: this.activeGameFor(deviceId ?? null),
+    };
+  }
+
+  private activeGameFor(deviceId: string | null): ActiveGame | null {
+    const plugin = this.selectedPlugin();
+    if (this.phase !== 'playing' || !this.session || !plugin) return null;
+    const role = deviceId ? (this.claims.get(deviceId) ?? null) : null;
+    return {
+      id: plugin.manifest.id,
+      name: plugin.manifest.name,
+      role,
+      view: this.session.viewFor(deviceId, role ?? 'spectator'),
+      players: this.session.players,
+      me: this.session.players.find((p) => p.id === deviceId) ?? null,
+      over: this.session.over,
+    };
   }
 
   private claimableRoles(m: Manifest): string[] {
@@ -98,8 +153,8 @@ export class Lobby {
     return hands < m.players.max;
   }
 
-  private selectedManifest(): Manifest | null {
-    return this.games.find((g) => g.id === this.selectedGameId) ?? null;
+  private selectedPlugin(): GamePlugin | null {
+    return this.games.find((g) => g.manifest.id === this.selectedGameId) ?? null;
   }
 
   /** Prune dead devices; keep the table role on the largest free screen. */
@@ -111,7 +166,7 @@ export class Lobby {
         this.claims.delete(id);
       }
     }
-    const m = this.selectedManifest();
+    const m = this.selectedPlugin()?.manifest;
     if (m && m.roles.table === 'required' && ![...this.claims.values()].includes('table')) {
       const best = [...this.devices.values()]
         .filter((d) => !this.claims.has(d.id))
@@ -124,26 +179,27 @@ export class Lobby {
     }
   }
 
-  private gameEntry(m: Manifest): GameEntry {
+  /** Feasibility annotates the game list; it never blocks selecting a game. */
+  private gameEntry(p: GamePlugin): GameEntry {
+    const m = p.manifest;
     const phones = [...this.devices.values()].filter((d) => !d.isTableScreen).length;
-    const screens = this.devices.size - phones;
+    if (!p.def) return { manifest: m, feasible: false, reason: 'not playable yet' };
     if (m.roles.hand !== 'none' && phones < m.players.min) {
       return {
         manifest: m,
         feasible: false,
-        reason: `needs ${m.players.min}+ phones (${phones} joined)`,
+        reason: `needs ${m.players.min}+ phone${m.players.min === 1 ? '' : 's'} (${phones} joined)`,
       };
-    }
-    if (m.roles.table === 'required' && screens === 0 && phones <= m.players.min) {
-      return { manifest: m, feasible: false, reason: 'needs a table screen' };
     }
     return { manifest: m, feasible: true };
   }
 
   private startState(): { canStart: boolean; blockers: string[] } {
-    const m = this.selectedManifest();
-    if (!m) return { canStart: false, blockers: ['no game selected'] };
+    const plugin = this.selectedPlugin();
+    if (!plugin) return { canStart: false, blockers: ['no game selected'] };
     const blockers: string[] = [];
+    if (!plugin.def) blockers.push(`${plugin.manifest.name} isn't playable yet`);
+    const m = plugin.manifest;
     const roles = [...this.claims.values()];
     if (m.roles.table === 'required' && !roles.includes('table')) {
       blockers.push('no table screen assigned');
@@ -156,25 +212,5 @@ export class Lobby {
       }
     }
     return { canStart: blockers.length === 0, blockers };
-  }
-
-  private snapshot(): LobbySnapshot {
-    const { canStart, blockers } = this.startState();
-    return {
-      phase: this.phase,
-      devices: [...this.devices.values()]
-        .sort((a, b) => a.joinedAt - b.joinedAt)
-        .map((d) => ({
-          id: d.id,
-          name: d.name,
-          isTableScreen: d.isTableScreen,
-          role: this.claims.get(d.id) ?? null,
-          away: Date.now() - d.lastSeen > AWAY_MS,
-        })),
-      games: this.games.map((m) => this.gameEntry(m)),
-      selectedGameId: this.selectedGameId,
-      canStart,
-      blockers,
-    };
   }
 }

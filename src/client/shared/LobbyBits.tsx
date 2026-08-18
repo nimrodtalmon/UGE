@@ -27,16 +27,19 @@ export function GameList(props: {
     <div className="games">
       {props.games.map(({ manifest, feasible, reason }) => {
         const selected = manifest.id === props.selectedGameId;
+        const classes = ['game', selected && 'selected', !feasible && 'infeasible'];
         return (
           <button
             key={manifest.id}
-            className={selected ? 'game selected' : 'game'}
-            disabled={!feasible || !props.onSelect}
+            className={classes.filter(Boolean).join(' ')}
+            disabled={!props.onSelect}
             onClick={() => props.onSelect?.(selected ? null : manifest.id)}
           >
             <span>{manifest.name}</span>
             <span className="meta">
-              {manifest.players.min}–{manifest.players.max} players
+              {manifest.players.min === manifest.players.max
+                ? `${manifest.players.min} player${manifest.players.min === 1 ? '' : 's'}`
+                : `${manifest.players.min}–${manifest.players.max} players`}
               {!feasible && reason ? ` · ${reason}` : ''}
             </span>
           </button>

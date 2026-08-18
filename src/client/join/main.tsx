@@ -1,7 +1,9 @@
+import '../shared/exposeReact.js';
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useLobby } from '../shared/useLobby.js';
 import { DeviceTiles } from '../shared/LobbyBits.js';
+import { GameScreen } from '../shared/GameScreen.js';
 
 function NameEntry(props: { onJoin: (name: string) => void }) {
   const [draft, setDraft] = useState('');
@@ -42,22 +44,9 @@ function PhoneLobby(props: { name: string; onRename: () => void }) {
   const selected = snapshot.games.find((g) => g.manifest.id === snapshot.selectedGameId) ?? null;
   const myRole = snapshot.devices.find((d) => d.id === deviceId)?.role ?? null;
 
-  if (snapshot.phase === 'starting' && selected) {
+  if (snapshot.phase === 'playing' && snapshot.game) {
     return (
-      <div className="center-screen">
-        <div className="stack">
-          <h1>{selected.manifest.name}</h1>
-          <p className="muted">
-            Starting… the game engine lands in stage 3.
-            {myRole && (
-              <>
-                {' '}
-                You are: <strong>{myRole}</strong>.
-              </>
-            )}
-          </p>
-        </div>
-      </div>
+      <GameScreen game={snapshot.game} move={(name, ...args) => act('/api/game/move', { name, args })} />
     );
   }
 

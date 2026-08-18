@@ -5,7 +5,7 @@ import express from 'express';
 import * as esbuild from 'esbuild';
 import QRCode from 'qrcode';
 import { lanAddress } from './lan.js';
-import { loadManifests } from './games.js';
+import { loadPlugins } from './games.js';
 import { Lobby } from './lobby.js';
 import type { SyncRequest } from '../shared/types.js';
 
@@ -15,6 +15,10 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const clientDir = path.join(root, 'src', 'client');
 const distDir = path.join(root, 'dist');
 
+const plugins = await loadPlugins(path.join(root, 'games'));
+console.log(`games discovered: ${plugins.map((p) => p.manifest.id).join(', ') || '(none)'}`);
+
+// platform shell bundles (own their React copy, exposed on globalThis)
 await esbuild.build({
   entryPoints: {
     table: path.join(clientDir, 'table', 'main.tsx'),
@@ -27,6 +31,28 @@ await esbuild.build({
   sourcemap: true,
 });
 
+// game view bundles — react aliased to shims so views share the shell's React
+const viewEntries: Record<string, string> = {};
+for (const p of plugins) {
+  for (const [role, file] of Object.entries(p.views)) {
+    viewEntries[`games/${p.manifest.id}/${role}`] = file;
+  }
+}
+if (Object.keys(viewEntries).length > 0) {
+  await esbuild.build({
+    entryPoints: viewEntries,
+    bundle: true,
+    outdir: distDir,
+    format: 'esm',
+    jsx: 'automatic',
+    sourcemap: true,
+    alias: {
+      react: path.join(clientDir, 'shared', 'react-shim.ts'),
+      'react/jsx-runtime': path.join(clientDir, 'shared', 'jsx-runtime-shim.ts'),
+    },
+  });
+}
+
 const joinUrl = `http://${lanAddress()}:${PORT}/join`;
 
 let version = 'dev';
@@ -36,9 +62,7 @@ try {
   /* not a git checkout */
 }
 
-const games = loadManifests(path.join(root, 'games'));
-console.log(`games discovered: ${games.map((g) => g.id).join(', ') || '(none)'}`);
-const lobby = new Lobby(games);
+const lobby = new Lobby(plugins);
 
 const app = express();
 app.use(express.json());
@@ -49,12 +73,26 @@ app.use('/dist', express.static(distDir));
 app.use('/static', express.static(clientDir));
 
 app.post('/api/lobby/sync', (req, res) => res.json(lobby.sync(req.body as SyncRequest)));
-app.post('/api/lobby/select', (req, res) => res.json(lobby.select(req.body.gameId ?? null)));
-app.post('/api/lobby/claim', (req, res) =>
-  res.json(lobby.claim(req.body.deviceId, req.body.role ?? null)),
-);
-app.post('/api/lobby/start', (_req, res) => res.json(lobby.start()));
-app.post('/api/lobby/reset', (_req, res) => res.json(lobby.reset()));
+app.post('/api/lobby/select', (req, res) => {
+  lobby.select(req.body.gameId ?? null);
+  res.json(lobby.snapshotFor(req.body.deviceId));
+});
+app.post('/api/lobby/claim', (req, res) => {
+  lobby.claim(req.body.deviceId, req.body.role ?? null);
+  res.json(lobby.snapshotFor(req.body.deviceId));
+});
+app.post('/api/lobby/start', (req, res) => {
+  lobby.start();
+  res.json(lobby.snapshotFor(req.body.deviceId));
+});
+app.post('/api/lobby/reset', (req, res) => {
+  lobby.reset();
+  res.json(lobby.snapshotFor(req.body.deviceId));
+});
+app.post('/api/game/move', (req, res) => {
+  lobby.move(req.body.deviceId, req.body.name, req.body.args ?? []);
+  res.json(lobby.snapshotFor(req.body.deviceId));
+});
 
 app.get('/api/session', (_req, res) => {
   res.json({ joinUrl, version });

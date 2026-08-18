@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { LobbySnapshot, SyncResponse } from '../../shared/types.js';
 
 const POLL_MS = 1500;
@@ -22,6 +22,7 @@ export function useLobby(me: { name: string; isTableScreen: boolean } | null) {
   const [snapshot, setSnapshot] = useState<LobbySnapshot | null>(null);
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [offline, setOffline] = useState(false);
+  const deviceIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!me) return;
@@ -36,6 +37,7 @@ export function useLobby(me: { name: string; isTableScreen: boolean } | null) {
         });
         if (stopped) return;
         localStorage.setItem(storageKey, res.deviceId);
+        deviceIdRef.current = res.deviceId;
         setDeviceId(res.deviceId);
         setSnapshot(res.snapshot);
         setOffline(false);
@@ -55,10 +57,13 @@ export function useLobby(me: { name: string; isTableScreen: boolean } | null) {
     };
   }, [me?.name, me?.isTableScreen, storageKey]);
 
-  /** POST a lobby mutation; every mutation endpoint returns a fresh snapshot. */
+  /**
+   * POST a lobby/game mutation. deviceId is injected so every endpoint can
+   * respond with a snapshot filtered for this device (hidden state stays hidden).
+   */
   const act = useCallback(async (path: string, body: object = {}) => {
     try {
-      setSnapshot(await post<LobbySnapshot>(path, body));
+      setSnapshot(await post<LobbySnapshot>(path, { deviceId: deviceIdRef.current, ...body }));
     } catch {
       /* next poll recovers */
     }

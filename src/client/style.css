@@ -63,6 +63,7 @@ h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; color:
   gap: 1rem;
 }
 .game.selected { border-color: #3d8a57; background: #223028; }
+.game.infeasible { opacity: 0.55; }
 .game .meta { font-size: 0.85rem; color: #8a8f98; }
 
 /* phone lobby layout */
@@ -115,4 +116,15 @@ h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; color:
   font-size: 0.85rem;
 }
 button.small { padding: 0.35rem 0.8rem; font-size: 0.85rem; }
+
+/* running game overlay */
+.game-shell { height: 100%; position: relative; }
+.game-controls {
+  position: fixed;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0.75;
+}
 .starting-banner { font-size: 2rem; margin-top: 2rem; }

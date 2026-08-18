@@ -1,0 +1,31 @@
+.lo-screen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+.lo-title { letter-spacing: 0.2em; }
+.lo-hint { color: #8a8f98; }
+.lo-status { font-size: 1.2rem; min-height: 1.5rem; }
+.lo-grid {
+  display: grid;
+  gap: 8px;
+  width: min(62vh, 92vw, 30rem);
+}
+.lo-cell {
+  aspect-ratio: 1;
+  padding: 0;
+  border-radius: 14px;
+  background: #22262d;
+  border: 1px solid #3a4048;
+  cursor: pointer;
+}
+.lo-cell.on {
+  background: #ffd75e;
+  border-color: #ffe9a8;
+  box-shadow: 0 0 18px rgba(255, 215, 94, 0.4);
+}
+.lo-cell:disabled { cursor: default; opacity: 0.9; }

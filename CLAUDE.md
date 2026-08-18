@@ -40,8 +40,10 @@ MacBook Air ("brain")
 Players' phones — browser → lobby → claim role → play
 ```
 
-- Framework: **boardgame.io** (game logic as pure functions; handles state
-  sync, turns, phases, secret state via `playerView` for hidden hands).
+- Framework: **built-in minimal engine** (v0 decision; see log). Game logic as
+  pure functions in the boardgame.io shape — `setup`, `moves`, `playerView`,
+  `isOver` — but state sync is the platform's own HTTP polling, shared with
+  the lobby. Revisit boardgame.io if sync needs outgrow polling.
 - Language: **TypeScript** throughout — the plugin API is a contract; types are
   its documentation and enforcement.
 - UI: simple — React or vanilla TS, big touch targets, phone-first CSS.
@@ -130,3 +132,15 @@ any hardware.
 - 2026-08: Name: **UGE**. Language: TypeScript (CC's discretion on React vs
   vanilla). Join UX v0: plain URL QR. NFC vendor: leaning Good Display,
   deferred. Launch games: Memory, Codenames, Alias.
+- 2026-08: UI: React. The table screen is the host (Kahoot-style): it picks
+  the game and starts it; phones are controllers. Selection is allowed with
+  zero players; only Start is gated. Away/disconnect: away after 5s of missed
+  polls (seat + role kept), dropped after 45s.
+- 2026-08: v0 game engine is **built-in**, not boardgame.io: plugin `game.ts`
+  keeps boardgame.io's pure-function shape (`setup`/`moves`/`playerView`/
+  `isOver`), so migrating later stays cheap, but sync reuses the lobby's
+  polling — far fewer moving parts (no socket.io/Koa beside Express).
+  TODO(nimrod): veto if boardgame.io is wanted after all.
+- 2026-08: Update-in-place: table screen's Update button → server exits 42 →
+  start.sh supervisor pulls, installs, relaunches. Extra launch game:
+  **Lights Out** (1 player) as the minimal engine-exercising plugin.

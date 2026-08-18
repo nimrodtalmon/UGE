@@ -1,0 +1,71 @@
+import { useEffect, useState } from 'react';
+import type { ComponentType } from 'react';
+import type { GameViewProps } from '../../shared/plugin.js';
+import type { ActiveGame } from '../../shared/types.js';
+
+/** Load the running game's view for this device's role and render it. */
+export function GameScreen(props: {
+  game: ActiveGame;
+  move: (name: string, ...args: unknown[]) => void;
+}) {
+  const { game } = props;
+  const [View, setView] = useState<ComponentType<GameViewProps> | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!game.role) return;
+    let dead = false;
+    setView(null);
+    setFailed(false);
+
+    const cssHref = `/dist/games/${game.id}/${game.role}.css`;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = cssHref; // 404 is harmless when a game ships no styles
+    document.head.appendChild(link);
+
+    const jsUrl = `/dist/games/${game.id}/${game.role}.js`;
+    import(jsUrl).then(
+      (m: { default: ComponentType<GameViewProps> }) => !dead && setView(() => m.default),
+      () => !dead && setFailed(true),
+    );
+    return () => {
+      dead = true;
+      link.remove();
+    };
+  }, [game.id, game.role]);
+
+  if (!game.role) {
+    return (
+      <div className="center-screen">
+        <p className="muted">{game.name} in progress — you're watching.</p>
+      </div>
+    );
+  }
+  if (failed) {
+    return (
+      <div className="center-screen">
+        <p className="muted">
+          {game.name} has no "{game.role}" view — that's a plugin bug.
+        </p>
+      </div>
+    );
+  }
+  if (!View) {
+    return (
+      <div className="center-screen">
+        <p className="muted">loading {game.name}…</p>
+      </div>
+    );
+  }
+  return (
+    <View
+      view={game.view}
+      role={game.role}
+      me={game.me}
+      players={game.players}
+      over={game.over}
+      move={props.move}
+    />
+  );
+}
