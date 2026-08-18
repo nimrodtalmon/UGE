@@ -8,8 +8,13 @@ import type {
   SyncResponse,
 } from '../shared/types.js';
 
-/** Clients poll every ~1.5s; a device silent this long has left. */
-const DEVICE_TTL_MS = 10_000;
+/**
+ * Clients poll every ~1.5s. A device that misses a few polls (locked phone,
+ * backgrounded tab) is shown as "away" but keeps its seat and role; only
+ * after a long silence is it dropped and its role freed.
+ */
+const AWAY_MS = 5_000;
+const REMOVE_MS = 45_000;
 
 interface Device {
   id: string;
@@ -99,7 +104,7 @@ export class Lobby {
 
   /** Prune dead devices; keep the table role on the largest free screen. */
   private tick(): void {
-    const cutoff = Date.now() - DEVICE_TTL_MS;
+    const cutoff = Date.now() - REMOVE_MS;
     for (const [id, d] of this.devices) {
       if (d.lastSeen < cutoff) {
         this.devices.delete(id);
@@ -164,6 +169,7 @@ export class Lobby {
           name: d.name,
           isTableScreen: d.isTableScreen,
           role: this.claims.get(d.id) ?? null,
+          away: Date.now() - d.lastSeen > AWAY_MS,
         })),
       games: this.games.map((m) => this.gameEntry(m)),
       selectedGameId: this.selectedGameId,

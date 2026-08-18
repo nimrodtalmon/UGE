@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawn } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
 import express from 'express';
 import * as esbuild from 'esbuild';
 import QRCode from 'qrcode';
@@ -29,6 +29,13 @@ await esbuild.build({
 
 const joinUrl = `http://${lanAddress()}:${PORT}/join`;
 
+let version = 'dev';
+try {
+  version = execSync('git rev-parse --short HEAD', { cwd: root }).toString().trim();
+} catch {
+  /* not a git checkout */
+}
+
 const games = loadManifests(path.join(root, 'games'));
 console.log(`games discovered: ${games.map((g) => g.id).join(', ') || '(none)'}`);
 const lobby = new Lobby(games);
@@ -50,7 +57,15 @@ app.post('/api/lobby/start', (_req, res) => res.json(lobby.start()));
 app.post('/api/lobby/reset', (_req, res) => res.json(lobby.reset()));
 
 app.get('/api/session', (_req, res) => {
-  res.json({ joinUrl });
+  res.json({ joinUrl, version });
+});
+
+// The table screen's Update button: exit with code 42 so the start.sh
+// supervisor pulls the latest code and relaunches.
+app.post('/api/admin/update', (_req, res) => {
+  res.json({ ok: true });
+  console.log('update requested — restarting via supervisor');
+  setTimeout(() => process.exit(42), 200);
 });
 
 app.get('/api/qr.svg', async (_req, res) => {

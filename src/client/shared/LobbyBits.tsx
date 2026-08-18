@@ -4,8 +4,11 @@ export function DeviceTiles(props: { devices: DeviceTile[]; myId: string | null 
   return (
     <div className="tiles">
       {props.devices.map((d) => (
-        <div key={d.id} className={d.id === props.myId ? 'tile me' : 'tile'}>
-          <div className="who">{d.name}</div>
+        <div
+          key={d.id}
+          className={['tile', d.id === props.myId && 'me', d.away && 'away'].filter(Boolean).join(' ')}
+        >
+          <div className="who">{d.name}{d.away ? ' 💤' : ''}</div>
           {d.role && <span className={`badge ${d.role === 'table' ? 'table' : ''}`}>{d.role}</span>}
           {!d.role && d.isTableScreen && <span className="muted"> screen</span>}
         </div>

@@ -45,9 +45,13 @@ export function useLobby(me: { name: string; isTableScreen: boolean } | null) {
     };
     void syncOnce();
     const timer = setInterval(syncOnce, POLL_MS);
+    // phones stop polling while locked/backgrounded; resync the moment they wake
+    const onVisible = () => document.visibilityState === 'visible' && void syncOnce();
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
       stopped = true;
       clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, [me?.name, me?.isTableScreen, storageKey]);
 

@@ -15,10 +15,16 @@ npm start
 
 `npm start` builds the client bundles and starts the brain on port 8000. The
 table view opens in your browser (or browse to `http://localhost:8000`). It
-shows a QR code; phones on the same WiFi scan it to join the lobby: enter a
-name, pick a game, claim a role, start when the blockers clear.
+shows a QR code; phones on the same WiFi scan it to join the lobby and enter
+a name. The table screen is the host: it picks the game and starts it once
+every phone has claimed a role — phones are controllers, Kahoot-style.
 
-Set `UGE_NO_OPEN=1` to skip auto-opening the browser.
+The table screen's **Update** button pulls the latest code from git and
+restarts the brain in place; phones reconnect on their own. Set
+`UGE_NO_OPEN=1` to skip auto-opening the browser.
+
+The brain runs anywhere Node ≥ 22 runs (MacBook now; a Raspberry Pi or any
+always-on box later — nothing is macOS-specific except the auto-open).
 
 ## Layout
 

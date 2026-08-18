@@ -42,6 +42,7 @@ h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; color:
 }
 .tile .who { font-weight: 600; }
 .tile.me { border-color: #3d8a57; }
+.tile.away { opacity: 0.45; }
 .tile .badge {
   display: inline-block;
   margin-top: 0.3rem;
@@ -104,4 +105,14 @@ h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; color:
   margin: 1.5rem 0 0.8rem;
 }
 .table-screen code { color: #8a8f98; font-size: 1rem; }
+.table-screen .qr { display: flex; flex-direction: column; }
+.table-screen .qr footer {
+  margin-top: auto;
+  padding-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.85rem;
+}
+button.small { padding: 0.35rem 0.8rem; font-size: 0.85rem; }
 .starting-banner { font-size: 2rem; margin-top: 2rem; }

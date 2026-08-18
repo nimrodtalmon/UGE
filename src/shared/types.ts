@@ -17,6 +17,8 @@ export interface DeviceTile {
   name: string;
   isTableScreen: boolean;
   role: string | null;
+  /** Stopped polling recently (locked phone, backgrounded tab) but not yet dropped. */
+  away: boolean;
 }
 
 export interface GameEntry {

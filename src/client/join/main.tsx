@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useLobby } from '../shared/useLobby.js';
-import { DeviceTiles, GameList } from '../shared/LobbyBits.js';
+import { DeviceTiles } from '../shared/LobbyBits.js';
 
 function NameEntry(props: { onJoin: (name: string) => void }) {
   const [draft, setDraft] = useState('');
@@ -40,20 +40,26 @@ function PhoneLobby(props: { name: string; onRename: () => void }) {
   }
 
   const selected = snapshot.games.find((g) => g.manifest.id === snapshot.selectedGameId) ?? null;
+  const myRole = snapshot.devices.find((d) => d.id === deviceId)?.role ?? null;
 
   if (snapshot.phase === 'starting' && selected) {
     return (
       <div className="center-screen">
         <div className="stack">
           <h1>{selected.manifest.name}</h1>
-          <p className="muted">Starting… the game engine lands in stage 3.</p>
-          <button onClick={() => act('/api/lobby/reset')}>Back to lobby</button>
+          <p className="muted">
+            Starting… the game engine lands in stage 3.
+            {myRole && (
+              <>
+                {' '}
+                You are: <strong>{myRole}</strong>.
+              </>
+            )}
+          </p>
         </div>
       </div>
     );
   }
-
-  const myRole = snapshot.devices.find((d) => d.id === deviceId)?.role ?? null;
 
   return (
     <div className="phone">
@@ -68,27 +74,26 @@ function PhoneLobby(props: { name: string; onRename: () => void }) {
       <h2>At the table</h2>
       <DeviceTiles devices={snapshot.devices} myId={deviceId} />
 
-      <h2>Games</h2>
-      <GameList
-        games={snapshot.games}
-        selectedGameId={snapshot.selectedGameId}
-        onSelect={(gameId) => act('/api/lobby/select', { gameId })}
-      />
-
-      {selected && (
+      <h2>Game</h2>
+      {selected === null ? (
+        <p className="muted">Waiting for the table screen to pick a game…</p>
+      ) : (
         <>
-          <h2>Your role</h2>
+          <p>
+            <strong>{selected.manifest.name}</strong>{' '}
+            <span className="muted">
+              ({selected.manifest.players.min}–{selected.manifest.players.max} players)
+            </span>
+          </p>
           <div className="actions">
             {myRole === null ? (
               <>
                 {selected.manifest.roles.hand !== 'none' && (
-                  <button className="primary" onClick={() => act('/api/lobby/claim', { deviceId, role: 'hand' })}>
+                  <button
+                    className="primary"
+                    onClick={() => act('/api/lobby/claim', { deviceId, role: 'hand' })}
+                  >
                     Join as player
-                  </button>
-                )}
-                {selected.manifest.roles.table !== 'none' && (
-                  <button onClick={() => act('/api/lobby/claim', { deviceId, role: 'table' })}>
-                    Use this device as the table
                   </button>
                 )}
                 {selected.manifest.roles.extras.map((extra) => (
@@ -96,6 +101,11 @@ function PhoneLobby(props: { name: string; onRename: () => void }) {
                     Claim: {extra}
                   </button>
                 ))}
+                {selected.manifest.roles.table !== 'none' && (
+                  <button onClick={() => act('/api/lobby/claim', { deviceId, role: 'table' })}>
+                    Use this device as the table
+                  </button>
+                )}
               </>
             ) : (
               <>
@@ -107,16 +117,8 @@ function PhoneLobby(props: { name: string; onRename: () => void }) {
                 </button>
               </>
             )}
-          </div>
-
-          <h2>Start</h2>
-          <div className="actions">
-            <button className="primary" disabled={!snapshot.canStart} onClick={() => act('/api/lobby/start')}>
-              Start {selected.manifest.name}
-            </button>
-            {snapshot.blockers.length > 0 && (
-              <p className="blockers">{snapshot.blockers.join(' · ')}</p>
-            )}
+            {snapshot.blockers.length > 0 && <p className="blockers">{snapshot.blockers.join(' · ')}</p>}
+            {snapshot.canStart && <p className="muted">Ready — start from the table screen.</p>}
           </div>
         </>
       )}
