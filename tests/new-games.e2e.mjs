@@ -106,6 +106,16 @@ if (await table.locator('.rk-rack').count()) fail('table shows a rack');
 await table.waitForSelector('.rk-pool:has-text("pool 78")', { timeout: 5000 }); // 106 - 2*14
 console.log('ok: rummikub started — 14 tiles each, racks private, pool 78');
 
+// rack sort toggle: numbers ascend after switching to 1→13
+await phones[0].click('.rk-sort');
+const nums = await phones[0].$$eval('.rk-rack .rk-tile', (els) =>
+  els.map((el) => el.textContent.trim()).filter((s) => s !== '☺').map(Number));
+for (let i = 1; i < nums.length; i++) {
+  if (nums[i] < nums[i - 1]) fail(`rack not sorted by number: ${nums.join(',')}`);
+}
+await phones[0].click('.rk-sort'); // back to colors
+console.log('ok: rack sort toggle orders tiles by number');
+
 // staging: two tiles are never a valid set
 await phones[0].click('.rk-rack .rk-tile >> nth=0');
 await phones[0].click('.rk-rack .rk-tile >> nth=1');

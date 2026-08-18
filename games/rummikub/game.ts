@@ -114,6 +114,37 @@ const game: GameDef<RkState, RkView> = {
       return advanceTurn(next);
     },
 
+    /**
+     * Rearrange the table: submit the complete new table layout. Every tile
+     * already on the table must stay on it, every meld must be valid, and at
+     * least one tile must come from your rack (no free reshuffles).
+     */
+    rearrange(state, ctx, payload: { table: number[][] }) {
+      if (state.winner !== null) return state;
+      const me = ctx.players.findIndex((p) => p.id === ctx.playerId);
+      if (me !== state.turn || !state.melded[me]) return state;
+      if (!payload || !Array.isArray(payload.table)) return state;
+      const table = payload.table;
+      if (!table.every((m) => Array.isArray(m) && isValidMeld(m))) return state;
+
+      const flat = table.flat();
+      const flatSet = new Set(flat);
+      if (flatSet.size !== flat.length) return state;
+      const oldSet = new Set(state.melds.flat());
+      if (![...oldSet].every((id) => flatSet.has(id))) return state; // table tiles never leave the table
+      const rack = state.racks[me]!;
+      const fromRack = flat.filter((id) => !oldSet.has(id));
+      if (fromRack.length === 0) return state; // must play at least one tile
+      if (!fromRack.every((id) => rack.includes(id))) return state;
+
+      const racks = state.racks.map((r, i) => (i === me ? r.filter((id) => !flatSet.has(id)) : r));
+      const next: RkState = { ...state, racks, melds: table.map((m) => [...m]), passes: 0 };
+      if (racks[me]!.length === 0) {
+        return { ...next, winner: me, winText: `${state.names[me]} is out — Rummikub! 🏆` };
+      }
+      return advanceTurn(next);
+    },
+
     /** Draw a tile (or pass when the pool is empty) and end the turn. */
     draw(state, ctx) {
       if (state.winner !== null) return state;

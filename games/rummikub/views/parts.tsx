@@ -1,4 +1,4 @@
-import { COLOR_HEX, decode } from '../lib.js';
+import { COLOR_HEX, decode, displayOrder } from '../lib.js';
 import type { RkView } from '../game.js';
 
 export function TileFace({ id, selected, onTap }: { id: number; selected?: boolean; onTap?: () => void }) {
@@ -26,7 +26,7 @@ export function Melds(props: { view: RkView; onTapMeld?: (i: number) => void; bi
           disabled={!props.onTapMeld}
           onClick={() => props.onTapMeld?.(i)}
         >
-          {meld.map((id) => (
+          {displayOrder(meld).map((id) => (
             <TileFace key={id} id={id} />
           ))}
         </button>

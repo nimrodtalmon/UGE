@@ -67,5 +67,34 @@ export const rackValue = (ids: number[]): number =>
 export const canAppend = (meld: number[], tileId: number): boolean =>
   isValidMeld([...meld, tileId]);
 
+/** Reading order for showing a meld: runs ascend (jokers dropped into the gaps
+ *  they fill), groups sort by color. Validation never depends on order. */
+export function displayOrder(ids: number[]): number[] {
+  const jokers = ids.filter((id) => decode(id).joker);
+  const rest = ids.filter((id) => !decode(id).joker);
+  if (rest.length === 0) return [...ids];
+  const runShaped =
+    rest.length >= 2 &&
+    new Set(rest.map((id) => decode(id).c)).size === 1 &&
+    new Set(rest.map((id) => decode(id).n)).size === rest.length;
+  if (runShaped) {
+    const sorted = [...rest].sort((a, b) => decode(a).n - decode(b).n);
+    const out: number[] = [];
+    const spare = [...jokers];
+    for (let i = 0; i < sorted.length; i++) {
+      if (i > 0) {
+        let gap = decode(sorted[i]!).n - decode(sorted[i - 1]!).n - 1;
+        while (gap-- > 0 && spare.length > 0) out.push(spare.pop()!);
+      }
+      out.push(sorted[i]!);
+    }
+    return [...out, ...spare];
+  }
+  return [
+    ...[...rest].sort((a, b) => decode(a).n - decode(b).n || decode(a).c - decode(b).c),
+    ...jokers,
+  ];
+}
+
 export const COLOR_NAMES = ['red', 'blue', 'yellow', 'black'];
 export const COLOR_HEX = ['#c0392b', '#2a6fc0', '#d1a02a', '#2b2d33'];

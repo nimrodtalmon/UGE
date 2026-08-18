@@ -23,6 +23,15 @@
 }
 .sk-picture.big { width: min(88vw, 66vh, 44rem); }
 
+/* drawer: the whole screen refuses touch scrolling so strokes never move the page */
+.sk-drawing {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
 /* drawer: live pad stacked over the confirmed picture */
 .sk-stack { position: relative; width: min(92vw, 56vh, 30rem); }
 .sk-stack .sk-picture { width: 100%; }

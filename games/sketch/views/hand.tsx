@@ -76,6 +76,21 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
   });
   const iDraw = view.myIndex === view.drawer;
 
+  // while drawing, freeze the page itself — a stroke swipe must never scroll/bounce it
+  const lockScroll = !over && view.phase === 'draw' && iDraw;
+  useEffect(() => {
+    if (!lockScroll) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    document.documentElement.style.overscrollBehavior = 'none';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.touchAction = '';
+      document.documentElement.style.overscrollBehavior = '';
+    };
+  }, [lockScroll]);
+
   useEffect(() => setDraft(''), [view.round]);
   useEffect(() => {
     if (rejected) {

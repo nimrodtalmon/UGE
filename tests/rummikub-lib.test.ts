@@ -1,5 +1,5 @@
 // Unit tests for the rummikub meld validation. Run with: npx tsx tests/rummikub-lib.test.ts
-import { decode, isValidMeld, meldValue, rackValue } from '../games/rummikub/lib.js';
+import { decode, displayOrder, isValidMeld, meldValue, rackValue } from '../games/rummikub/lib.js';
 
 const t = (name: string, cond: boolean) => {
   if (!cond) {
@@ -33,4 +33,10 @@ t('group joker value', meldValue([id(11, 0), id(11, 1), J1]) === 33);
 t('run value 3+4+5', meldValue([id(3, 2), id(4, 2), id(5, 2)]) === 12);
 t('run 12,13 + joker valued as 11+12+13', meldValue([id(12, 2), id(13, 2), J1]) === 36);
 t('rack value with joker', rackValue([id(5, 0), J1]) === 35);
+
+const eq = (a: number[], b: number[]) => JSON.stringify(a) === JSON.stringify(b);
+t('display: run sorts ascending', eq(displayOrder([id(5, 2), id(3, 2), id(4, 2)]), [id(3, 2), id(4, 2), id(5, 2)]));
+t('display: joker lands in the run gap', eq(displayOrder([id(5, 2), J1, id(3, 2)]), [id(3, 2), J1, id(5, 2)]));
+t('display: spare joker goes to the end', eq(displayOrder([J1, id(13, 2), id(12, 2)]), [id(12, 2), id(13, 2), J1]));
+t('display: group sorts by color', eq(displayOrder([id(7, 3), id(7, 0), id(7, 1)]), [id(7, 0), id(7, 1), id(7, 3)]));
 console.log('ALL RUMMIKUB LIB TESTS PASSED');
