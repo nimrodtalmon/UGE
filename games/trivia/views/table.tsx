@@ -24,7 +24,7 @@ export default function TableView({ view, players, over, move, serverNow }: Game
         {view.playerNames.map((name, i) => (
           <div key={i} className="tv-player" style={{ '--seat': colorFor(i) } as CSSProperties}>
             <span>{players[i]?.avatar ?? avatarFor(name)}</span>
-            <span className="tv-name">{name}</span>
+            <span className="tv-name">{players[i]?.name ?? name}</span>
             <strong>{view.scores[i]}</strong>
           </div>
         ))}

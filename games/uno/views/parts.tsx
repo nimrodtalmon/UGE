@@ -17,16 +17,20 @@ export function CardFace({ card, big }: { card: Card; big?: boolean }) {
 export function PlayerRing({ view, players }: { view: WcView; players: PlayerInfo[] }) {
   return (
     <div className="wc-players">
-      {view.playerNames.map((name, i) => (
-        <div
-          key={i}
-          className={view.winner === null && i === view.turn ? 'wc-player current' : 'wc-player'}
-        >
-          <span className="wc-avatar">{players[i]?.avatar ?? avatarFor(name)}</span>
-          <span className="wc-name">{name}</span>
-          <span className="wc-count">{view.counts[i]} 🂠</span>
-        </div>
-      ))}
+      {view.playerNames.map((name, i) => {
+        // live identity for real seats; hotseat's virtual "Player N" seats stay as-is
+        const live = view.hotseat ? undefined : players[i];
+        return (
+          <div
+            key={i}
+            className={view.winner === null && i === view.turn ? 'wc-player current' : 'wc-player'}
+          >
+            <span className="wc-avatar">{live?.avatar ?? avatarFor(name)}</span>
+            <span className="wc-name">{live?.name ?? name}</span>
+            <span className="wc-count">{view.counts[i]} 🂠</span>
+          </div>
+        );
+      })}
       <span className="wc-dir">{view.dir === 1 ? '⟳' : '⟲'}</span>
     </div>
   );

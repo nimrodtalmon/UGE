@@ -21,8 +21,8 @@ export default function TableView({ view, players, over, move }: GameViewProps<M
         <p className="mem-over">{over.text}</p>
       ) : (
         <p className="mem-hint">
-          {view.playerNames[view.current]}'s turn —{' '}
-          {view.pass ? 'pass them the phone' : 'flip on their phone'}
+          {(view.pass ? undefined : players[view.current]?.name) ?? view.playerNames[view.current]}
+          's turn — {view.pass ? 'pass them the phone' : 'flip on their phone'}
         </p>
       )}
       <Grid view={view} cols={cols} disabled={!!over} />

@@ -59,9 +59,18 @@ await table.waitForFunction(() => document.querySelector('.lo-status')?.textCont
 const litAfter = await table.locator('.lo-cell.on').count();
 console.log(`ok: phone move propagated to table (lit ${litBefore} -> ${litAfter})`);
 
+// mid-game rename via the floating chip must reach the running game
+await phone.click('.profile-chip');
+await phone.waitForSelector('.avatar-grid', { timeout: 5000 });
+await phone.fill('input', 'Zorro');
+await phone.click('button:has-text("Save")');
+await phone.waitForSelector('p.lo-hint:has-text("Zorro")', { timeout: 6000 });
+console.log('ok: mid-game rename shows in the running game');
+
 await table.click('button:has-text("End game")');
 await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 5000 });
-console.log('ok: end game returns everyone to the lobby');
+await table.waitForSelector('.tile:has-text("Zorro")', { timeout: 6000 });
+console.log('ok: end game returns everyone to the lobby, rename kept');
 
 if (process.env.SCRATCH) await table.screenshot({ path: process.env.SCRATCH + '/table.png' });
 await browser.close();

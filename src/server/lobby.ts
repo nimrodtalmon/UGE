@@ -62,6 +62,10 @@ export class Lobby {
       joinedAt: existing?.joinedAt ?? Date.now(),
       lastSeen: Date.now(),
     });
+    if (this.session) {
+      const d = this.devices.get(id)!;
+      this.session.updatePlayer(id, d.name, deviceAvatar(d));
+    }
     this.tick();
     return { deviceId: id, snapshot: this.snapshotFor(id) };
   }

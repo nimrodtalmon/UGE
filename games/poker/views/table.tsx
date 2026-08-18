@@ -35,7 +35,7 @@ export default function TableView({ view, players, over, move, serverNow }: Game
         </p>
       ) : (
         <p className="pk-turn">
-          {view.names[view.toAct] ?? '…'} to act
+          {players[view.toAct]?.name ?? view.names[view.toAct] ?? '…'} to act
           {view.currentBet > 0 ? ` — bet is ${view.currentBet}` : ''}
         </p>
       )}

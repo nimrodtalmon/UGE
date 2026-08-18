@@ -13,17 +13,21 @@ export function Scoreboard(props: {
   const { view } = props;
   return (
     <div className={props.small ? 'mem-scores small' : 'mem-scores'}>
-      {view.playerNames.map((name, i) => (
-        <div
-          key={i}
-          className={!props.over && i === view.current ? 'mem-player current' : 'mem-player'}
-          style={{ '--seat': colorFor(i) } as CSSProperties}
-        >
-          <span className="mem-avatar">{props.players[i]?.avatar ?? avatarFor(name)}</span>
-          <span className="mem-name">{name}</span>
-          <strong>{view.scores[i]}</strong>
-        </div>
-      ))}
+      {view.playerNames.map((name, i) => {
+        // live identity for real seats; virtual "Player N" seats in pass mode stay as-is
+        const live = view.pass ? undefined : props.players[i];
+        return (
+          <div
+            key={i}
+            className={!props.over && i === view.current ? 'mem-player current' : 'mem-player'}
+            style={{ '--seat': colorFor(i) } as CSSProperties}
+          >
+            <span className="mem-avatar">{live?.avatar ?? avatarFor(name)}</span>
+            <span className="mem-name">{live?.name ?? name}</span>
+            <strong>{view.scores[i]}</strong>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -27,6 +27,15 @@ export class GameSession {
     this.over = this.def.isOver?.(this.state) ?? null;
   }
 
+  /** Keep player identity live — lobby renames show up mid-game. */
+  updatePlayer(id: string, name: string, avatar: string): void {
+    const p = this.players.find((q) => q.id === id);
+    if (p) {
+      p.name = name;
+      p.avatar = avatar;
+    }
+  }
+
   viewFor(playerId: string | null, role: string): unknown {
     return this.def.playerView
       ? this.def.playerView(this.state, { playerId, role, players: this.players })

@@ -76,7 +76,7 @@ export default function HandView({ view, players, over, move }: GameViewProps<Wc
           ? view.pendingCardIdx !== null
             ? 'you drew a playable card!'
             : 'your turn!'
-          : `${view.playerNames[view.turn]}'s turn…`}
+          : `${(view.hotseat ? undefined : players[view.turn]?.name) ?? view.playerNames[view.turn]}'s turn…`}
       </p>
 
       <div className="wc-hand">

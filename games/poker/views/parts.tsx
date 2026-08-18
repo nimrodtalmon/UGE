@@ -26,7 +26,7 @@ export function Seats({ view, players }: { view: PokerView; players: PlayerInfo[
           <div key={i} className={classes.join(' ')}>
             <span className="pk-avatar">{players[i]?.avatar ?? avatarFor(view.names[i] ?? '?')}</span>
             <span className="pk-name">
-              {view.names[i]}
+              {players[i]?.name ?? view.names[i]}
               {i === view.dealer && <span className="pk-dealer">D</span>}
             </span>
             <span className="pk-chips">{seat.chips}💰</span>

@@ -13,8 +13,9 @@ export default function TableView({ view, players, over, move, serverNow }: Game
     onExpire: () => move('endRound'),
   });
 
-  const explainer = view.playerNames[view.turn] ?? '?';
-  const explainerAvatar = players[view.turn]?.avatar ?? avatarFor(explainer);
+  const liveAt = (i: number) => (view.pass ? undefined : players[i]);
+  const explainer = liveAt(view.turn)?.name ?? view.playerNames[view.turn] ?? '?';
+  const explainerAvatar = liveAt(view.turn)?.avatar ?? avatarFor(explainer);
 
   return (
     <div className="al-screen">
@@ -25,8 +26,8 @@ export default function TableView({ view, players, over, move, serverNow }: Game
             className={!over && i === view.turn ? 'al-player current' : 'al-player'}
             style={{ '--seat': colorFor(i) } as CSSProperties}
           >
-            <span>{players[i]?.avatar ?? avatarFor(name)}</span>
-            <span className="al-name">{name}</span>
+            <span>{liveAt(i)?.avatar ?? avatarFor(name)}</span>
+            <span className="al-name">{liveAt(i)?.name ?? name}</span>
             <strong>{view.scores[i]}</strong>
           </div>
         ))}

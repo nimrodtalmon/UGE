@@ -14,8 +14,9 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
   });
 
   const iExplain = view.pass || view.myIndex === view.turn;
-  const explainer = view.playerNames[view.turn] ?? '?';
-  const explainerAvatar = players[view.turn]?.avatar ?? avatarFor(explainer);
+  const live = view.pass ? undefined : players[view.turn];
+  const explainer = live?.name ?? view.playerNames[view.turn] ?? '?';
+  const explainerAvatar = live?.avatar ?? avatarFor(explainer);
 
   if (over || view.phase === 'done') {
     return (

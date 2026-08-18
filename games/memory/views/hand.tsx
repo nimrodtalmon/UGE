@@ -29,7 +29,7 @@ export default function HandView({ view, me, players, over, move }: GameViewProp
             ? `${view.playerNames[view.current]}'s turn — pass & flip!`
             : myTurn
               ? 'Your turn — flip two cards!'
-              : `${view.playerNames[view.current]}'s turn…`}
+              : `${players[view.current]?.name ?? view.playerNames[view.current]}'s turn…`}
       </p>
       <Scoreboard view={view} players={players} over={!!over} small />
       <Grid view={view} cols={4} disabled={!myTurn} onFlip={(i) => move('flip', i)} />
