@@ -48,11 +48,8 @@ const game: GameDef<MemoryState> = {
       if (state.mismatch) return state;
       const card = state.cards[i];
       if (!card || card.state !== 'down') return state;
-      // phones flip only on their own turn; the table always acts for the current player
-      if (
-        ctx.role !== 'table' &&
-        ctx.players.findIndex((p) => p.id === ctx.playerId) !== state.current
-      ) {
+      // only the current player's phone flips — the table is display-only
+      if (ctx.players.findIndex((p) => p.id === ctx.playerId) !== state.current) {
         return state;
       }
       const firstIdx = state.cards.findIndex((c) => c.state === 'up');

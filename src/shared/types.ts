@@ -40,6 +40,7 @@ export interface ActiveGame {
   players: PlayerInfo[];
   me: PlayerInfo | null;
   over: GameResult | null;
+  serverNow: number;
 }
 
 export interface LobbySnapshot {

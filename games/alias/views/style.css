@@ -1,0 +1,71 @@
+.al-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  padding: 1.2rem;
+  text-align: center;
+}
+.al-big { font-size: clamp(1.5rem, 4vw, 2.6rem); }
+.al-hint { color: #8a8f98; max-width: 30rem; }
+.al-over { font-size: 1.7rem; font-weight: 700; }
+
+.al-clock {
+  font-size: clamp(3rem, 14vh, 7rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #e4b83d;
+  line-height: 1;
+}
+.al-clock.small { font-size: 2rem; }
+.al-bar { width: min(92vw, 40rem); height: 8px; border-radius: 4px; background: #262a31; overflow: hidden; }
+.al-bar-fill { height: 100%; background: #e4b83d; transition: width 0.25s linear; }
+
+.al-word {
+  font-size: clamp(2rem, 9vw, 3.2rem);
+  font-weight: 800;
+  padding: 1.4rem 1.6rem;
+  border-radius: 16px;
+  background: #f2f2ef;
+  color: #14161a;
+  min-width: min(85vw, 22rem);
+}
+.al-actions { display: flex; gap: 0.9rem; width: min(92vw, 26rem); }
+.al-actions button {
+  flex: 1;
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 1.1rem 0;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+}
+.al-got { background: #2f8a4d; }
+.al-skip { background: #4a5160; }
+.al-start {
+  font-size: 1.3rem;
+  font-weight: 700;
+  padding: 1.1rem 2.4rem;
+  border-radius: 14px;
+  border: none;
+  background: #2f8a4d;
+  color: #fff;
+  cursor: pointer;
+}
+
+.al-scores { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+.al-player {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 2px solid var(--seat);
+  background: #1d2026;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.al-player.current { transform: scale(1.1); box-shadow: 0 0 14px var(--seat); }
+.al-name { max-width: 8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -26,7 +26,8 @@ export function Grid(props: {
   view: MemoryState;
   cols: number;
   disabled: boolean;
-  onFlip: (i: number) => void;
+  /** Omit to render a display-only grid (the table screen). */
+  onFlip?: (i: number) => void;
 }) {
   const { view, cols } = props;
   const rows = Math.ceil(view.cards.length / cols);
@@ -39,8 +40,8 @@ export function Grid(props: {
         <button
           key={i}
           className={`mem-card ${c.state}`}
-          disabled={props.disabled || c.state !== 'down'}
-          onClick={() => props.onFlip(i)}
+          disabled={!props.onFlip || props.disabled || c.state !== 'down'}
+          onClick={() => props.onFlip?.(i)}
           style={c.matchedBy !== null ? ({ '--owner': colorFor(c.matchedBy) } as CSSProperties) : undefined}
         >
           <span className="mem-inner">

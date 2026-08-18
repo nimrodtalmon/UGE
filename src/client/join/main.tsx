@@ -78,35 +78,33 @@ function PhoneLobby(props: { name: string; onRename: () => void }) {
           <div className="actions">
             {myRole === null ? (
               <>
+                <p className="muted">You're sitting this one out.</p>
                 {selected.manifest.roles.hand !== 'none' && (
                   <button
                     className="primary"
                     onClick={() => act('/api/lobby/claim', { deviceId, role: 'hand' })}
                   >
-                    Join as player
-                  </button>
-                )}
-                {selected.manifest.roles.extras.map((extra) => (
-                  <button key={extra} onClick={() => act('/api/lobby/claim', { deviceId, role: extra })}>
-                    Claim: {extra}
-                  </button>
-                ))}
-                {selected.manifest.roles.table !== 'none' && (
-                  <button onClick={() => act('/api/lobby/claim', { deviceId, role: 'table' })}>
-                    Use this device as the table
+                    Jump in
                   </button>
                 )}
               </>
             ) : (
               <>
                 <p>
-                  You are: <strong>{myRole}</strong>
+                  ✅ You're in as <strong>{myRole === 'hand' ? 'player' : myRole}</strong>
                 </p>
                 <button onClick={() => act('/api/lobby/claim', { deviceId, role: null })}>
-                  Leave role
+                  Sit out
                 </button>
               </>
             )}
+            {selected.manifest.roles.extras
+              .filter((extra) => extra !== myRole)
+              .map((extra) => (
+                <button key={extra} onClick={() => act('/api/lobby/claim', { deviceId, role: extra })}>
+                  Claim: {extra}
+                </button>
+              ))}
             {snapshot.blockers.length > 0 && <p className="blockers">{snapshot.blockers.join(' · ')}</p>}
             {snapshot.canStart && <p className="muted">Ready — start from the table screen.</p>}
           </div>

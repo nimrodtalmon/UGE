@@ -7,7 +7,7 @@ export default function HandView(props: GameViewProps<LightsOutState>) {
   return (
     <div className="lo-screen">
       <p className="lo-hint">{props.me ? `${props.me.name} — ` : ''}turn every light off</p>
-      <Board {...props} />
+      <Board view={props.view} over={props.over} onPress={(i) => props.move('press', i)} />
       <Status view={props.view} over={props.over} />
     </div>
   );

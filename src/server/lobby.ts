@@ -32,6 +32,7 @@ interface Device {
 export class Lobby {
   private devices = new Map<string, Device>();
   private claims = new Map<string, string>(); // deviceId -> role
+  private optOut = new Set<string>(); // devices that chose to sit out (no auto-join)
   private selectedGameId: string | null = null;
   private phase: LobbyPhase = 'lobby';
   private session: GameSession | null = null;
@@ -57,6 +58,7 @@ export class Lobby {
     if (this.phase === 'lobby' && (gameId === null || this.games.some((g) => g.manifest.id === gameId))) {
       this.selectedGameId = gameId;
       this.claims.clear();
+      this.optOut.clear();
     }
     this.tick();
   }
@@ -66,11 +68,13 @@ export class Lobby {
     if (this.phase === 'lobby' && manifest && this.devices.has(deviceId)) {
       if (role === null) {
         this.claims.delete(deviceId);
+        this.optOut.add(deviceId); // an explicit "sit out" — don't auto-join them again
       } else if (this.claimableRoles(manifest).includes(role) && this.hasCapacity(manifest, role)) {
         if (role === 'table') {
           for (const [dev, r] of this.claims) if (r === 'table') this.claims.delete(dev);
         }
         this.claims.set(deviceId, role);
+        this.optOut.delete(deviceId);
       }
     }
     this.tick();
@@ -137,6 +141,7 @@ export class Lobby {
       players: this.session.players,
       me: this.session.players.find((p) => p.id === deviceId) ?? null,
       over: this.session.over,
+      serverNow: Date.now(),
     };
   }
 
@@ -164,9 +169,20 @@ export class Lobby {
       if (d.lastSeen < cutoff) {
         this.devices.delete(id);
         this.claims.delete(id);
+        this.optOut.delete(id);
       }
     }
     const m = this.selectedPlugin()?.manifest;
+    // phones auto-join as players (opting out is explicit) — in the lobby only
+    if (this.phase === 'lobby' && m && m.roles.hand !== 'none') {
+      const free = [...this.devices.values()]
+        .filter((d) => !d.isTableScreen && !this.claims.has(d.id) && !this.optOut.has(d.id))
+        .sort((a, b) => a.joinedAt - b.joinedAt);
+      for (const d of free) {
+        if (!this.hasCapacity(m, 'hand')) break;
+        this.claims.set(d.id, 'hand');
+      }
+    }
     if (m && m.roles.table === 'required' && ![...this.claims.values()].includes('table')) {
       const best = [...this.devices.values()]
         .filter((d) => !this.claims.has(d.id))

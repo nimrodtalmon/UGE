@@ -1,0 +1,71 @@
+.tv-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  padding: 1.2rem;
+  text-align: center;
+}
+.tv-progress { color: #8a8f98; letter-spacing: 0.06em; }
+.tv-clock { color: #e4b83d; font-variant-numeric: tabular-nums; }
+.tv-question { max-width: 46rem; font-size: clamp(1.3rem, 3.5vw, 2.4rem); }
+.tv-phone .tv-question { font-size: 1.3rem; }
+
+.tv-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  width: min(92vw, 44rem);
+}
+.tv-phone .tv-choices { grid-template-columns: 1fr; width: min(92vw, 26rem); }
+.tv-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  background: #262a31;
+  border: 1px solid #3a4048;
+  font-size: 1.05rem;
+  text-align: left;
+  transition: opacity 0.3s, border-color 0.3s, background 0.3s;
+}
+button.tv-choice { cursor: pointer; color: inherit; font: inherit; }
+button.tv-choice:disabled { cursor: default; opacity: 1; }
+.tv-letter {
+  flex: none;
+  width: 1.8rem;
+  height: 1.8rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #3a4048;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.tv-choice.tv-mine { border-color: #3d8ae4; background: #21304a; }
+.tv-choice.tv-correct { border-color: #3d8a57; background: #223028; box-shadow: 0 0 14px rgba(61, 138, 87, 0.4); }
+.tv-choice.tv-wrong { opacity: 0.35; }
+
+.tv-status { color: #8a8f98; min-height: 1.4rem; }
+.tv-feedback { font-size: 1.2rem; font-weight: 700; }
+.tv-feedback.right { color: #6fd08c; }
+.tv-feedback.wrong { color: #e08a6a; }
+.tv-over { font-size: 1.7rem; font-weight: 700; }
+
+.tv-bar { width: min(92vw, 44rem); height: 6px; border-radius: 3px; background: #262a31; overflow: hidden; }
+.tv-bar-fill { height: 100%; background: #e4b83d; transition: width 0.25s linear; }
+
+.tv-scores { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+.tv-player {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 2px solid var(--seat);
+  background: #1d2026;
+}
+.tv-name { max-width: 8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

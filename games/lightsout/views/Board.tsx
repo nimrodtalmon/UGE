@@ -1,8 +1,12 @@
 import type { GameViewProps } from '../../../src/shared/plugin.js';
 import type { LightsOutState } from '../game.js';
 
-/** Shared board renderer for both the table and hand views. */
-export function Board({ view, over, move }: GameViewProps<LightsOutState>) {
+/** Shared board renderer; omit onPress for the display-only table. */
+export function Board({
+  view,
+  over,
+  onPress,
+}: Pick<GameViewProps<LightsOutState>, 'view' | 'over'> & { onPress?: (i: number) => void }) {
   return (
     <div
       className="lo-grid"
@@ -12,8 +16,8 @@ export function Board({ view, over, move }: GameViewProps<LightsOutState>) {
         <button
           key={i}
           className={on ? 'lo-cell on' : 'lo-cell'}
-          disabled={!!over}
-          onClick={() => move('press', i)}
+          disabled={!!over || !onPress}
+          onClick={() => onPress?.(i)}
           aria-label={`cell ${i}`}
         />
       ))}

@@ -1,0 +1,69 @@
+import './style.css';
+import type { GameViewProps } from '../../../src/shared/plugin.js';
+import { useDeadline, formatSeconds } from '../../../src/shared/gameKit.js';
+import type { TriviaView } from '../game.js';
+
+const LETTERS = ['A', 'B', 'C', 'D'];
+
+export default function HandView({ view, over, move, serverNow }: GameViewProps<TriviaView>) {
+  const remaining = useDeadline({
+    active: !over && view.phase === 'question',
+    endsAt: view.endsAt,
+    serverNow,
+  });
+
+  if (view.myIndex < 0) {
+    return (
+      <div className="tv-screen">
+        <p className="tv-status">Trivia in progress — you're watching.</p>
+      </div>
+    );
+  }
+
+  if (view.phase === 'done' || over) {
+    return (
+      <div className="tv-screen">
+        <p className="tv-over">{over?.text ?? 'Done!'}</p>
+        <p className="tv-status">You scored {view.scores[view.myIndex]} / {view.total}</p>
+      </div>
+    );
+  }
+
+  const answeredRight = view.myAnswer !== null && view.myAnswer === view.correct;
+
+  return (
+    <div className="tv-screen tv-phone">
+      <p className="tv-progress">
+        {view.qIdx + 1} / {view.total}
+        {view.phase === 'question' && <span className="tv-clock"> · {formatSeconds(remaining)}s</span>}
+      </p>
+      <h2 className="tv-question">{view.q}</h2>
+
+      {view.phase === 'reveal' ? (
+        <p className={answeredRight ? 'tv-feedback right' : 'tv-feedback wrong'}>
+          {answeredRight ? '+1 — correct! 🎉' : view.myAnswer === null ? 'too slow ⏱️' : 'nope 😅'}
+        </p>
+      ) : view.myAnswer !== null ? (
+        <p className="tv-status">Locked in — waiting for the others…</p>
+      ) : null}
+
+      <div className="tv-choices tv-tap">
+        {view.choices.map((c, i) => {
+          const classes = ['tv-choice'];
+          if (view.correct !== null) classes.push(i === view.correct ? 'tv-correct' : 'tv-wrong');
+          else if (view.myAnswer === i) classes.push('tv-mine');
+          return (
+            <button
+              key={i}
+              className={classes.join(' ')}
+              disabled={view.phase !== 'question' || view.myAnswer !== null}
+              onClick={() => move('answer', i)}
+            >
+              <span className="tv-letter">{LETTERS[i]}</span> {c}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

@@ -34,7 +34,8 @@ const game: GameDef<LightsOutState> = {
   },
 
   moves: {
-    press(state, _ctx, i: number) {
+    press(state, ctx, i: number) {
+      if (ctx.role === 'table') return state; // the table is display-only
       if (!Number.isInteger(i) || i < 0 || i >= SIZE * SIZE) return state;
       return { ...state, grid: press(state.grid, i), moves: state.moves + 1 };
     },

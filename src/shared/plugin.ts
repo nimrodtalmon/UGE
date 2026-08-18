@@ -12,6 +12,8 @@ export interface PlayerInfo {
 export interface SetupCtx {
   players: PlayerInfo[];
   random: () => number;
+  /** Server clock (ms). Games store deadlines relative to this, never Date.now(). */
+  now: number;
 }
 
 export interface MoveCtx {
@@ -20,6 +22,8 @@ export interface MoveCtx {
   role: string;
   players: PlayerInfo[];
   random: () => number;
+  /** Server clock (ms). Games store deadlines relative to this, never Date.now(). */
+  now: number;
 }
 
 export interface GameResult {
@@ -31,7 +35,7 @@ export interface GameDef<S = unknown, V = unknown> {
   /** Each move returns the next state (or the same state to reject). */
   moves: Record<string, (state: S, ctx: MoveCtx, ...args: never[]) => S>;
   /** Filter what a given device may see (hidden hands, key cards). Defaults to full state. */
-  playerView?(state: S, ctx: { playerId: string | null; role: string }): V;
+  playerView?(state: S, ctx: { playerId: string | null; role: string; players: PlayerInfo[] }): V;
   isOver?(state: S): GameResult | null;
 }
 
@@ -43,4 +47,6 @@ export interface GameViewProps<V = unknown> {
   players: PlayerInfo[];
   over: GameResult | null;
   move: (name: string, ...args: unknown[]) => void;
+  /** Server clock (ms) at snapshot time — see gameKit's useServerClock. */
+  serverNow: number;
 }

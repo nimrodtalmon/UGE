@@ -9,8 +9,11 @@ export function GameScreen(props: {
   move: (name: string, ...args: unknown[]) => void;
 }) {
   const { game } = props;
-  const [View, setView] = useState<ComponentType<GameViewProps> | null>(null);
+  // key the loaded component by game+role so a stale view never renders a new game's state
+  const viewKey = `${game.id}/${game.role ?? ''}`;
+  const [loaded, setLoaded] = useState<{ key: string; comp: ComponentType<GameViewProps> } | null>(null);
   const [failed, setFailed] = useState(false);
+  const View = loaded?.key === viewKey ? loaded.comp : null;
 
   // hand views a stable `move` so their effects/timers can safely depend on it
   const moveRef = useRef(props.move);
@@ -20,7 +23,6 @@ export function GameScreen(props: {
   useEffect(() => {
     if (!game.role) return;
     let dead = false;
-    setView(null);
     setFailed(false);
 
     const cssHref = `/dist/games/${game.id}/${game.role}.css`;
@@ -31,14 +33,15 @@ export function GameScreen(props: {
 
     const jsUrl = `/dist/games/${game.id}/${game.role}.js`;
     import(jsUrl).then(
-      (m: { default: ComponentType<GameViewProps> }) => !dead && setView(() => m.default),
+      (m: { default: ComponentType<GameViewProps> }) =>
+        !dead && setLoaded({ key: viewKey, comp: m.default }),
       () => !dead && setFailed(true),
     );
     return () => {
       dead = true;
       link.remove();
     };
-  }, [game.id, game.role]);
+  }, [game.id, game.role, viewKey]);
 
   if (!game.role) {
     return (
@@ -71,6 +74,7 @@ export function GameScreen(props: {
       players={game.players}
       over={game.over}
       move={move}
+      serverNow={game.serverNow}
     />
   );
 }

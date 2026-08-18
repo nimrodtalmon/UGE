@@ -9,7 +9,7 @@ export class GameSession {
     private readonly def: GameDef,
     readonly players: PlayerInfo[],
   ) {
-    this.state = def.setup({ players, random: Math.random });
+    this.state = def.setup({ players, random: Math.random, now: Date.now() });
     this.over = def.isOver?.(this.state) ?? null;
   }
 
@@ -19,13 +19,15 @@ export class GameSession {
     if (!move) return;
     this.state = move(
       this.state,
-      { playerId, role, players: this.players, random: Math.random },
+      { playerId, role, players: this.players, random: Math.random, now: Date.now() },
       ...(args as never[]),
     );
     this.over = this.def.isOver?.(this.state) ?? null;
   }
 
   viewFor(playerId: string | null, role: string): unknown {
-    return this.def.playerView ? this.def.playerView(this.state, { playerId, role }) : this.state;
+    return this.def.playerView
+      ? this.def.playerView(this.state, { playerId, role, players: this.players })
+      : this.state;
   }
 }

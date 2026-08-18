@@ -23,12 +23,20 @@ export function useLobby(me: { name: string; isTableScreen: boolean } | null) {
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [offline, setOffline] = useState(false);
   const deviceIdRef = useRef<string | null>(null);
+  // a slow poll response must never overwrite the result of a newer request
+  const lastAppliedRef = useRef(0);
+  const applyRef = useRef((requestedAt: number, snap: LobbySnapshot) => {
+    if (requestedAt < lastAppliedRef.current) return;
+    lastAppliedRef.current = requestedAt;
+    setSnapshot(snap);
+  });
 
   useEffect(() => {
     if (!me) return;
     let stopped = false;
     const syncOnce = async () => {
       try {
+        const requestedAt = Date.now();
         const res = await post<SyncResponse>('/api/lobby/sync', {
           deviceId: localStorage.getItem(storageKey) ?? undefined,
           name: me.name,
@@ -39,7 +47,7 @@ export function useLobby(me: { name: string; isTableScreen: boolean } | null) {
         localStorage.setItem(storageKey, res.deviceId);
         deviceIdRef.current = res.deviceId;
         setDeviceId(res.deviceId);
-        setSnapshot(res.snapshot);
+        applyRef.current(requestedAt, res.snapshot);
         setOffline(false);
       } catch {
         if (!stopped) setOffline(true); // brain unreachable; keep polling
@@ -63,7 +71,9 @@ export function useLobby(me: { name: string; isTableScreen: boolean } | null) {
    */
   const act = useCallback(async (path: string, body: object = {}) => {
     try {
-      setSnapshot(await post<LobbySnapshot>(path, { deviceId: deviceIdRef.current, ...body }));
+      const requestedAt = Date.now();
+      const snap = await post<LobbySnapshot>(path, { deviceId: deviceIdRef.current, ...body });
+      applyRef.current(requestedAt, snap);
     } catch {
       /* next poll recovers */
     }

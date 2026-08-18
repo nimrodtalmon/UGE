@@ -20,11 +20,9 @@ export default function TableView({ view, over, move }: GameViewProps<MemoryStat
       {over ? (
         <p className="mem-over">{over.text}</p>
       ) : (
-        <p className="mem-hint">
-          {view.playerNames[view.current]}'s turn — flip here or on their phone
-        </p>
+        <p className="mem-hint">{view.playerNames[view.current]}'s turn — flip on their phone</p>
       )}
-      <Grid view={view} cols={cols} disabled={!!over} onFlip={(i) => move('flip', i)} />
+      <Grid view={view} cols={cols} disabled={!!over} />
       {over && <Confetti />}
     </div>
   );

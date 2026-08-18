@@ -144,3 +144,11 @@ any hardware.
 - 2026-08: Update-in-place: table screen's Update button → server exits 42 →
   start.sh supervisor pulls, installs, relaunches. Extra launch game:
   **Lights Out** (1 player) as the minimal engine-exercising plugin.
+- 2026-08: The table is display-only during games (no tap-to-play on the
+  table; it still hosts the lobby and drives timer moves). Phones auto-join
+  as players when a game is selected; sitting out is explicit. Timed games:
+  the platform passes a server clock (`ctx.now`, `serverNow`) and
+  `src/shared/gameKit.ts` gives views drift-safe countdowns. Extra launch
+  game: **Trivia** (1–8). Alias v0 is rotating-explainer with individual
+  scores, 2+ players; the spec's team mode is deferred.
+  TODO(nimrod): veto individual-scores Alias if team play is wanted for v0.
