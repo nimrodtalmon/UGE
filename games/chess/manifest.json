@@ -1,0 +1,19 @@
+{
+  "id": "chess",
+  "name": "Chess",
+  "players": { "min": 2, "max": 2 },
+  "roles": { "table": "required", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "♟️",
+  "tagline": "the classic",
+  "modes": [
+    { "id": "phones", "name": "Phone each", "tagline": "move from your own phone" },
+    {
+      "id": "shared",
+      "name": "One shared phone",
+      "tagline": "nothing to hide — pass it between moves",
+      "phones": { "min": 1 },
+      "config": { "shared": true }
+    }
+  ]
+}

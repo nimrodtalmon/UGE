@@ -1,0 +1,9 @@
+{
+  "id": "rummikub",
+  "name": "Rummikub",
+  "players": { "min": 2, "max": 4 },
+  "roles": { "table": "required", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "🁢",
+  "tagline": "runs & groups, open with 30"
+}

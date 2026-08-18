@@ -1,0 +1,68 @@
+.sk-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  padding: 1rem;
+  text-align: center;
+}
+.sk-status { font-size: 1.05rem; color: #c8ccd2; min-height: 1.4rem; }
+.sk-word { color: #e4b83d; font-size: 1.2em; }
+.sk-hint-word { letter-spacing: 0.2em; font-weight: 700; color: #e4b83d; }
+.sk-over { font-size: 1.6rem; font-weight: 800; }
+.sk-right { color: #6fd08c; font-weight: 700; font-size: 1.2rem; }
+
+.sk-picture {
+  width: min(92vw, 62vh, 34rem);
+  aspect-ratio: 1;
+  background: #fbfaf6;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+.sk-picture.big { width: min(88vw, 66vh, 44rem); }
+
+/* drawer: live pad stacked over the confirmed picture */
+.sk-stack { position: relative; width: min(92vw, 56vh, 30rem); }
+.sk-stack .sk-picture { width: 100%; }
+.sk-pad {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+.sk-tools { display: flex; gap: 0.6rem; align-items: center; }
+.sk-color {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  padding: 0;
+}
+.sk-color.on { border-color: #f2f2ef; transform: scale(1.12); }
+.sk-clear { padding: 0.45rem 0.9rem; font-size: 0.9rem; }
+
+.sk-guessrow { display: flex; gap: 0.6rem; width: min(92vw, 26rem); }
+.sk-guess { flex: 1; text-align: left; }
+.sk-guess.shake { animation: sk-shake 0.3s; }
+@keyframes sk-shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+.sk-wrong { color: #8a8f98; font-size: 0.9rem; }
+
+.sk-scores { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+.sk-player {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 2px solid var(--seat);
+  background: #1d2026;
+}
+.sk-player.drawer { box-shadow: 0 0 12px var(--seat); }
+.sk-player.guessed { background: #223028; }
+.sk-name { max-width: 7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sk-tag { font-size: 0.85rem; }

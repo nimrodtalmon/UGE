@@ -58,6 +58,9 @@ Current audit of the built-in games (players × phones, + table always):
 | UNO | phone each / hotseat | 2–8 | per player / 1 |
 | Codenames | map+phones / one phone | 4–9 | 2 / 1 |
 | Poker | — | 2–8 | one per player |
+| Chess | phone each / shared | 2 | 2 / 1 |
+| Sketch | — | 2–8 | one per player |
+| Rummikub | — | 2–4 | one per player |
 
 ## Modes — several ways to play one game
 
@@ -113,6 +116,9 @@ Rules of the road:
 - Secrets (hidden cards, key words) must be stripped in `playerView` —
   whatever you return is visible in that device's browser devtools.
 - Assets: import JSON with `import words from './assets/words.json' with { type: 'json' }`.
+- npm libraries are fine when they earn their keep (Chess uses `chess.js` for
+  full rules) — add them to the root package.json; pure-JS libraries bundle
+  into views too.
 
 ## views/ — one component per role
 
