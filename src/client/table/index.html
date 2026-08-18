@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UGE — Table</title>
+    <style>
+      * { margin: 0; box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        background: #14161a;
+        color: #f2f2ef;
+        font-family: system-ui, sans-serif;
+        display: grid;
+        place-items: center;
+      }
+      main { text-align: center; }
+      h1 { font-size: 4rem; letter-spacing: 0.3em; margin-bottom: 0.5rem; }
+      .tagline { color: #8a8f98; margin-bottom: 2.5rem; }
+      .qr img {
+        width: min(45vh, 60vw);
+        background: #fff;
+        padding: 12px;
+        border-radius: 12px;
+        display: block;
+        margin: 0 auto 1rem;
+      }
+      code { color: #8a8f98; font-size: 1.1rem; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/dist/table.js"></script>
+  </body>
+</html>

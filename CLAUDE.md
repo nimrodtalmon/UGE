@@ -1,0 +1,132 @@
+# UGE — Universal Game Engine
+
+*Founding spec, v0.2 (Aug 2026). Source of truth for Claude Code and human
+contributors. Keep updated as decisions are made.*
+
+## Vision
+
+A modular universal tabletop game system. Long-term: physical batteryless NFC
+e-ink cards/tiles ("static" pieces, rewritable between games) plus wireless
+dynamic displays, orchestrated by a small brain device. Short-term (v0): pure
+software — a laptop as brain+table, players' phones as hands, any browser as a
+client. Hardware modules attach later without changing the architecture.
+
+**Games are plugins.** The central product bet: third parties (and Nimrod's
+future self, students, kids) will program new games into UGE. Everything about
+the platform must serve a clean, documented, stable plugin API. When in doubt,
+choose the design that makes game authors' lives simpler over the one that
+makes the platform's code simpler.
+
+Design principles:
+- **Clients are dumb browsers.** The only client requirement, forever: WiFi + a
+  browser. No installs.
+- **The brain is the only stateful machine.** One server owns game state.
+- **Roles, not devices.** A game declares roles (table, hand, scoreboard...);
+  devices claim roles in a lobby. The brain's own screen is always available as
+  a client.
+- **Games are data + pure functions**, packaged as self-contained plugins.
+  Adding a game must never touch platform code.
+- **Road-first.** Everything must work with zero internet (local network only).
+
+## Architecture (v0)
+
+```
+MacBook Air ("brain")
+├── boardgame.io server (Node) — game state, moves, sync
+├── static file server — serves all client pages
+├── Lobby service — device registry, role assignment, game feasibility
+└── Chrome fullscreen — the "table" client + join QR
+
+Players' phones — browser → lobby → claim role → play
+```
+
+- Framework: **boardgame.io** (game logic as pure functions; handles state
+  sync, turns, phases, secret state via `playerView` for hidden hands).
+- Language: **TypeScript** throughout — the plugin API is a contract; types are
+  its documentation and enforcement.
+- UI: simple — React or vanilla TS, big touch targets, phone-first CSS.
+- Networking v0: all devices on the same LAN (home WiFi or a phone hotspot);
+  clients browse to `http://<air-ip>:8000`. **Join UX v0: plain URL QR** shown
+  on the table screen (scan → browser opens lobby). WiFi-QR auto-join +
+  captive portal is a v2/hardware-brain feature; do not build now.
+
+## Game plugin format
+
+Every game is a folder under `games/`, containing:
+
+```
+games/<id>/
+├── manifest.json     # metadata + role requirements (below)
+├── game.ts           # boardgame.io game object: setup, moves, phases, playerView
+├── views/            # one UI component per role (table.tsx, hand.tsx, ...)
+└── assets/           # optional images, word lists, etc.
+```
+
+`manifest.json`:
+
+```json
+{
+  "id": "memory",
+  "name": "Memory",
+  "players": {"min": 2, "max": 6},
+  "roles": {
+    "table": "required",        // required | optional | none
+    "hand": "per-player",       // per-player | per-team | none
+    "extras": []                 // e.g. ["scoreboard", "discard"]
+  },
+  "pieces": {"static": 0, "dynamic": 0}   // forward-compat for physical modules
+}
+```
+
+The platform discovers plugins by scanning `games/` at startup — no
+registration code. The lobby computes feasible games from connected devices +
+player count and greys out the rest. Largest screen auto-assigned "table";
+manual reassignment allowed.
+
+## v0 scope (build now)
+
+1. `npm start` on the Air launches server + opens table view with join QR.
+2. Lobby: devices join via QR/URL, appear as named tiles, claim roles; game
+   selection filtered by feasibility.
+3. Three launch games, chosen to stress different platform features:
+   - **Memory** (2–6): simplest possible plugin. Table shows card grid; phones
+     show turn indicator + score; flips via table touch or phone.
+   - **Codenames** (4+, two teams): secret per-role state — two phones claim
+     "spymaster" role and see the key card; table shows the word grid.
+   - **Alias** (4+, two teams): timed rounds — explainer's phone shows the
+     word queue (tap: got-it / skip); table shows countdown + team scores;
+     explainer role rotates each round. Stresses timers, team structure, role
+     rotation. Word list in `assets/` (start EN; word lists must be pluggable
+     files — HE list later).
+4. Hot-reload of game plugins in dev; platform never special-cases a game.
+
+Out of scope for v0: accounts, internet play, persistence beyond a session,
+any hardware.
+
+## Roadmap (do not build yet; design for compatibility)
+
+- **v1 — static pieces**: NFC e-ink tiles/cards (battery-free; image persists
+  unpowered). Written by tapping an Android phone (NFC-writer is just another
+  client role) or later a multi-slot dock. Deck-compiler: manifest → rendered
+  piece faces (PNG) → NFC write queue. Likely vendor: Good Display
+  (documented protocol); decision deliberately deferred.
+- **v2 — dynamic pieces & dedicated brain**: BLE e-ink tags as mutable in-game
+  surfaces; big e-ink table display; Pi Zero 2 W brain-in-a-box with its own
+  hotspot, captive portal, WiFi-QR auto-join.
+- **Product framing**: base box + expansion module packs; plugin marketplace
+  for community games. Platform/manifest must make both plug-and-play.
+
+## Conventions
+
+- Node ≥ 22. TypeScript, strict mode.
+- Each game fully contained in `games/<id>/`; platform code never imports from
+  a specific game.
+- Commits small and topical. Always `git pull --rebase` before pushing.
+- Dry, precise docs. No overselling. Mark open decisions `TODO(nimrod):`.
+- Owner: github.com/nimrodtalmon/uge. License: MIT.
+
+## Decisions log
+
+- 2026-08: Name: **UGE**. Language: TypeScript (CC's discretion on React vs
+  vanilla). Join UX v0: plain URL QR. NFC vendor: leaning Good Display,
+  deferred. Launch games: Memory, Codenames, Alias.
