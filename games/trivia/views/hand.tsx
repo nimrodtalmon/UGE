@@ -6,10 +6,13 @@ import type { TriviaView } from '../game.js';
 const SHAPES = ['▲', '◆', '●', '■'];
 
 export default function HandView({ view, over, move, serverNow }: GameViewProps<TriviaView>) {
+  // phones back up the table's clock — vital when the table tab is backgrounded
+  // (e.g. one Android phone hosting the table AND playing)
   const remaining = useDeadline({
-    active: !over && view.phase === 'question',
+    active: !over && view.phase !== 'done',
     endsAt: view.endsAt,
     serverNow,
+    onExpire: () => move(view.phase === 'question' ? 'timeUp' : 'next'),
   });
 
   if (view.myIndex < 0) {

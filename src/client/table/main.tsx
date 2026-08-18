@@ -83,8 +83,15 @@ function Table() {
         <p className="muted">{session?.wifi ? '2 · scan to join the table' : 'Scan to join the table'}</p>
         {session && (
           <>
-            <img src="/api/qr.svg" alt={`Join QR for ${session.joinUrl}`} />
-            <code>{session.joinUrl}</code>
+            <a href="/join" target="_blank" rel="noopener">
+              <img src="/api/qr.svg" alt={`Join QR for ${session.joinUrl}`} />
+            </a>
+            <a className="join-url" href="/join" target="_blank" rel="noopener">
+              <code>{session.joinUrl}</code>
+            </a>
+            <a className="join-here" href="/join" target="_blank" rel="noopener">
+              …or play on this device too →
+            </a>
           </>
         )}
         <footer>

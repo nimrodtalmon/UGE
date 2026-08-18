@@ -1,10 +1,11 @@
 import './style.css';
 import { useEffect, useState } from 'react';
 import type { GameViewProps } from '../../../src/shared/plugin.js';
+import { useDeadline } from '../../../src/shared/gameKit.js';
 import type { PokerView } from '../game.js';
 import { CardFace, Seats } from './parts.js';
 
-export default function HandView({ view, players, over, move }: GameViewProps<PokerView>) {
+export default function HandView({ view, players, over, move, serverNow }: GameViewProps<PokerView>) {
   const me = view.myIndex >= 0 ? view.seats[view.myIndex] : undefined;
   const myTurn = !over && view.myIndex === view.toAct;
   const minTo = view.currentBet + view.minRaise;
@@ -15,6 +16,14 @@ export default function HandView({ view, players, over, move }: GameViewProps<Po
     if (myTurn) navigator.vibrate?.(80);
     setRaiseTo(Math.min(minTo, maxTo));
   }, [myTurn, minTo, maxTo]);
+
+  // phones back up the table's next-hand timer (table tab may be backgrounded)
+  useDeadline({
+    active: !over && view.stage === 'handover',
+    endsAt: view.endsAt,
+    serverNow,
+    onExpire: () => move('nextHand'),
+  });
 
   if (!me || view.myIndex < 0) {
     return (

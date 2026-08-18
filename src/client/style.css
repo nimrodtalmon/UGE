@@ -187,6 +187,16 @@ h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; color:
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
 }
 .table-screen code { color: #8a8f98; font-size: 1.15rem; }
+.table-screen .join-url { text-decoration: none; }
+.table-screen .join-here {
+  margin-top: 0.7rem;
+  color: #6fd08c;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border: 1px solid #3d8a57;
+  border-radius: 999px;
+  padding: 0.35rem 1rem;
+}
 .table-screen .qr footer {
   margin-top: auto;
   padding-top: 1.5rem;

@@ -5,10 +5,12 @@ import { avatarFor } from '../../../src/shared/avatar.js';
 import type { AliasView } from '../game.js';
 
 export default function HandView({ view, players, over, move, serverNow }: GameViewProps<AliasView>) {
+  // phones back up the table's round clock (table tab may be backgrounded)
   const remaining = useDeadline({
     active: !over && view.phase === 'round',
     endsAt: view.endsAt,
     serverNow,
+    onExpire: () => move('endRound'),
   });
 
   const iExplain = view.myIndex === view.turn;
