@@ -141,7 +141,7 @@ function PhoneLobby(props: { profile: Profile; onChange: (p: Profile) => void })
             ) : (
               <>
                 <p>
-                  ✅ You're in as <strong>{myRole === 'hand' ? 'player' : myRole}</strong>
+                  ✅ You're in as <strong>{myRole === 'hand' ? 'player' : myRole.replace(/-/g, ' ')}</strong>
                 </p>
                 <button onClick={() => act('/api/lobby/claim', { deviceId, role: null })}>
                   Sit out
@@ -152,7 +152,7 @@ function PhoneLobby(props: { profile: Profile; onChange: (p: Profile) => void })
               .filter((extra) => extra !== myRole)
               .map((extra) => (
                 <button key={extra} onClick={() => act('/api/lobby/claim', { deviceId, role: extra })}>
-                  Claim: {extra}
+                  Become {extra.replace(/-/g, ' ')}
                 </button>
               ))}
             {snapshot.blockers.length > 0 && <p className="blockers">{snapshot.blockers.join(' · ')}</p>}

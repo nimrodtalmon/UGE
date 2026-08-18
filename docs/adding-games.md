@@ -26,7 +26,9 @@ games/<id>/
   "roles": {
     "table": "required",                // required | optional | none
     "hand": "per-player",               // per-player | per-team | none
-    "extras": []                         // extra claimable roles, e.g. ["spymaster"]
+    "extras": []       // extra claimable roles, e.g. ["spymaster-red"] — each
+                       // must be claimed before the game can start, and gets
+                       // its own view file (views/spymaster-red.tsx)
   }
 }
 ```

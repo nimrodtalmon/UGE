@@ -5,7 +5,7 @@ import { useDeadline, formatSeconds } from '../../../src/shared/gameKit.js';
 import { avatarFor, colorFor } from '../../../src/shared/avatar.js';
 import type { TriviaView } from '../game.js';
 
-const LETTERS = ['A', 'B', 'C', 'D'];
+const SHAPES = ['▲', '◆', '●', '■'];
 
 export default function TableView({ view, players, over, move, serverNow }: GameViewProps<TriviaView>) {
   // the table drives the clock: reveal when time is up, advance after reveals
@@ -43,15 +43,15 @@ export default function TableView({ view, players, over, move, serverNow }: Game
             {view.choices.map((c, i) => (
               <div
                 key={i}
-                className={
-                  view.correct === null
-                    ? 'tv-choice'
-                    : i === view.correct
-                      ? 'tv-choice tv-correct'
-                      : 'tv-choice tv-wrong'
-                }
+                className={[
+                  'tv-choice',
+                  `c${i}`,
+                  view.correct !== null && (i === view.correct ? 'tv-correct' : 'tv-wrong'),
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
               >
-                <span className="tv-letter">{LETTERS[i]}</span> {c}
+                <span className="tv-letter">{SHAPES[i]}</span> {c}
               </div>
             ))}
           </div>

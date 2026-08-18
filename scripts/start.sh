@@ -3,16 +3,12 @@
 # pull the latest code, refresh dependencies, and relaunch.
 set -u
 cd "$(dirname "$0")/.."
-first=1
+relaunch=""
 while true; do
-  if [ "$first" = 1 ]; then
-    npx tsx src/server/index.ts
-    first=0
-  else
-    # relaunch after an update: the table tab reloads itself — never open a new one
-    UGE_NO_OPEN=1 npx tsx src/server/index.ts
-  fi
+  # relaunches after an update never open a new tab — the table tab reloads itself
+  UGE_NO_OPEN="${UGE_NO_OPEN:-$relaunch}" npx tsx src/server/index.ts
   code=$?
+  relaunch=1
   if [ "$code" -ne 42 ]; then
     exit "$code"
   fi

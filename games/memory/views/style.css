@@ -74,12 +74,16 @@
   font-size: clamp(1.2rem, 5.5vh, 2.6rem);
 }
 .mem-back {
-  background: #262b36;
-  border: 1px solid #3a4048;
-  color: #4a5160;
+  background:
+    radial-gradient(circle at 50% 40%, #2c3242 0%, #232833 65%),
+    repeating-linear-gradient(45deg, transparent 0 10px, rgba(255, 255, 255, 0.03) 10px 20px);
+  border: 1px solid #3f4756;
+  color: #545e73;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.35);
 }
 .mem-front {
-  background: #f2f2ef;
+  background: linear-gradient(160deg, #fbfaf6, #e8e5da);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.08);
   transform: rotateY(180deg);
 }
 .mem-card.matched .mem-front {

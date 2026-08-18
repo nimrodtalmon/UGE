@@ -3,7 +3,7 @@ import type { GameViewProps } from '../../../src/shared/plugin.js';
 import { useDeadline, formatSeconds } from '../../../src/shared/gameKit.js';
 import type { TriviaView } from '../game.js';
 
-const LETTERS = ['A', 'B', 'C', 'D'];
+const SHAPES = ['▲', '◆', '●', '■'];
 
 export default function HandView({ view, over, move, serverNow }: GameViewProps<TriviaView>) {
   const remaining = useDeadline({
@@ -49,7 +49,7 @@ export default function HandView({ view, over, move, serverNow }: GameViewProps<
 
       <div className="tv-choices tv-tap">
         {view.choices.map((c, i) => {
-          const classes = ['tv-choice'];
+          const classes = ['tv-choice', `c${i}`];
           if (view.correct !== null) classes.push(i === view.correct ? 'tv-correct' : 'tv-wrong');
           else if (view.myAnswer === i) classes.push('tv-mine');
           return (
@@ -59,7 +59,7 @@ export default function HandView({ view, over, move, serverNow }: GameViewProps<
               disabled={view.phase !== 'question' || view.myAnswer !== null}
               onClick={() => move('answer', i)}
             >
-              <span className="tv-letter">{LETTERS[i]}</span> {c}
+              <span className="tv-letter">{SHAPES[i]}</span> {c}
             </button>
           );
         })}

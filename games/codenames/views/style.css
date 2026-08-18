@@ -1,0 +1,67 @@
+.cn-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.cn-chips { display: flex; gap: 0.8rem; }
+.cn-chip {
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: #1d2026;
+  border: 2px solid #3a4048;
+  font-weight: 700;
+}
+.cn-chip.red.current { border-color: #e4573d; box-shadow: 0 0 14px #e4573d66; }
+.cn-chip.blue.current { border-color: #3d8ae4; box-shadow: 0 0 14px #3d8ae466; }
+
+.cn-turn { font-size: 1.15rem; color: #c8ccd2; }
+.cn-over { font-size: 1.6rem; font-weight: 800; }
+.cn-role { font-weight: 800; letter-spacing: 0.04em; }
+.cn-hint-note { color: #8a8f98; font-size: 0.8rem; }
+
+.cn-board {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  width: min(94vw, calc(78vh * 1.55), 66rem);
+}
+.cn-board.mini { width: min(94vw, 30rem); gap: 6px; }
+.cn-card {
+  padding: 0;
+  min-height: 3.4rem;
+  border-radius: 10px;
+  background: #e8e4d8;
+  color: #2a2c30;
+  border: 2px solid #d4cfc0;
+  font-weight: 700;
+  font-size: clamp(0.7rem, 1.5vw, 1.05rem);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  transition: transform 0.15s, opacity 0.3s;
+}
+.cn-board.mini .cn-card { min-height: 2.6rem; font-size: 0.62rem; border-width: 1.5px; }
+.cn-card:not(:disabled):active { transform: scale(0.95); }
+/* display-only boards (table, spymasters) must not look washed out */
+.cn-card:disabled { opacity: 1; cursor: default; }
+
+/* spymaster key hints on unrevealed cards */
+.cn-card.hint.h-red { border-color: #d64531; background: #f3d9d2; box-shadow: inset 0 0 0 2px #e4573d66; }
+.cn-card.hint.h-blue { border-color: #2f77cf; background: #d4e2f4; box-shadow: inset 0 0 0 2px #3d8ae466; }
+.cn-card.hint.h-neutral { border-color: #b9b294; }
+.cn-card.hint.h-assassin { background: #3a3d44; color: #f2f2ef; border-color: #14161a; }
+
+/* revealed cards */
+.cn-card.revealed { color: #fff; opacity: 0.95; }
+.cn-card.revealed.k-red { background: #c74a33; border-color: #e4573d; }
+.cn-card.revealed.k-blue { background: #3372c7; border-color: #3d8ae4; }
+.cn-card.revealed.k-neutral { background: #8f8a76; border-color: #b9b294; }
+.cn-card.revealed.k-assassin { background: #101114; border-color: #000; color: #e4573d; }
+
+.cn-endturn { margin-top: 0.4rem; }

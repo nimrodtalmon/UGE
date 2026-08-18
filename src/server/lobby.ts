@@ -162,8 +162,8 @@ export class Lobby {
 
   private hasCapacity(m: Manifest, role: string): boolean {
     if (role !== 'hand') return true;
-    const hands = [...this.claims.values()].filter((r) => r === 'hand').length;
-    return hands < m.players.max;
+    const playing = [...this.claims.values()].filter((r) => r !== 'table').length;
+    return playing < m.players.max;
   }
 
   private selectedPlugin(): GamePlugin | null {
@@ -228,10 +228,14 @@ export class Lobby {
     if (m.roles.table === 'required' && !roles.includes('table')) {
       blockers.push('no table screen assigned');
     }
+    // every declared extra role must be claimed (e.g. both spymasters)
+    for (const extra of m.roles.extras) {
+      if (!roles.includes(extra)) blockers.push(`waiting for a ${extra.replace(/-/g, ' ')}`);
+    }
     if (m.roles.hand !== 'none') {
-      const hands = roles.filter((r) => r === 'hand').length;
-      if (hands < m.players.min) {
-        const missing = m.players.min - hands;
+      const playing = roles.filter((r) => r !== 'table').length;
+      if (playing < m.players.min) {
+        const missing = m.players.min - playing;
         blockers.push(`waiting for ${missing} more player${missing === 1 ? '' : 's'}`);
       }
     }

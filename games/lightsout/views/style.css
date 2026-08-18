@@ -24,8 +24,14 @@
   cursor: pointer;
 }
 .lo-cell.on {
-  background: #ffd75e;
+  background: radial-gradient(circle at 45% 35%, #ffe9a8, #ffd75e 60%, #f0be3a);
   border-color: #ffe9a8;
-  box-shadow: 0 0 18px rgba(255, 215, 94, 0.4);
+  box-shadow: 0 0 22px rgba(255, 215, 94, 0.55);
+}
+.lo-grid {
+  padding: 14px;
+  border-radius: 18px;
+  background: #1a1e26;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 .lo-cell:disabled { cursor: default; opacity: 0.9; }
