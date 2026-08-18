@@ -30,6 +30,12 @@ reconnect on their own. Set `UGE_NO_OPEN=1` to skip auto-opening the browser.
 `http://<brain-ip>:8000` in the TV browser (or cast the Chrome tab). Any
 tablet can claim the table role from its own lobby.
 
+**Road mode (no home WiFi)**: any phone's hotspot is a complete network —
+the brain and all players join it; no internet is needed. If you're sharing
+a network with a password (hotspot or the Mac's Internet Sharing), copy
+`uge.config.example.json` to `uge.config.json` with the SSID/password and
+the table shows a two-step QR: ① join the WiFi, ② open UGE.
+
 The brain runs anywhere Node ≥ 22 runs — including an Android phone via
 Termux, hotspot and all: see [docs/android-brain.md](docs/android-brain.md).
 To write a new game, see [docs/adding-games.md](docs/adding-games.md).

@@ -152,3 +152,8 @@ any hardware.
   game: **Trivia** (1–8). Alias v0 is rotating-explainer with individual
   scores, 2+ players; the spec's team mode is deferred.
   TODO(nimrod): veto individual-scores Alias if team play is wanted for v0.
+- 2026-08: Road mode: an optional gitignored `uge.config.json` can carry the
+  WiFi credentials of whatever network the brain shares (phone hotspot /
+  Internet Sharing); the table then shows a two-step QR (join WiFi → open
+  UGE). This is a static join-network QR only — auto-hotspot and captive
+  portal remain v2 hardware-brain features.

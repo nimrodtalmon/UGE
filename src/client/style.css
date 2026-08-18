@@ -169,6 +169,14 @@ h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; color:
   align-items: center;
   text-align: center;
 }
+.table-screen .wifi-step { margin-top: 0.8rem; }
+.table-screen .qr img.wifi-qr {
+  width: min(22vh, 45%);
+  margin: 0.5rem 0 0.2rem;
+  padding: 8px;
+  border-radius: 12px;
+}
+.table-screen .wifi-step + .muted { margin-top: 1rem; }
 .table-screen .qr img {
   width: min(58vh, 100%);
   background: #fff;

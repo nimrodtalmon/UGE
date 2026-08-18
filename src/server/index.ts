@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync, spawn } from 'node:child_process';
@@ -55,6 +56,26 @@ if (Object.keys(viewEntries).length > 0) {
 
 const joinUrl = `http://${lanAddress()}:${PORT}/join`;
 
+// optional local config (gitignored — may hold a WiFi password).
+// wifi: { ssid, password?, security? } → the table shows a join-this-WiFi QR
+// next to the join-the-game QR, for road mode (hotspot / Internet Sharing).
+interface UgeConfig {
+  wifi?: { ssid: string; password?: string; security?: 'WPA' | 'WEP' | 'nopass' };
+}
+let config: UgeConfig = {};
+const configPath = path.join(root, 'uge.config.json');
+if (fs.existsSync(configPath)) {
+  config = JSON.parse(fs.readFileSync(configPath, 'utf8')) as UgeConfig;
+  if (config.wifi) console.log(`wifi QR enabled for network "${config.wifi.ssid}"`);
+}
+
+function wifiQrText(w: NonNullable<UgeConfig['wifi']>): string {
+  const esc = (s: string) => s.replace(/([\\;,:"])/g, '\\$1');
+  const security = w.security ?? (w.password ? 'WPA' : 'nopass');
+  const pass = security === 'nopass' || !w.password ? '' : `P:${esc(w.password)};`;
+  return `WIFI:T:${security};S:${esc(w.ssid)};${pass};`;
+}
+
 let version = 'dev';
 try {
   version = execSync('git rev-parse --short HEAD', { cwd: root }).toString().trim();
@@ -95,7 +116,16 @@ app.post('/api/game/move', (req, res) => {
 });
 
 app.get('/api/session', (_req, res) => {
-  res.json({ joinUrl, version });
+  res.json({ joinUrl, version, wifi: config.wifi ? { ssid: config.wifi.ssid } : null });
+});
+
+app.get('/api/wifi-qr.svg', async (_req, res) => {
+  if (!config.wifi) {
+    res.status(404).end();
+    return;
+  }
+  const svg = await QRCode.toString(wifiQrText(config.wifi), { type: 'svg', margin: 1 });
+  res.type('image/svg+xml').send(svg);
 });
 
 // The table screen's Update button: exit with code 42 so the start.sh

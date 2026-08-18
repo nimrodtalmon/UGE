@@ -6,7 +6,11 @@ import { DeviceTiles, GameList } from '../shared/LobbyBits.js';
 import { GameScreen } from '../shared/GameScreen.js';
 
 function Table() {
-  const [session, setSession] = useState<{ joinUrl: string; version: string } | null>(null);
+  const [session, setSession] = useState<{
+    joinUrl: string;
+    version: string;
+    wifi: { ssid: string } | null;
+  } | null>(null);
   const [updating, setUpdating] = useState(false);
   const { snapshot, deviceId, act } = useLobby({ name: 'Table', isTableScreen: true });
 
@@ -70,7 +74,13 @@ function Table() {
     <div className="table-screen">
       <div className="qr">
         <h1>UGE</h1>
-        <p className="muted">Scan to join the table</p>
+        {session?.wifi && (
+          <div className="wifi-step">
+            <p className="muted">1 · join WiFi “{session.wifi.ssid}”</p>
+            <img className="wifi-qr" src="/api/wifi-qr.svg" alt={`WiFi QR for ${session.wifi.ssid}`} />
+          </div>
+        )}
+        <p className="muted">{session?.wifi ? '2 · scan to join the table' : 'Scan to join the table'}</p>
         {session && (
           <>
             <img src="/api/qr.svg" alt={`Join QR for ${session.joinUrl}`} />
