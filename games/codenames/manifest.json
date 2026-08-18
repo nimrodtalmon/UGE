@@ -1,11 +1,11 @@
 {
   "id": "codenames",
   "name": "Codenames",
-  "players": { "min": 4, "max": 8 },
+  "players": { "min": 3, "max": 9 },
   "roles": {
     "table": "required",
     "hand": "per-player",
-    "extras": ["spymaster-red", "spymaster-blue"]
+    "extras": ["spymasters"]
   },
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "🕵️",

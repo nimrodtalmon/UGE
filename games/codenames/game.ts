@@ -95,7 +95,8 @@ const game: GameDef<CodenamesState, CodenamesView> = {
   },
 
   playerView(state, { role }) {
-    const showAll = state.winner !== null || role.startsWith('spymaster');
+    // one shared "spymasters" device holds the key card for both teams
+    const showAll = state.winner !== null || role === 'spymasters';
     return {
       words: state.words,
       key: state.key.map((k, i) => (showAll || state.revealed[i] ? k : null)),

@@ -21,15 +21,14 @@ for (const name of ['Nimrod', 'Dana', 'Ben', 'Noa']) {
 
 // ---------- Codenames ----------
 await table.click('button.game:has-text("Codenames")');
-await phones[0].waitForSelector('button:has-text("Become spymaster red")', { timeout: 10000 });
-await phones[0].click('button:has-text("Become spymaster red")');
-await phones[1].click('button:has-text("Become spymaster blue")');
+await phones[0].waitForSelector('button:has-text("Become spymasters")', { timeout: 10000 });
+await phones[0].click('button:has-text("Become spymasters")');
 await table.waitForSelector('button:has-text("Start Codenames"):not([disabled])', { timeout: 10000 });
 await table.click('button:has-text("Start Codenames")');
 await table.waitForSelector('.cn-board', { timeout: 10000 });
-console.log('ok: codenames started (spymasters claimed, extras gating worked)');
+console.log('ok: codenames started (shared spymasters device claimed)');
 
-const spym = phones[0]; // red spymaster
+const spym = phones[0]; // the shared map device
 const operative = phones[2];
 await spym.waitForSelector('.cn-card.hint', { timeout: 10000 });
 
@@ -38,10 +37,10 @@ if (await table.locator('.cn-card.hint').count()) fail('table sees the key');
 await operative.waitForSelector('.cn-board', { timeout: 10000 });
 if (await operative.locator('.cn-card.hint').count()) fail('operative sees the key');
 const hintCount = await spym.locator('.cn-card.hint').count();
-if (hintCount !== 25) fail(`spymaster sees ${hintCount}/25 key hints`);
-console.log('ok: key card visible only to spymasters');
+if (hintCount !== 25) fail(`spymasters device sees ${hintCount}/25 key hints`);
+console.log('ok: key card visible only on the spymasters device');
 
-// read the key from the red spymaster's DOM
+// read the key from the spymasters device's DOM
 const key = await spym.evaluate(() =>
   [...document.querySelectorAll('.cn-card')].map((el) =>
     el.classList.contains('h-red') ? 'red'
@@ -74,15 +73,15 @@ console.log('ok: full key revealed to everyone at game end');
 await table.click('button:has-text("End game")');
 await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 5000 });
 
-// ---------- Wildcards (2 players; others sit out) ----------
-await table.click('button.game:has-text("Wildcards")');
+// ---------- UNO (2 players; others sit out) ----------
+await table.click('button.game:has-text("UNO")');
 await phones[2].waitForSelector('button:has-text("Sit out")', { timeout: 10000 });
 await phones[2].click('button:has-text("Sit out")');
 await phones[3].click('button:has-text("Sit out")');
-await table.waitForSelector('button:has-text("Start Wildcards"):not([disabled])', { timeout: 10000 });
-await table.click('button:has-text("Start Wildcards")');
+await table.waitForSelector('button:has-text("Start UNO"):not([disabled])', { timeout: 10000 });
+await table.click('button:has-text("Start UNO")');
 await table.waitForSelector('.wc-center', { timeout: 10000 });
-console.log('ok: wildcards started with 2 players');
+console.log('ok: UNO started with 2 players');
 
 // the table shows piles only — no hand of cards
 const tableCards = await table.locator('.wc-card').count();
@@ -117,11 +116,50 @@ for (let i = 0; i < 400 && !done; i++) {
   }
   await table.waitForTimeout(250);
 }
-if (!done) fail('wildcards never finished within 400 rounds');
-console.log(`ok: wildcards finished — "${(await table.textContent('.wc-over')).trim()}"`);
+if (!done) fail('UNO never finished within 400 rounds');
+console.log(`ok: UNO finished — "${(await table.textContent('.wc-over')).trim()}"`);
+await table.click('button:has-text("End game")');
+await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 5000 });
+console.log('ok: back to lobby');
+
+// ---------- Poker (all four back in) ----------
+await table.click('button.game:has-text("Poker")');
+await table.waitForSelector('button:has-text("Start Poker"):not([disabled])', { timeout: 10000 });
+await table.click('button:has-text("Start Poker")');
+await table.waitForSelector('.pk-felt', { timeout: 10000 });
+console.log('ok: poker started with 4 players');
+
+// hole cards: each phone sees exactly its own two; the table sees none
+await phones[0].waitForSelector('.pk-hole .pk-card', { timeout: 10000 });
+const holeCount = await phones[0].locator('.pk-hole .pk-card').count();
+if (holeCount !== 2) fail(`phone shows ${holeCount} hole cards`);
+if (await table.locator('.pk-mini-hole').count()) fail('table shows hole cards before showdown');
+console.log('ok: hole cards private to each phone');
+
+// everyone check-calls until two hands have completed
+let handovers = 0;
+let sawShowdownReveal = false;
+const deadline2 = Date.now() + 120000;
+let inHandover = false;
+while (handovers < 2 && Date.now() < deadline2) {
+  const nowHandover = (await table.locator('.pk-result').count()) > 0;
+  if (nowHandover && !inHandover) {
+    handovers++;
+    if (await table.locator('.pk-mini-hole').count()) sawShowdownReveal = true;
+  }
+  inHandover = nowHandover;
+  for (const p of phones) {
+    const btn = p.locator('.pk-call');
+    if (await btn.count()) await btn.click({ timeout: 1200 }).catch(() => {});
+  }
+  await table.waitForTimeout(300);
+}
+if (handovers < 2) fail('poker did not complete two hands in time');
+if (!sawShowdownReveal) fail('showdown never revealed hole cards on the table');
+console.log(`ok: ${handovers} poker hands played to showdown, cards revealed at the end`);
 await table.click('button:has-text("End game")');
 await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 5000 });
 console.log('ok: back to lobby');
 
 await browser.close();
-console.log('ALL CODENAMES+WILDCARDS TESTS PASSED');
+console.log('ALL CODENAMES+UNO+POKER TESTS PASSED');
