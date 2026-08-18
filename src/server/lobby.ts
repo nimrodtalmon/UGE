@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { avatarFor } from '../shared/avatar.js';
 import type { PlayerInfo } from '../shared/plugin.js';
 import type {
   ActiveGame,
@@ -23,10 +24,15 @@ const REMOVE_MS = 45_000;
 interface Device {
   id: string;
   name: string;
+  avatar?: string;
   screen: { w: number; h: number };
   isTableScreen: boolean;
   joinedAt: number;
   lastSeen: number;
+}
+
+function deviceAvatar(d: Device): string {
+  return d.isTableScreen ? '🖥️' : (d.avatar ?? avatarFor(d.name));
 }
 
 export class Lobby {
@@ -45,6 +51,7 @@ export class Lobby {
     this.devices.set(id, {
       id,
       name: req.name,
+      avatar: req.avatar,
       screen: req.screen,
       isTableScreen: req.isTableScreen,
       joinedAt: existing?.joinedAt ?? Date.now(),
@@ -89,7 +96,7 @@ export class Lobby {
     const players: PlayerInfo[] = [...this.devices.values()]
       .filter((d) => this.claims.get(d.id) === 'hand')
       .sort((a, b) => a.joinedAt - b.joinedAt)
-      .map((d) => ({ id: d.id, name: d.name }));
+      .map((d) => ({ id: d.id, name: d.name, avatar: deviceAvatar(d) }));
     this.session = new GameSession(plugin.def, players);
     this.phase = 'playing';
   }
@@ -117,6 +124,7 @@ export class Lobby {
         .map((d) => ({
           id: d.id,
           name: d.name,
+          avatar: deviceAvatar(d),
           isTableScreen: d.isTableScreen,
           role: this.claims.get(d.id) ?? null,
           away: Date.now() - d.lastSeen > AWAY_MS,

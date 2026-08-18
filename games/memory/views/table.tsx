@@ -4,7 +4,7 @@ import type { GameViewProps } from '../../../src/shared/plugin.js';
 import type { MemoryState } from '../game.js';
 import { Confetti, Grid, Scoreboard } from './parts.js';
 
-export default function TableView({ view, over, move }: GameViewProps<MemoryState>) {
+export default function TableView({ view, players, over, move }: GameViewProps<MemoryState>) {
   // the table is always present, so it owns flipping mismatches back
   useEffect(() => {
     if (view.mismatch && !over) {
@@ -16,7 +16,7 @@ export default function TableView({ view, over, move }: GameViewProps<MemoryStat
   const cols = view.cards.length <= 16 ? 4 : 6;
   return (
     <div className="mem-screen">
-      <Scoreboard view={view} over={!!over} />
+      <Scoreboard view={view} players={players} over={!!over} />
       {over ? (
         <p className="mem-over">{over.text}</p>
       ) : (

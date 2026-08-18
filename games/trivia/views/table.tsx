@@ -7,7 +7,7 @@ import type { TriviaView } from '../game.js';
 
 const LETTERS = ['A', 'B', 'C', 'D'];
 
-export default function TableView({ view, over, move, serverNow }: GameViewProps<TriviaView>) {
+export default function TableView({ view, players, over, move, serverNow }: GameViewProps<TriviaView>) {
   // the table drives the clock: reveal when time is up, advance after reveals
   const remaining = useDeadline({
     active: !over && view.phase !== 'done',
@@ -23,7 +23,7 @@ export default function TableView({ view, over, move, serverNow }: GameViewProps
       <div className="tv-scores">
         {view.playerNames.map((name, i) => (
           <div key={i} className="tv-player" style={{ '--seat': colorFor(i) } as CSSProperties}>
-            <span>{avatarFor(name)}</span>
+            <span>{players[i]?.avatar ?? avatarFor(name)}</span>
             <span className="tv-name">{name}</span>
             <strong>{view.scores[i]}</strong>
           </div>

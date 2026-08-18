@@ -4,7 +4,7 @@ import { useDeadline, formatSeconds } from '../../../src/shared/gameKit.js';
 import { avatarFor } from '../../../src/shared/avatar.js';
 import type { AliasView } from '../game.js';
 
-export default function HandView({ view, over, move, serverNow }: GameViewProps<AliasView>) {
+export default function HandView({ view, players, over, move, serverNow }: GameViewProps<AliasView>) {
   const remaining = useDeadline({
     active: !over && view.phase === 'round',
     endsAt: view.endsAt,
@@ -13,6 +13,7 @@ export default function HandView({ view, over, move, serverNow }: GameViewProps<
 
   const iExplain = view.myIndex === view.turn;
   const explainer = view.playerNames[view.turn] ?? '?';
+  const explainerAvatar = players[view.turn]?.avatar ?? avatarFor(explainer);
 
   if (over || view.phase === 'done') {
     return (
@@ -51,7 +52,7 @@ export default function HandView({ view, over, move, serverNow }: GameViewProps<
         ) : (
           <>
             <h1 className="al-big">
-              {avatarFor(explainer)} {explainer} is up next
+              {explainerAvatar} {explainer} is up next
             </h1>
             <p className="al-hint">get ready to guess out loud</p>
           </>

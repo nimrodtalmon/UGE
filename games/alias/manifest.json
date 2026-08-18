@@ -1,7 +1,19 @@
 {
   "id": "alias",
   "name": "Alias",
-  "players": { "min": 2, "max": 8 },
-  "roles": { "table": "required", "hand": "per-player", "extras": [] },
-  "pieces": { "static": 0, "dynamic": 0 }
+  "players": {
+    "min": 2,
+    "max": 8
+  },
+  "roles": {
+    "table": "required",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
+  "icon": "🗣️",
+  "tagline": "explain it fast"
 }

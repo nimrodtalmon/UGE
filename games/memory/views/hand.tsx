@@ -25,7 +25,7 @@ export default function HandView({ view, me, players, over, move }: GameViewProp
       <p className={myTurn ? 'mem-turn mine' : 'mem-turn'}>
         {over ? over.text : myTurn ? 'Your turn — flip two cards!' : `${view.playerNames[view.current]}'s turn…`}
       </p>
-      <Scoreboard view={view} over={!!over} small />
+      <Scoreboard view={view} players={players} over={!!over} small />
       <Grid view={view} cols={4} disabled={!myTurn} onFlip={(i) => move('flip', i)} />
       {over && <Confetti />}
     </div>

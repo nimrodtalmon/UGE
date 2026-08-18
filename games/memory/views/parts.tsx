@@ -1,9 +1,15 @@
 import { useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { avatarFor, colorFor } from '../../../src/shared/avatar.js';
+import type { PlayerInfo } from '../../../src/shared/plugin.js';
 import type { MemoryState } from '../game.js';
 
-export function Scoreboard(props: { view: MemoryState; over: boolean; small?: boolean }) {
+export function Scoreboard(props: {
+  view: MemoryState;
+  players: PlayerInfo[];
+  over: boolean;
+  small?: boolean;
+}) {
   const { view } = props;
   return (
     <div className={props.small ? 'mem-scores small' : 'mem-scores'}>
@@ -13,7 +19,7 @@ export function Scoreboard(props: { view: MemoryState; over: boolean; small?: bo
           className={!props.over && i === view.current ? 'mem-player current' : 'mem-player'}
           style={{ '--seat': colorFor(i) } as CSSProperties}
         >
-          <span className="mem-avatar">{avatarFor(name)}</span>
+          <span className="mem-avatar">{props.players[i]?.avatar ?? avatarFor(name)}</span>
           <span className="mem-name">{name}</span>
           <strong>{view.scores[i]}</strong>
         </div>

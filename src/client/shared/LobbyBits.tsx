@@ -1,5 +1,4 @@
 import type { DeviceTile, GameEntry } from '../../shared/types.js';
-import { avatarFor } from '../../shared/avatar.js';
 
 export function DeviceTiles(props: { devices: DeviceTile[]; myId: string | null }) {
   return (
@@ -9,12 +8,12 @@ export function DeviceTiles(props: { devices: DeviceTile[]; myId: string | null 
           key={d.id}
           className={['tile', d.id === props.myId && 'me', d.away && 'away'].filter(Boolean).join(' ')}
         >
-          <div className="who">
-            <span className="avatar">{d.isTableScreen ? '🖥️' : avatarFor(d.name)}</span> {d.name}
+          <span className="avatar">{d.avatar}</span>
+          <span className="who">
+            {d.name}
             {d.away ? ' 💤' : ''}
-          </div>
-          {d.role && <span className={`badge ${d.role === 'table' ? 'table' : ''}`}>{d.role}</span>}
-          {!d.role && d.isTableScreen && <span className="muted"> screen</span>}
+          </span>
+          {d.role && <span className={`badge ${d.role === 'table' ? 'table' : ''}`}>{d.role === 'hand' ? 'player' : d.role}</span>}
         </div>
       ))}
       {props.devices.length === 0 && <p className="muted">nobody yet</p>}
@@ -39,16 +38,19 @@ export function GameList(props: {
             disabled={!props.onSelect}
             onClick={() => props.onSelect?.(selected ? null : manifest.id)}
           >
-            <span>
-              {manifest.name}
-              {feasible && !selected && <span className="ready-chip">ready</span>}
-            </span>
+            <span className="game-icon">{manifest.icon ?? '🎲'}</span>
+            <span className="game-name">{manifest.name}</span>
+            <span className="game-tagline">{manifest.tagline ?? ''}</span>
             <span className="meta">
               {manifest.players.min === manifest.players.max
                 ? `${manifest.players.min} player${manifest.players.min === 1 ? '' : 's'}`
                 : `${manifest.players.min}–${manifest.players.max} players`}
-              {!feasible && reason ? ` · ${reason}` : ''}
             </span>
+            {feasible ? (
+              <span className="ready-chip">{selected ? 'selected' : 'ready'}</span>
+            ) : (
+              <span className="meta reason">{reason}</span>
+            )}
           </button>
         );
       })}

@@ -1,6 +1,6 @@
 /** Deterministic fun: a stable avatar emoji and color per player name/seat. */
 
-const AVATARS = ['🦊', '🐼', '🐸', '🦁', '🐯', '🐨', '🐵', '🦄', '🐙', '🦉', '🐬', '🦜', '🐢', '🦋', '🐝', '🦕'];
+export const AVATARS = ['🦊', '🐼', '🐸', '🦁', '🐯', '🐨', '🐵', '🦄', '🐙', '🦉', '🐬', '🦜', '🐢', '🦋', '🐝', '🦕', '🐺', '🦔', '🐷', '🐰', '🦩', '🐲', '👻', '🤖'];
 
 export function avatarFor(name: string): string {
   let h = 0;

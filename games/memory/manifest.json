@@ -1,7 +1,19 @@
 {
   "id": "memory",
   "name": "Memory",
-  "players": { "min": 2, "max": 6 },
-  "roles": { "table": "required", "hand": "per-player", "extras": [] },
-  "pieces": { "static": 0, "dynamic": 0 }
+  "players": {
+    "min": 2,
+    "max": 6
+  },
+  "roles": {
+    "table": "required",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
+  "icon": "🧠",
+  "tagline": "find the pairs"
 }

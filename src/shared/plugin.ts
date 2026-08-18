@@ -7,6 +7,8 @@
 export interface PlayerInfo {
   id: string;
   name: string;
+  /** Emoji the player chose (or was assigned) in the lobby. */
+  avatar: string;
 }
 
 export interface SetupCtx {

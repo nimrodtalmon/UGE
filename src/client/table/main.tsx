@@ -70,7 +70,7 @@ function Table() {
     <div className="table-screen">
       <div className="qr">
         <h1>UGE</h1>
-        <p className="muted">Scan to join from your phone</p>
+        <p className="muted">Scan to join the table</p>
         {session && (
           <>
             <img src="/api/qr.svg" alt={`Join QR for ${session.joinUrl}`} />
@@ -83,7 +83,7 @@ function Table() {
         </footer>
       </div>
 
-      <div>
+      <div className="lobby-main">
         <h2>At the table</h2>
         <DeviceTiles devices={snapshot?.devices ?? []} myId={deviceId} />
 
@@ -93,20 +93,20 @@ function Table() {
           selectedGameId={snapshot?.selectedGameId ?? null}
           onSelect={(gameId) => act('/api/lobby/select', { gameId })}
         />
-        {selected && (
-          <div className="actions">
+        <div className="actions start-row">
+          {selected && (
             <button
-              className="primary"
+              className="primary big-start"
               disabled={!snapshot?.canStart}
               onClick={() => act('/api/lobby/start')}
             >
-              Start {selected.manifest.name}
+              ▶ Start {selected.manifest.name}
             </button>
-            {snapshot && snapshot.blockers.length > 0 && (
-              <p className="blockers">{snapshot.blockers.join(' · ')}</p>
-            )}
-          </div>
-        )}
+          )}
+          {selected && snapshot && snapshot.blockers.length > 0 && (
+            <p className="blockers">{snapshot.blockers.join(' · ')}</p>
+          )}
+        </div>
       </div>
     </div>
   );

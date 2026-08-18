@@ -20,11 +20,19 @@ a name. The table screen is the host: it picks the game and starts it once
 every phone has claimed a role — phones are controllers, Kahoot-style.
 
 The table screen's **Update** button pulls the latest code from git and
-restarts the brain in place; phones reconnect on their own. Set
-`UGE_NO_OPEN=1` to skip auto-opening the browser.
+restarts the brain in place; the same tab reloads itself and phones
+reconnect on their own. Set `UGE_NO_OPEN=1` to skip auto-opening the browser.
 
-The brain runs anywhere Node ≥ 22 runs (MacBook now; a Raspberry Pi or any
-always-on box later — nothing is macOS-specific except the auto-open).
+**Mac app**: `bash scripts/install-mac-app.sh` creates a double-clickable
+`UGE.app` in /Applications (first launch: right-click → Open, it's unsigned).
+
+**Screens are just browsers.** A smart TV works as the table: open
+`http://<brain-ip>:8000` in the TV browser (or cast the Chrome tab). Any
+tablet can claim the table role from its own lobby.
+
+The brain runs anywhere Node ≥ 22 runs — including an Android phone via
+Termux, hotspot and all: see [docs/android-brain.md](docs/android-brain.md).
+To write a new game, see [docs/adding-games.md](docs/adding-games.md).
 
 ## Layout
 

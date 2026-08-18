@@ -5,7 +5,7 @@ import { useDeadline, formatSeconds } from '../../../src/shared/gameKit.js';
 import { avatarFor, colorFor } from '../../../src/shared/avatar.js';
 import type { AliasView } from '../game.js';
 
-export default function TableView({ view, over, move, serverNow }: GameViewProps<AliasView>) {
+export default function TableView({ view, players, over, move, serverNow }: GameViewProps<AliasView>) {
   const remaining = useDeadline({
     active: !over && view.phase === 'round',
     endsAt: view.endsAt,
@@ -14,6 +14,7 @@ export default function TableView({ view, over, move, serverNow }: GameViewProps
   });
 
   const explainer = view.playerNames[view.turn] ?? '?';
+  const explainerAvatar = players[view.turn]?.avatar ?? avatarFor(explainer);
 
   return (
     <div className="al-screen">
@@ -24,7 +25,7 @@ export default function TableView({ view, over, move, serverNow }: GameViewProps
             className={!over && i === view.turn ? 'al-player current' : 'al-player'}
             style={{ '--seat': colorFor(i) } as CSSProperties}
           >
-            <span>{avatarFor(name)}</span>
+            <span>{players[i]?.avatar ?? avatarFor(name)}</span>
             <span className="al-name">{name}</span>
             <strong>{view.scores[i]}</strong>
           </div>
@@ -36,7 +37,7 @@ export default function TableView({ view, over, move, serverNow }: GameViewProps
       ) : view.phase === 'ready' ? (
         <>
           <h1 className="al-big">
-            {avatarFor(explainer)} {explainer} is up next
+            {explainerAvatar} {explainer} is up next
           </h1>
           <p className="al-hint">start the round from {explainer}'s phone — everyone else guesses out loud</p>
         </>

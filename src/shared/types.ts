@@ -12,11 +12,16 @@ export interface Manifest {
   players: { min: number; max: number };
   roles: { table: RoleRequirement; hand: HandMode; extras: string[] };
   pieces?: { static: number; dynamic: number };
+  /** Emoji shown on the lobby's game box. */
+  icon?: string;
+  /** One-liner shown on the lobby's game box. */
+  tagline?: string;
 }
 
 export interface DeviceTile {
   id: string;
   name: string;
+  avatar: string;
   isTableScreen: boolean;
   role: string | null;
   /** Stopped polling recently (locked phone, backgrounded tab) but not yet dropped. */
@@ -56,6 +61,7 @@ export interface LobbySnapshot {
 export interface SyncRequest {
   deviceId?: string;
   name: string;
+  avatar?: string;
   screen: { w: number; h: number };
   isTableScreen: boolean;
 }
