@@ -200,6 +200,32 @@ button.small { padding: 0.35rem 0.8rem; font-size: 0.85rem; }
 .start-row { margin-top: 1.4rem; }
 .big-start { font-size: 1.25rem; padding: 1rem 1.4rem; }
 
+/* narrow / portrait table screens (Android phone or tablet as the table):
+   stack everything — compact QR on top, full-width game boxes below */
+@media (max-width: 1000px), (orientation: portrait) {
+  .table-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    height: auto;
+    min-height: 100vh;
+    gap: 1.1rem;
+    padding: 1.2rem 1rem 2rem;
+  }
+  .table-screen h1 { font-size: 1.7rem; }
+  .table-screen .qr img { width: min(32vh, 62vw); margin: 0.8rem 0 0.5rem; padding: 8px; }
+  .table-screen .qr img.wifi-qr { width: min(16vh, 34vw); }
+  .table-screen code { font-size: 0.85rem; word-break: break-all; }
+  .table-screen .qr footer { margin-top: 0.6rem; padding-top: 0; }
+  .lobby-main h2:first-child { margin-top: 0.4rem; }
+  .games { grid-template-columns: repeat(auto-fill, minmax(8.6rem, 1fr)); gap: 0.6rem; }
+  .game { min-height: 8.6rem; padding: 0.9rem 0.5rem 0.8rem; }
+  .game .game-icon { font-size: 2rem; }
+  .game .game-name { font-size: 1rem; }
+  .game .game-tagline { font-size: 0.75rem; }
+  .big-start { font-size: 1.1rem; padding: 0.9rem 1rem; }
+}
+
 /* running game overlay */
 .game-shell { height: 100%; position: relative; }
 .game-controls {
