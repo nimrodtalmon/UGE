@@ -5,6 +5,9 @@ import express from 'express';
 import * as esbuild from 'esbuild';
 import QRCode from 'qrcode';
 import { lanAddress } from './lan.js';
+import { loadManifests } from './games.js';
+import { Lobby } from './lobby.js';
+import type { SyncRequest } from '../shared/types.js';
 
 const PORT = 8000;
 
@@ -26,11 +29,25 @@ await esbuild.build({
 
 const joinUrl = `http://${lanAddress()}:${PORT}/join`;
 
+const games = loadManifests(path.join(root, 'games'));
+console.log(`games discovered: ${games.map((g) => g.id).join(', ') || '(none)'}`);
+const lobby = new Lobby(games);
+
 const app = express();
+app.use(express.json());
 
 app.get('/', (_req, res) => res.sendFile(path.join(clientDir, 'table', 'index.html')));
 app.get('/join', (_req, res) => res.sendFile(path.join(clientDir, 'join', 'index.html')));
 app.use('/dist', express.static(distDir));
+app.use('/static', express.static(clientDir));
+
+app.post('/api/lobby/sync', (req, res) => res.json(lobby.sync(req.body as SyncRequest)));
+app.post('/api/lobby/select', (req, res) => res.json(lobby.select(req.body.gameId ?? null)));
+app.post('/api/lobby/claim', (req, res) =>
+  res.json(lobby.claim(req.body.deviceId, req.body.role ?? null)),
+);
+app.post('/api/lobby/start', (_req, res) => res.json(lobby.start()));
+app.post('/api/lobby/reset', (_req, res) => res.json(lobby.reset()));
 
 app.get('/api/session', (_req, res) => {
   res.json({ joinUrl });
