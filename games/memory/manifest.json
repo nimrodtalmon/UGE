@@ -15,5 +15,23 @@
     "dynamic": 0
   },
   "icon": "🧠",
-  "tagline": "find the pairs"
+  "tagline": "find the pairs",
+  "modes": [
+    {
+      "id": "phones",
+      "name": "Phone each",
+      "tagline": "flip from your own phone"
+    },
+    {
+      "id": "pass",
+      "name": "Pass the phone",
+      "tagline": "one phone goes around",
+      "phones": {
+        "min": 1
+      },
+      "config": {
+        "pass": true
+      }
+    }
+  ]
 }

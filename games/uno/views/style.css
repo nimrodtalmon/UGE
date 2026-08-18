@@ -91,6 +91,11 @@
 .wc-slot.drawn { animation: wc-pulse 1s infinite; }
 .wc-actions { display: flex; gap: 0.7rem; }
 
+/* hotseat pass screen */
+.wc-pass-title { color: #8a8f98; font-size: 1.2rem; }
+.wc-pass-name { font-size: 2.2rem; font-weight: 800; }
+.wc-take { font-size: 1.1rem; padding: 1rem 1.6rem; }
+
 /* wild color picker */
 .wc-picker { position: fixed; inset: 0; background: #14161ae8; display: grid; place-items: center; z-index: 50; }
 .wc-picker-box { text-align: center; display: flex; flex-direction: column; gap: 1rem; }

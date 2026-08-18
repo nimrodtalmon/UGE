@@ -194,6 +194,26 @@ function Table() {
           onSelect={(gameId) => act('/api/lobby/select', { gameId })}
           fitChip
         />
+        {selected && selected.modes.length > 1 && (
+          <div className="mode-row">
+            {selected.modes.map((mo) => (
+              <button
+                key={mo.id}
+                className={[
+                  'mode',
+                  snapshot.selectedModeId === mo.id && 'on',
+                  !mo.fits && 'dim',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                onClick={() => act('/api/lobby/mode', { modeId: mo.id })}
+              >
+                <strong>{mo.name}</strong>
+                <span className="meta">{mo.fits ? (mo.tagline ?? '') : (mo.reason ?? '')}</span>
+              </button>
+            ))}
+          </div>
+        )}
         <div className="actions start-row">
           {selected && (
             <button

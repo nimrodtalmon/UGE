@@ -43,6 +43,28 @@ against it. Phone need defaults to one per player (when `hand` is
 per-player) plus one per extra role; set `phones.min` when devices can be
 shared (Codenames: one spymasters device + one shared guessing phone → 2).
 
+## Modes — several ways to play one game
+
+A game may declare `modes`: variants with their own player/phone needs and
+settings. The lobby shows a mode picker, auto-selects the first mode that
+fits the declared group, and a game is listed as fitting if ANY mode fits.
+The chosen mode reaches `setup(ctx)` as `ctx.mode = { id, config }`, and
+`ctx.group` carries the declared group (useful for virtual seats).
+
+```json
+"modes": [
+  { "id": "phones", "name": "Phone each", "tagline": "private hands" },
+  { "id": "pass", "name": "Pass the phone", "tagline": "one shared device",
+    "phones": { "min": 1 }, "config": { "pass": true } }
+]
+```
+
+`config` is opaque to the platform — branch on it in `setup`. Patterns used
+by the built-in games: virtual seats named "Player N" sized from
+`ctx.group.players` (Memory/UNO pass modes), a lock-between-turns flag for
+hidden-hand hotseat (UNO's `takePhone` move), and letting an extra role act
+(Codenames one-phone mode: the map device may `guess`).
+
 ## game.ts — the rules
 
 Default-export a `GameDef` (types in `src/shared/plugin.ts`). Everything is

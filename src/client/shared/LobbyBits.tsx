@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { DeviceTile, GameEntry } from '../../shared/types.js';
 
 export function DeviceTiles(props: { devices: DeviceTile[]; myId: string | null }) {
@@ -28,9 +29,13 @@ export function GameList(props: {
   /** Feasibility is against the declared group ("fits") rather than joined devices ("ready"). */
   fitChip?: boolean;
 }) {
+  const [showAll, setShowAll] = useState(false);
+  // with a declared group, non-fitting games hide behind an expander
+  const hidden = props.fitChip && !showAll ? props.games.filter((g) => !g.feasible) : [];
+  const shown = props.games.filter((g) => !hidden.includes(g));
   return (
     <div className="games">
-      {props.games.map(({ manifest, feasible, reason }) => {
+      {shown.map(({ manifest, feasible, reason }) => {
         const selected = manifest.id === props.selectedGameId;
         const classes = ['game', selected && 'selected', feasible ? 'ready' : 'infeasible'];
         return (
@@ -58,6 +63,12 @@ export function GameList(props: {
           </button>
         );
       })}
+      {hidden.length > 0 && (
+        <button className="games-more" onClick={() => setShowAll(true)}>
+          +{hidden.length} more game{hidden.length === 1 ? '' : 's'}
+          <span className="meta">don't fit your group</span>
+        </button>
+      )}
       {props.games.length === 0 && <p className="muted">no games installed</p>}
     </div>
   );

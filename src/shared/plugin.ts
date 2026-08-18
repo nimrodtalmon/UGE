@@ -16,6 +16,10 @@ export interface SetupCtx {
   random: () => number;
   /** Server clock (ms). Games store deadlines relative to this, never Date.now(). */
   now: number;
+  /** The mode picked in the lobby (manifest `modes`); id 'default' when none declared. */
+  mode: { id: string; config: Record<string, unknown> };
+  /** The group declared on the table ("N players, M phones"), if any. */
+  group: { players: number; phones: number } | null;
 }
 
 export interface MoveCtx {

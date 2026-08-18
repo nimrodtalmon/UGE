@@ -98,6 +98,10 @@ app.post('/api/lobby/setup', (req, res) => {
   lobby.setSetup(req.body.players, req.body.phones);
   res.json(lobby.snapshotFor(req.body.deviceId));
 });
+app.post('/api/lobby/mode', (req, res) => {
+  lobby.setMode(req.body.modeId);
+  res.json(lobby.snapshotFor(req.body.deviceId));
+});
 app.post('/api/lobby/select', (req, res) => {
   lobby.select(req.body.gameId ?? null);
   res.json(lobby.snapshotFor(req.body.deviceId));

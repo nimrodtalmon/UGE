@@ -157,6 +157,12 @@ any hardware.
   optional `phones.min` for shared-device games); Start still gates on who
   actually joined. Groundwork for "needs dice / NFC pieces" annotations via
   the existing `pieces` field — display deferred.
+- 2026-08: Manifest gains `modes` — variants with own player/phone needs and
+  an opaque `config` passed to `setup` (plus `ctx.group`). Non-fitting games
+  hide behind an expander. Shared-phone modes shipped: Alias & Memory "pass
+  the phone", UNO hotseat (locked handoff), Codenames one-phone (map device
+  records shouted guesses), Trivia quick/classic. Poker stays phone-per-
+  player (hotseat betting with hidden holes is too leaky to be fun).
 - 2026-08: Road mode: an optional gitignored `uge.config.json` can carry the
   WiFi credentials of whatever network the brain shares (phone hotspot /
   Internet Sharing); the table then shows a two-step QR (join WiFi → open

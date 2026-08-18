@@ -8,8 +8,10 @@ export class GameSession {
   constructor(
     private readonly def: GameDef,
     readonly players: PlayerInfo[],
+    mode: { id: string; config: Record<string, unknown> },
+    group: { players: number; phones: number } | null,
   ) {
-    this.state = def.setup({ players, random: Math.random, now: Date.now() });
+    this.state = def.setup({ players, random: Math.random, now: Date.now(), mode, group });
     this.over = def.isOver?.(this.state) ?? null;
   }
 

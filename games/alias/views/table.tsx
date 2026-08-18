@@ -37,9 +37,15 @@ export default function TableView({ view, players, over, move, serverNow }: Game
       ) : view.phase === 'ready' ? (
         <>
           <h1 className="al-big">
-            {explainerAvatar} {explainer} is up next
+            {view.pass
+              ? `Round ${view.turn + 1} of ${view.totalRounds}`
+              : `${explainerAvatar} ${explainer} is up next`}
           </h1>
-          <p className="al-hint">start the round from {explainer}'s phone — everyone else guesses out loud</p>
+          <p className="al-hint">
+            {view.pass
+              ? `pass the phone to ${explainer} — start from the phone, everyone else guesses out loud`
+              : `start the round from ${explainer}'s phone — everyone else guesses out loud`}
+          </p>
         </>
       ) : (
         <>

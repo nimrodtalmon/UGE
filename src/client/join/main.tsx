@@ -122,7 +122,9 @@ function PhoneLobby(props: { profile: Profile; onChange: (p: Profile) => void })
               {selected.manifest.icon ?? '🎲'} {selected.manifest.name}
             </strong>{' '}
             <span className="muted">
-              ({selected.manifest.players.min}–{selected.manifest.players.max} players)
+              {selected.modes.length > 1 && snapshot.selectedModeId
+                ? `· ${selected.modes.find((mo) => mo.id === snapshot.selectedModeId)?.name ?? ''}`
+                : `(${selected.manifest.players.min}–${selected.manifest.players.max} players)`}
             </span>
           </p>
           <div className="actions">

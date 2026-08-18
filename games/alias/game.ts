@@ -8,19 +8,22 @@ export interface AliasState {
   phase: 'ready' | 'round' | 'done';
   words: string[];
   ptr: number;
-  turn: number; // seat index of the current explainer
+  turn: number; // seat index of the explainer — or the round index in pass mode
   roundsPlayed: number;
   endsAt: number;
-  scores: number[];
+  scores: number[]; // per player — or per round in pass mode
   skips: number[];
   playerNames: string[];
   playerIds: string[];
+  /** "Pass the phone" mode: one shared device, anyone holding it explains. */
+  pass: boolean;
+  totalRounds: number;
 }
 
 /** Clients never receive the full word list — just the explainer's current word. */
 export interface AliasView {
   phase: 'ready' | 'round' | 'done';
-  word: string | null; // only for the current explainer, only during a round
+  word: string | null;
   turn: number;
   myIndex: number;
   endsAt: number;
@@ -28,6 +31,8 @@ export interface AliasView {
   scores: number[];
   skips: number[];
   playerNames: string[];
+  pass: boolean;
+  totalRounds: number;
 }
 
 function shuffle<T>(items: T[], random: () => number): T[] {
@@ -39,12 +44,16 @@ function shuffle<T>(items: T[], random: () => number): T[] {
   return a;
 }
 
-function isExplainer(state: AliasState, playerId: string): boolean {
-  return state.playerIds[state.turn] === playerId;
+function canExplain(state: AliasState, ctx: { playerId: string; role: string }): boolean {
+  return state.pass ? ctx.role === 'hand' : state.playerIds[state.turn] === ctx.playerId;
 }
 
 const game: GameDef<AliasState, AliasView> = {
-  setup({ players, random }) {
+  setup({ players, random, mode, group }) {
+    const pass = mode.config['pass'] === true;
+    const totalRounds = pass
+      ? Math.max(2, Math.min(12, group?.players ?? 4))
+      : players.length;
     return {
       phase: 'ready',
       words: shuffle(WORDS, random),
@@ -52,53 +61,51 @@ const game: GameDef<AliasState, AliasView> = {
       turn: 0,
       roundsPlayed: 0,
       endsAt: 0,
-      scores: players.map(() => 0),
-      skips: players.map(() => 0),
+      scores: Array<number>(totalRounds).fill(0),
+      skips: Array<number>(totalRounds).fill(0),
       playerNames: players.map((p) => p.name),
       playerIds: players.map((p) => p.id),
+      pass,
+      totalRounds,
     };
   },
 
   moves: {
-    /** Only the explainer starts their own round, from their phone. */
     startRound(state, ctx) {
-      if (state.phase !== 'ready' || !isExplainer(state, ctx.playerId)) return state;
+      if (state.phase !== 'ready' || !canExplain(state, ctx)) return state;
       return { ...state, phase: 'round', endsAt: ctx.now + ROUND_MS };
     },
 
     gotIt(state, ctx) {
-      if (state.phase !== 'round' || !isExplainer(state, ctx.playerId)) return state;
+      if (state.phase !== 'round' || !canExplain(state, ctx)) return state;
       const scores = [...state.scores];
       scores[state.turn] = (scores[state.turn] ?? 0) + 1;
       return { ...state, scores, ptr: state.ptr + 1 };
     },
 
     skip(state, ctx) {
-      if (state.phase !== 'round' || !isExplainer(state, ctx.playerId)) return state;
+      if (state.phase !== 'round' || !canExplain(state, ctx)) return state;
       const skips = [...state.skips];
       skips[state.turn] = (skips[state.turn] ?? 0) + 1;
       return { ...state, skips, ptr: state.ptr + 1 };
     },
 
-    /** Round timer ran out (sent by the table on a timer; idempotent). */
+    /** Round timer ran out (sent on a client timer; idempotent). */
     endRound(state, ctx) {
       if (state.phase !== 'round' || ctx.now < state.endsAt - 250) return state;
       const roundsPlayed = state.roundsPlayed + 1;
-      if (roundsPlayed >= state.playerNames.length) {
+      if (roundsPlayed >= state.totalRounds) {
         return { ...state, phase: 'done', roundsPlayed };
       }
-      return {
-        ...state,
-        phase: 'ready',
-        roundsPlayed,
-        turn: (state.turn + 1) % state.playerNames.length,
-      };
+      return { ...state, phase: 'ready', roundsPlayed, turn: (state.turn + 1) % state.totalRounds };
     },
   },
 
-  playerView(state, { playerId }) {
+  playerView(state, { playerId, role }) {
     const myIndex = state.playerIds.findIndex((id) => id === playerId);
-    const explaining = state.phase === 'round' && playerId !== null && isExplainer(state, playerId);
+    const explaining =
+      state.phase === 'round' &&
+      (state.pass ? role === 'hand' : playerId !== null && state.playerIds[state.turn] === playerId);
     return {
       phase: state.phase,
       word: explaining ? (state.words[state.ptr % state.words.length] ?? null) : null,
@@ -109,11 +116,17 @@ const game: GameDef<AliasState, AliasView> = {
       scores: state.scores,
       skips: state.skips,
       playerNames: state.playerNames,
+      pass: state.pass,
+      totalRounds: state.totalRounds,
     };
   },
 
   isOver(state) {
     if (state.phase !== 'done') return null;
+    if (state.pass) {
+      const total = state.scores.reduce((a, b) => a + b, 0);
+      return { text: `Together you got ${total} words in ${state.totalRounds} rounds! 🎉` };
+    }
     const top = Math.max(...state.scores);
     const winners = state.playerNames.filter((_, i) => state.scores[i] === top);
     return winners.length === 1

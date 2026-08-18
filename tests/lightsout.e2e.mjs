@@ -27,11 +27,13 @@ await phone.waitForSelector('h2:has-text("At the table")', { timeout: 10000 });
 await table.waitForSelector('.tile:has-text("Nimrod")', { timeout: 10000 });
 console.log('ok: phone joined, tile on table');
 
-// with the declared group, fitting games highlight and others explain why not
+// only fitting games show; the rest hide behind an expander
 await table.waitForSelector('button.game.ready:has-text("Lights Out")', { timeout: 10000 });
+if (await table.locator('button.game:has-text("Memory")').count()) fail('non-fitting game visible before expanding');
+await table.click('.games-more');
 const memoryReason = (await table.textContent('button.game:has-text("Memory")')).trim();
 if (!memoryReason.includes('for 2+ players')) fail(`memory reason wrong: ${memoryReason}`);
-console.log('ok: Lights Out fits the group; Memory explains it needs more players');
+console.log('ok: non-fitting games hidden until expanded, with reasons');
 
 await table.click('button.game:has-text("Lights Out")');
 // auto-join: start enables without any claim tap

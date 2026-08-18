@@ -58,10 +58,12 @@ function reveal(state: TriviaState, now: number): TriviaState {
 }
 
 const game: GameDef<TriviaState, TriviaView> = {
-  setup({ players, random, now }) {
+  setup({ players, random, now, mode }) {
+    const wanted = mode.config['questions'];
+    const num = typeof wanted === 'number' ? Math.max(1, Math.min(POOL.length, wanted)) : NUM_QUESTIONS;
     return {
       phase: 'question',
-      questions: shuffle(POOL, random).slice(0, NUM_QUESTIONS),
+      questions: shuffle(POOL, random).slice(0, num),
       qIdx: 0,
       answers: players.map(() => null),
       scores: players.map(() => 0),

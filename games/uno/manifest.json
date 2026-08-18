@@ -15,5 +15,23 @@
     "dynamic": 0
   },
   "icon": "🃏",
-  "tagline": "match it or draw"
+  "tagline": "match it or draw",
+  "modes": [
+    {
+      "id": "phones",
+      "name": "Phone each",
+      "tagline": "private hands on every phone"
+    },
+    {
+      "id": "hotseat",
+      "name": "One shared phone",
+      "tagline": "pass it around — no peeking",
+      "phones": {
+        "min": 1
+      },
+      "config": {
+        "hotseat": true
+      }
+    }
+  ]
 }

@@ -22,6 +22,31 @@ export interface Manifest {
    * Default: one per player when hand is per-player, plus one per extra role.
    */
   phones?: { min: number };
+  /**
+   * Ways to play the same game — different player/phone needs and settings
+   * (e.g. Alias "pass the phone" with a single shared device). Each mode may
+   * override players/phones and carries an opaque config handed to setup().
+   * Absent → one implicit default mode from the top-level fields.
+   */
+  modes?: GameMode[];
+}
+
+export interface GameMode {
+  id: string;
+  name: string;
+  tagline?: string;
+  players?: { min: number; max: number };
+  phones?: { min: number };
+  config?: Record<string, unknown>;
+}
+
+/** A mode as shown in the lobby, matched against the declared group. */
+export interface ModeEntry {
+  id: string;
+  name: string;
+  tagline?: string;
+  fits: boolean;
+  reason?: string;
 }
 
 /** The group declared on the table before anyone joins ("game night setup"). */
@@ -44,6 +69,7 @@ export interface GameEntry {
   manifest: Manifest;
   feasible: boolean;
   reason?: string;
+  modes: ModeEntry[];
 }
 
 export type LobbyPhase = 'lobby' | 'playing';
@@ -69,6 +95,7 @@ export interface LobbySnapshot {
   blockers: string[];
   game: ActiveGame | null;
   setup: GroupSetup | null;
+  selectedModeId: string | null;
 }
 
 export interface SyncRequest {

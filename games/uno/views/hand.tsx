@@ -14,17 +14,32 @@ const PICK: { c: Color; label: string }[] = [
 
 export default function HandView({ view, players, over, move }: GameViewProps<WcView>) {
   const [wildIdx, setWildIdx] = useState<number | null>(null);
-  const myTurn = view.winner === null && view.myIndex === view.turn;
+  const myTurn =
+    view.winner === null && (view.hotseat ? view.unlocked : view.myIndex === view.turn);
 
   useEffect(() => {
-    if (myTurn) navigator.vibrate?.(80);
-  }, [myTurn]);
+    if (myTurn && !view.hotseat) navigator.vibrate?.(80);
+  }, [myTurn, view.hotseat]);
   useEffect(() => setWildIdx(null), [view.turn, view.top.s, view.top.c]);
+
+  // hotseat: the phone is "locked" between turns so nobody peeks
+  if (view.hotseat && !over && !view.unlocked) {
+    return (
+      <div className="wc-screen wc-phone">
+        <PlayerRing view={view} players={players} />
+        <p className="wc-pass-title">📲 Pass the phone to</p>
+        <p className="wc-pass-name">{view.playerNames[view.turn]}</p>
+        <button className="primary wc-take" onClick={() => move('takePhone')}>
+          I'm {view.playerNames[view.turn]} — show my cards
+        </button>
+      </div>
+    );
+  }
 
   if (view.hand === null) {
     return (
       <div className="wc-screen">
-        <p className="wc-turn">Wildcards in progress — you're watching.</p>
+        <p className="wc-turn">UNO in progress — you're watching.</p>
       </div>
     );
   }

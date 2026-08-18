@@ -13,7 +13,7 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
     onExpire: () => move('endRound'),
   });
 
-  const iExplain = view.myIndex === view.turn;
+  const iExplain = view.pass || view.myIndex === view.turn;
   const explainer = view.playerNames[view.turn] ?? '?';
   const explainerAvatar = players[view.turn]?.avatar ?? avatarFor(explainer);
 
@@ -43,12 +43,15 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
       <div className="al-screen">
         {iExplain ? (
           <>
-            <h1 className="al-big">You're up! 🎤</h1>
+            <h1 className="al-big">
+              {view.pass ? `Round ${view.turn + 1}/${view.totalRounds} — pass the phone! 🎤` : "You're up! 🎤"}
+            </h1>
             <p className="al-hint">
+              {view.pass ? `${explainer} explains — ` : ''}
               explain as many words as you can in {Math.round(view.roundMs / 1000)}s — without saying the word!
             </p>
             <button className="al-start" onClick={() => move('startRound')}>
-              Start my round
+              {view.pass ? 'Start the round' : 'Start my round'}
             </button>
           </>
         ) : (

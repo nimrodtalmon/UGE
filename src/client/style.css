@@ -120,6 +120,20 @@ h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; color:
   transform: scale(1.03);
 }
 .game.infeasible { opacity: 0.45; }
+.games-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-height: 10.5rem;
+  border-radius: 16px;
+  background: none;
+  border: 2px dashed #3a4048;
+  color: #8a8f98;
+  font-weight: 600;
+}
+.games-more .meta { font-size: 0.8rem; color: #6b7078; }
 .ready-chip {
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -233,6 +247,22 @@ h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; color:
 .lobby-main { min-width: 0; }
 button.small { padding: 0.35rem 0.8rem; font-size: 0.85rem; }
 .start-row { margin-top: 1.4rem; }
+
+/* mode picker (games with several ways to play) */
+.mode-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+.mode {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  background: #1d2026;
+  border: 2px solid #3a4048;
+}
+.mode .meta { font-size: 0.8rem; color: #8a8f98; }
+.mode.on { border-color: #6fd08c; background: #223028; }
+.mode.dim { opacity: 0.5; }
 .big-start { font-size: 1.25rem; padding: 1rem 1.4rem; }
 
 /* narrow / portrait table screens (Android phone or tablet as the table):

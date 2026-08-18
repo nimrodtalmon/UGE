@@ -1,22 +1,25 @@
 {
   "id": "alias",
   "name": "Alias",
-  "players": {
-    "min": 2,
-    "max": 8
-  },
-  "roles": {
-    "table": "required",
-    "hand": "per-player",
-    "extras": []
-  },
-  "pieces": {
-    "static": 0,
-    "dynamic": 0
-  },
+  "players": { "min": 2, "max": 12 },
+  "roles": { "table": "required", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
   "icon": "🗣️",
   "tagline": "explain it fast",
-  "phones": {
-    "min": 2
-  }
+  "modes": [
+    {
+      "id": "phones",
+      "name": "Phone each",
+      "tagline": "your phone, your rounds",
+      "players": { "min": 2, "max": 8 },
+      "phones": { "min": 2 }
+    },
+    {
+      "id": "pass",
+      "name": "Pass the phone",
+      "tagline": "one phone, hand to hand",
+      "phones": { "min": 1 },
+      "config": { "pass": true }
+    }
+  ]
 }

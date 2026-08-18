@@ -6,11 +6,11 @@ import { Confetti, Grid, Scoreboard } from './parts.js';
 
 export default function HandView({ view, me, players, over, move }: GameViewProps<MemoryState>) {
   const myIndex = players.findIndex((p) => p.id === me?.id);
-  const myTurn = !over && myIndex === view.current;
+  const myTurn = !over && (view.pass || myIndex === view.current);
 
   useEffect(() => {
-    if (myTurn) navigator.vibrate?.(80);
-  }, [myTurn]);
+    if (myTurn && !view.pass) navigator.vibrate?.(80);
+  }, [myTurn, view.pass]);
 
   // backup resolver in case the table screen is gone mid-game
   useEffect(() => {
@@ -23,7 +23,13 @@ export default function HandView({ view, me, players, over, move }: GameViewProp
   return (
     <div className="mem-screen mem-phone">
       <p className={myTurn ? 'mem-turn mine' : 'mem-turn'}>
-        {over ? over.text : myTurn ? 'Your turn — flip two cards!' : `${view.playerNames[view.current]}'s turn…`}
+        {over
+          ? over.text
+          : view.pass
+            ? `${view.playerNames[view.current]}'s turn — pass & flip!`
+            : myTurn
+              ? 'Your turn — flip two cards!'
+              : `${view.playerNames[view.current]}'s turn…`}
       </p>
       <Scoreboard view={view} players={players} over={!!over} small />
       <Grid view={view} cols={4} disabled={!myTurn} onFlip={(i) => move('flip', i)} />

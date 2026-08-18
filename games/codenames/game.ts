@@ -14,6 +14,8 @@ export interface CodenamesState {
   first: Team;
   winner: Team | null;
   winText: string | null;
+  /** One-shared-phone mode: the spymasters device also taps the guesses. */
+  solo: boolean;
 }
 
 /** key entries are null until revealed — except for spymasters and finished games. */
@@ -25,6 +27,7 @@ export interface CodenamesView {
   first: Team;
   remaining: { red: number; blue: number };
   winner: Team | null;
+  solo: boolean;
 }
 
 function shuffle<T>(items: T[], random: () => number): T[] {
@@ -39,8 +42,12 @@ function shuffle<T>(items: T[], random: () => number): T[] {
 const other = (t: Team): Team => (t === 'red' ? 'blue' : 'red');
 const cap = (t: Team) => (t === 'red' ? 'Red' : 'Blue');
 
+function mayGuess(state: CodenamesState, role: string): boolean {
+  return role === 'hand' || (state.solo && role === 'spymasters');
+}
+
 const game: GameDef<CodenamesState, CodenamesView> = {
-  setup({ random }) {
+  setup({ random, mode }) {
     const words = shuffle(WORDS, random).slice(0, 25);
     const first: Team = random() < 0.5 ? 'red' : 'blue';
     const key = shuffle<CardKind>(
@@ -60,13 +67,14 @@ const game: GameDef<CodenamesState, CodenamesView> = {
       first,
       winner: null,
       winText: null,
+      solo: mode.config['solo'] === true,
     };
   },
 
   moves: {
     /** Operatives tap the word their spymaster clued (clues are spoken aloud). */
     guess(state, ctx, i: number) {
-      if (state.winner || ctx.role !== 'hand') return state;
+      if (state.winner || !mayGuess(state, ctx.role)) return state;
       if (!Number.isInteger(i) || i < 0 || i >= 25 || state.revealed[i]) return state;
       const revealed = state.revealed.map((r, j) => r || j === i);
       const kind = state.key[i]!;
@@ -89,7 +97,7 @@ const game: GameDef<CodenamesState, CodenamesView> = {
     },
 
     endTurn(state, ctx) {
-      if (state.winner || ctx.role !== 'hand') return state;
+      if (state.winner || !mayGuess(state, ctx.role)) return state;
       return { ...state, turn: other(state.turn) };
     },
   },
@@ -108,6 +116,7 @@ const game: GameDef<CodenamesState, CodenamesView> = {
         blue: state.key.filter((k, i) => k === 'blue' && !state.revealed[i]).length,
       },
       winner: state.winner,
+      solo: state.solo,
     };
   },
 

@@ -19,10 +19,16 @@ export interface WcState {
   pending: { player: number; cardIdx: number } | null;
   winner: number | null;
   playerNames: string[];
+  /** One shared phone passed around; seats are virtual. */
+  hotseat: boolean;
+  /** Hotseat: current player tapped "show my cards" (locks again on turn change). */
+  unlocked: boolean;
 }
 
 export interface WcView {
   hand: Card[] | null;
+  hotseat: boolean;
+  unlocked: boolean;
   counts: number[];
   top: Card;
   color: Color;
@@ -103,10 +109,27 @@ function advance(s: WcState, played: Card | null, random: () => number): WcState
   return { ...next, dir, turn: wrap(s.turn + dir * step, n) };
 }
 
+/** Which seat may act for this request — the device owner, or the unlocked hotseat. */
+function actorSeat(state: WcState, ctx: { playerId: string; role: string; players: { id: string }[] }): number {
+  if (state.hotseat) {
+    return ctx.role === 'hand' && state.unlocked ? state.turn : -1;
+  }
+  return ctx.players.findIndex((p) => p.id === ctx.playerId);
+}
+
+/** Hotseat: lock the phone again whenever the turn moves on. */
+function lockIfPassed(prevTurn: number, next: WcState): WcState {
+  return next.hotseat && next.winner === null && next.turn !== prevTurn
+    ? { ...next, unlocked: false }
+    : next;
+}
+
 const game: GameDef<WcState, WcView> = {
-  setup({ players, random }) {
+  setup({ players, random, mode, group }) {
+    const hotseat = mode.config['hotseat'] === true;
+    const seats = hotseat ? Math.max(2, Math.min(8, group?.players ?? 2)) : players.length;
     let deck = shuffle(buildDeck(), random);
-    const hands = players.map(() => deck.splice(0, 7));
+    const hands = Array.from({ length: seats }, () => deck.splice(0, 7));
     // first discard: keep flipping until it's a plain number card
     let topIdx = deck.findIndex((c) => c.c !== 'w' && Number.isInteger(Number(c.s)));
     if (topIdx < 0) topIdx = deck.length - 1;
@@ -120,14 +143,18 @@ const game: GameDef<WcState, WcView> = {
       dir: 1,
       pending: null,
       winner: null,
-      playerNames: players.map((p) => p.name),
+      playerNames: hotseat
+        ? Array.from({ length: seats }, (_, i) => `Player ${i + 1}`)
+        : players.map((p) => p.name),
+      hotseat,
+      unlocked: false,
     };
   },
 
   moves: {
     play(state, ctx, cardIdx: number, chosen?: Color) {
       if (state.winner !== null) return state;
-      const me = ctx.players.findIndex((p) => p.id === ctx.playerId);
+      const me = actorSeat(state, ctx);
       if (me < 0 || me !== state.turn) return state;
       if (state.pending && (state.pending.player !== me || state.pending.cardIdx !== cardIdx)) {
         return state; // after drawing you may only play the drawn card
@@ -147,37 +174,52 @@ const game: GameDef<WcState, WcView> = {
         pending: null,
       };
       if (hands[me]!.length === 0) return { ...next, winner: me };
-      next = advance(next, card, ctx.random);
-      return next;
+      return lockIfPassed(me, advance(next, card, ctx.random));
     },
 
     draw(state, ctx) {
       if (state.winner !== null || state.pending) return state;
-      const me = ctx.players.findIndex((p) => p.id === ctx.playerId);
+      const me = actorSeat(state, ctx);
       if (me < 0 || me !== state.turn) return state;
       const { card, next } = drawOne(state, ctx.random);
-      if (!card) return advance(state, null, ctx.random); // decks exhausted — just pass
+      if (!card) return lockIfPassed(me, advance(state, null, ctx.random)); // decks exhausted — just pass
       const hands = next.hands.map((h, i) => (i === me ? [...h, card] : h));
       const top = state.discard[state.discard.length - 1]!;
       if (isLegal(card, top, state.color)) {
         return { ...next, hands, pending: { player: me, cardIdx: hands[me]!.length - 1 } };
       }
-      return advance({ ...next, hands }, null, ctx.random);
+      return lockIfPassed(me, advance({ ...next, hands }, null, ctx.random));
     },
 
     /** Keep the drawn playable card and pass the turn. */
     keep(state, ctx) {
       if (state.winner !== null || !state.pending) return state;
-      const me = ctx.players.findIndex((p) => p.id === ctx.playerId);
+      const me = actorSeat(state, ctx);
       if (me !== state.pending.player) return state;
-      return advance({ ...state, pending: null }, null, ctx.random);
+      return lockIfPassed(me, advance({ ...state, pending: null }, null, ctx.random));
+    },
+
+    /** Hotseat: the next player picked the phone up. */
+    takePhone(state, ctx) {
+      if (!state.hotseat || state.unlocked || state.winner !== null) return state;
+      if (ctx.role !== 'hand') return state;
+      return { ...state, unlocked: true };
     },
   },
 
   playerView(state, { playerId, players }) {
     const myIndex = players.findIndex((p) => p.id === playerId);
+    const hand = state.hotseat
+      ? state.unlocked
+        ? state.hands[state.turn]!
+        : null
+      : myIndex >= 0
+        ? state.hands[myIndex]!
+        : null;
     return {
-      hand: myIndex >= 0 ? state.hands[myIndex]! : null,
+      hand,
+      hotseat: state.hotseat,
+      unlocked: state.unlocked,
       counts: state.hands.map((h) => h.length),
       top: state.discard[state.discard.length - 1]!,
       color: state.color,
@@ -185,7 +227,9 @@ const game: GameDef<WcState, WcView> = {
       dir: state.dir,
       drawCount: state.draw.length,
       pendingCardIdx:
-        state.pending && state.pending.player === myIndex ? state.pending.cardIdx : null,
+        state.pending && state.pending.player === (state.hotseat ? state.turn : myIndex) && (!state.hotseat || state.unlocked)
+          ? state.pending.cardIdx
+          : null,
       myIndex,
       winner: state.winner,
       playerNames: state.playerNames,

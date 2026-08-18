@@ -14,6 +14,8 @@ export interface MemoryState {
   current: number;
   scores: number[];
   mismatch: boolean;
+  /** One shared phone passed around; seats are virtual. */
+  pass: boolean;
 }
 
 function shuffle<T>(items: T[], random: () => number): T[] {
@@ -26,8 +28,10 @@ function shuffle<T>(items: T[], random: () => number): T[] {
 }
 
 const game: GameDef<MemoryState> = {
-  setup({ players, random }) {
-    const pairs = players.length <= 3 ? 8 : 12;
+  setup({ players, random, mode, group }) {
+    const pass = mode.config['pass'] === true;
+    const seats = pass ? Math.max(2, Math.min(6, group?.players ?? 2)) : players.length;
+    const pairs = seats <= 3 ? 8 : 12;
     const faces = shuffle(FACES, random).slice(0, pairs);
     const cards = shuffle([...faces, ...faces], random).map((face) => ({
       face,
@@ -36,10 +40,13 @@ const game: GameDef<MemoryState> = {
     }));
     return {
       cards,
-      playerNames: players.map((p) => p.name),
+      playerNames: pass
+        ? Array.from({ length: seats }, (_, i) => `Player ${i + 1}`)
+        : players.map((p) => p.name),
       current: 0,
-      scores: players.map(() => 0),
+      scores: Array.from({ length: seats }, () => 0),
       mismatch: false,
+      pass,
     };
   },
 
@@ -48,8 +55,11 @@ const game: GameDef<MemoryState> = {
       if (state.mismatch) return state;
       const card = state.cards[i];
       if (!card || card.state !== 'down') return state;
-      // only the current player's phone flips — the table is display-only
-      if (ctx.players.findIndex((p) => p.id === ctx.playerId) !== state.current) {
+      // only the current player's phone flips (pass mode: whoever holds it);
+      // the table is display-only
+      if (state.pass) {
+        if (ctx.role !== 'hand') return state;
+      } else if (ctx.players.findIndex((p) => p.id === ctx.playerId) !== state.current) {
         return state;
       }
       const firstIdx = state.cards.findIndex((c) => c.state === 'up');
