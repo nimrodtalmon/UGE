@@ -171,6 +171,12 @@ any hardware.
   syncs re-create missing rooms (free-tier sleep ⇒ reconnect, not strand);
   idle rooms GC after 30 min; Update hidden in public mode (deploys via git
   push). Game plugins needed zero changes.
+- 2026-08: Library grows to 18 games: added Werewolf (moderator-less,
+  night/day/vote), Shesh-Besh (backgammon, no doubling cube), Stop!
+  (categories), Liar's Dice, Dial (Wavelength-style teams), Battleship,
+  Dice Poker (Yahtzee rules, renamed), Hearts. Each built as a pure plugin
+  (no platform changes), audited for playerView leaks + hostile input, and
+  covered by tests/more-games.e2e.mjs.
 - 2026-08: Road mode: an optional gitignored `uge.config.json` can carry the
   WiFi credentials of whatever network the brain shares (phone hotspot /
   Internet Sharing); the table then shows a two-step QR (join WiFi → open

@@ -1,0 +1,124 @@
+.ld-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* dice */
+.ld-die {
+  display: inline-grid;
+  place-items: center;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: #e8e6df;
+  border-radius: 6px;
+  padding: 0.05rem 0.1rem;
+}
+.ld-die.big { font-size: 2.8rem; }
+.ld-die.mine { color: #fdfcf8; }
+.ld-die.hit { color: #14161a; background: #e4b83d; box-shadow: 0 0 12px #e4b83d66; }
+
+.ld-dieback {
+  display: inline-grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 4px;
+  background: repeating-linear-gradient(45deg, #2a3350 0 5px, #34406b 5px 10px);
+  color: #7583b5;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.ld-backs { display: inline-flex; gap: 0.25rem; }
+
+/* seats around the table */
+.ld-seats { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+.ld-seat {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: #1d2026;
+  border: 2px solid #3a4048;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.ld-seat.current { border-color: #e4b83d; transform: scale(1.08); box-shadow: 0 0 14px #e4b83d55; }
+.ld-seat.out { opacity: 0.45; }
+.ld-avatar { font-size: 1.15rem; }
+.ld-name { font-weight: 600; max-width: 7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ld-tag { font-size: 0.75rem; color: #8a8f98; text-transform: uppercase; }
+
+/* the pit — center stage on the table screen */
+.ld-pit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 2rem 3rem 1.6rem;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at 50% 35%, #5c3a1e, #432a14 75%);
+  border: 6px solid #2c2317;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 0 40px rgba(0, 0, 0, 0.35);
+  min-width: min(90vw, 30rem);
+}
+.ld-bid-huge { font-size: 3.4rem; font-weight: 800; text-transform: capitalize; }
+.ld-bid-die { font-size: 4.4rem; vertical-align: middle; }
+.ld-bid-none { font-size: 1.4rem; color: #b5a486; }
+.ld-bidder { color: #e4b83d; font-weight: 700; }
+
+/* reveal */
+.ld-reveal { display: flex; flex-direction: column; gap: 0.35rem; align-items: stretch; }
+.ld-reveal-row { display: flex; align-items: center; gap: 0.7rem; justify-content: space-between; }
+.ld-reveal-name {
+  font-weight: 600;
+  max-width: 7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+.ld-reveal-dice { display: inline-flex; gap: 0.25rem; }
+.ld-tally { color: #e4b83d; font-weight: 700; font-size: 1.15rem; }
+.ld-verdict { font-size: 1.15rem; }
+.ld-next { color: #8a8f98; font-weight: 400; font-size: 0.95rem; }
+
+.ld-turn { color: #8a8f98; min-height: 1.4rem; }
+.ld-turn.mine { color: #6fd08c; font-weight: 700; animation: ld-pulse 1.2s infinite; }
+@keyframes ld-pulse { 50% { opacity: 0.55; } }
+.ld-result { font-size: 1.25rem; font-weight: 700; }
+.ld-hint { color: #8a8f98; font-size: 0.9rem; }
+.ld-bid-line { color: #d5d2c8; }
+
+/* phone controls */
+.ld-mine { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+.ld-stepper { display: flex; align-items: center; gap: 0.8rem; }
+.ld-step {
+  width: 3.2rem;
+  height: 3.2rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  border-radius: 14px;
+}
+.ld-qty { font-size: 2rem; font-weight: 800; min-width: 2.6rem; }
+.ld-faces { display: flex; gap: 0.5rem; }
+.ld-face {
+  width: 3.2rem;
+  height: 3.2rem;
+  font-size: 1.8rem;
+  border-radius: 14px;
+  background: #1d2026;
+  border: 2px solid #3a4048;
+  color: #e8e6df;
+}
+.ld-face.selected { border-color: #e4b83d; box-shadow: 0 0 10px #e4b83d55; }
+.ld-actions { display: flex; flex-direction: column; gap: 0.7rem; width: min(92vw, 24rem); }
+.ld-actions button { font-size: 1.2rem; font-weight: 700; padding: 1rem 0; border: none; border-radius: 14px; color: #fff; }
+.ld-do-bid { background: #2f6b43; }
+.ld-do-bid:disabled { opacity: 0.4; }
+.ld-dudo { background: #a3312f; }

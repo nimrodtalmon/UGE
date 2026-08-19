@@ -61,6 +61,14 @@ Current audit of the built-in games (players × phones, + table always):
 | Chess | phone each / shared | 2 | 2 / 1 |
 | Sketch | — | 2–8 | one per player |
 | Rummikub | — | 2–4 | one per player |
+| Werewolf | — | 4–12 | one per player |
+| Shesh-Besh | phone each / shared | 2 | 2 / 1 |
+| Stop! | — | 2–8 | one per player |
+| Liar's Dice | — | 2–6 | one per player |
+| Dial | — | 4–12 | 1+ |
+| Battleship | — | 2 | one per player |
+| Dice Poker | phone each / pass | 1–8 | per player / 1 |
+| Hearts | — | 4 | one per player |
 
 ## Modes — several ways to play one game
 

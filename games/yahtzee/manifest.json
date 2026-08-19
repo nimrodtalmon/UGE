@@ -1,0 +1,36 @@
+{
+  "id": "yahtzee",
+  "name": "Dice Poker",
+  "players": {
+    "min": 1,
+    "max": 8
+  },
+  "roles": {
+    "table": "required",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
+  "icon": "🎲",
+  "tagline": "roll, hold, score",
+  "modes": [
+    {
+      "id": "phones",
+      "name": "Phone each"
+    },
+    {
+      "id": "pass",
+      "name": "Pass the phone",
+      "tagline": "one shared device",
+      "phones": {
+        "min": 1
+      },
+      "config": {
+        "pass": true
+      }
+    }
+  ]
+}

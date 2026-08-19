@@ -1,0 +1,10 @@
+{
+  "id": "dial",
+  "name": "Dial",
+  "players": { "min": 4, "max": 12 },
+  "roles": { "table": "required", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "🎯",
+  "tagline": "read your team's mind",
+  "phones": { "min": 1 }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "battleship",
+  "name": "Battleship",
+  "players": { "min": 2, "max": 2 },
+  "roles": { "table": "required", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "🚢",
+  "tagline": "sink the fleet"
+}

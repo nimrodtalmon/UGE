@@ -1,0 +1,152 @@
+.yz-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* status lines */
+.yz-hint { color: #8a8f98; }
+.yz-hint.small { font-size: 0.85rem; margin-top: -0.4rem; }
+.yz-hint strong { color: #e6e8ec; }
+.yz-turn { color: #8a8f98; font-size: 1.1rem; min-height: 1.5rem; }
+.yz-turn.mine { color: #6fd08c; font-weight: 700; animation: yz-pulse 1.2s infinite; }
+@keyframes yz-pulse { 50% { opacity: 0.55; } }
+.yz-over { font-size: 1.6rem; font-weight: 700; }
+.yz-banner {
+  padding: 0.6rem 1.2rem;
+  border-radius: 12px;
+  background: #2c3242;
+  border: 1px solid #3f4756;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.yz-confirm { color: #e4b83d; font-weight: 700; animation: yz-pulse 1.2s infinite; }
+
+/* dice */
+.yz-dice { display: flex; gap: 0.5rem; justify-content: center; }
+.yz-die {
+  display: grid;
+  place-items: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 12px;
+  border: 2px solid #3f4756;
+  background: #1d2026;
+  color: #fbfaf6;
+  font-size: 2.9rem;
+  line-height: 1;
+  padding: 0;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+button.yz-die { cursor: pointer; }
+button.yz-die:disabled { cursor: default; }
+.yz-die.blank { color: #545e73; }
+.yz-die.held {
+  color: #e4b83d;
+  border-color: #e4b83d;
+  transform: translateY(-6px);
+  box-shadow: 0 0 14px rgba(228, 184, 61, 0.5);
+}
+.yz-dice.big .yz-die {
+  width: clamp(4rem, 11vw, 7rem);
+  height: clamp(4rem, 11vw, 7rem);
+  font-size: clamp(3.2rem, 9vw, 5.8rem);
+  border-radius: 16px;
+}
+
+/* roll button */
+.yz-roll {
+  padding: 0.8rem 2.2rem;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #2a6fc0, #235d9f);
+  color: #fff;
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s, opacity 0.2s;
+}
+.yz-roll:not(:disabled):active { transform: scale(0.96); }
+.yz-roll:disabled { cursor: default; opacity: 0.45; }
+
+/* category picker (hand, current player) */
+.yz-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+  width: min(92vw, 26rem);
+}
+.yz-cat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 10px;
+  border: 2px solid #3f4756;
+  background: #1d2026;
+  color: #e6e8ec;
+  font: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+}
+button.yz-cat { cursor: pointer; transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s; }
+button.yz-cat:not(:disabled):active { transform: scale(0.97); }
+button.yz-cat:disabled { cursor: default; opacity: 0.5; }
+.yz-cat.zero strong { color: #545e73; }
+.yz-cat.pending {
+  border-color: #e4b83d;
+  box-shadow: 0 0 12px rgba(228, 184, 61, 0.45);
+  color: #e4b83d;
+}
+.yz-cat.used { opacity: 0.55; background: #16181d; }
+.yz-cat.used strong { color: #6fd08c; }
+
+/* scorecards (table + waiting phones) */
+.yz-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  justify-content: center;
+  max-width: 96vw;
+}
+.yz-card {
+  width: min(92vw, 15rem);
+  padding: 0.6rem 0.7rem;
+  border-radius: 12px;
+  border: 2px solid #3f4756;
+  background: #1d2026;
+  text-align: left;
+  transition: box-shadow 0.25s, border-color 0.25s;
+}
+.yz-card.compact { width: 11rem; font-size: 0.8rem; }
+.yz-card.current { border-color: var(--seat); box-shadow: 0 0 14px var(--seat); }
+.yz-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px solid #3f4756;
+}
+.yz-card-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.yz-card-head strong { font-size: 1.1em; color: #e4b83d; }
+.yz-rows { display: flex; flex-direction: column; gap: 0.12rem; }
+.yz-row { display: flex; justify-content: space-between; gap: 0.5rem; }
+.yz-row.open { color: #545e73; }
+.yz-row-pts { font-variant-numeric: tabular-nums; }
+.yz-upper {
+  margin-top: 0.4rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid #3f4756;
+  color: #8a8f98;
+  font-size: 0.9em;
+}
+.yz-bonus { color: #6fd08c; font-weight: 700; }

@@ -1,0 +1,19 @@
+{
+  "id": "backgammon",
+  "name": "Shesh-Besh",
+  "players": { "min": 2, "max": 2 },
+  "roles": { "table": "required", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "🧿",
+  "tagline": "the classic race",
+  "modes": [
+    { "id": "phones", "name": "Phone each" },
+    {
+      "id": "shared",
+      "name": "One phone",
+      "tagline": "pass it between moves",
+      "phones": { "min": 1 },
+      "config": { "shared": true }
+    }
+  ]
+}
