@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { api } from './room.js';
 import type { LobbySnapshot, SyncResponse } from '../../shared/types.js';
 
 const POLL_MS = 1000;
 
 async function post<T>(url: string, body: unknown): Promise<T> {
-  const r = await fetch(url, {
+  const r = await fetch(api(url), {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),

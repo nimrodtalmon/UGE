@@ -2,6 +2,7 @@ import '../shared/exposeReact.js';
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useLobby } from '../shared/useLobby.js';
+import { api, roomBase } from '../shared/room.js';
 import { DeviceTiles, GameList } from '../shared/LobbyBits.js';
 import { GameScreen } from '../shared/GameScreen.js';
 import type { GroupSetup } from '../../shared/types.js';
@@ -50,7 +51,7 @@ function SetupWizard(props: { initial: GroupSetup | null; onDone: (s: GroupSetup
         >
           Continue
         </button>
-        <a className="join-here" href="/join" target="_blank" rel="noopener">
+        <a className="join-here" href={`${roomBase}/join`} target="_blank" rel="noopener">
           open a player on this device →
         </a>
       </div>
@@ -63,25 +64,27 @@ function Table() {
     joinUrl: string;
     version: string;
     wifi: { ssid: string } | null;
+    updatable?: boolean;
+    roomCode?: string | null;
   } | null>(null);
   const [updating, setUpdating] = useState(false);
   const [editingSetup, setEditingSetup] = useState(false);
   const { snapshot, deviceId, act } = useLobby({ name: 'Table', isTableScreen: true });
 
   useEffect(() => {
-    fetch('/api/session')
+    fetch(api('/api/session'))
       .then((r) => r.json())
       .then(setSession);
   }, []);
 
   async function update() {
     setUpdating(true);
-    await fetch('/api/admin/update', { method: 'POST' }).catch(() => {});
+    await fetch(api('/api/admin/update'), { method: 'POST' }).catch(() => {});
     // give the server time to exit, then reload as soon as it's back
     setTimeout(() => {
       const poll = setInterval(async () => {
         try {
-          const r = await fetch('/api/session');
+          const r = await fetch(api('/api/session'));
           if (r.ok) {
             clearInterval(poll);
             location.reload();
@@ -150,32 +153,39 @@ function Table() {
     <div className="table-screen">
       <div className="qr">
         <h1>UGE</h1>
+        {session?.roomCode && (
+          <p className="room-code">
+            room <strong>{session.roomCode}</strong>
+          </p>
+        )}
         {session?.wifi && (
           <div className="wifi-step">
             <p className="muted">1 · join WiFi “{session.wifi.ssid}”</p>
-            <img className="wifi-qr" src="/api/wifi-qr.svg" alt={`WiFi QR for ${session.wifi.ssid}`} />
+            <img className="wifi-qr" src={api('/api/wifi-qr.svg')} alt={`WiFi QR for ${session.wifi.ssid}`} />
           </div>
         )}
         <p className="muted">{session?.wifi ? '2 · scan to join the table' : 'Scan to join the table'}</p>
         {session && (
           <>
-            <a href="/join" target="_blank" rel="noopener">
-              <img src="/api/qr.svg" alt={`Join QR for ${session.joinUrl}`} />
+            <a href={`${roomBase}/join`} target="_blank" rel="noopener">
+              <img src={api('/api/qr.svg')} alt={`Join QR for ${session.joinUrl}`} />
             </a>
-            <a className="join-url" href="/join" target="_blank" rel="noopener">
+            <a className="join-url" href={`${roomBase}/join`} target="_blank" rel="noopener">
               <code>{session.joinUrl}</code>
             </a>
             <p className={joinedPhones >= snapshot.setup.phones ? 'join-count done' : 'join-count'}>
               {joinedPhones} / {snapshot.setup.phones} phones joined
             </p>
-            <a className="join-here" href="/join" target="_blank" rel="noopener">
+            <a className="join-here" href={`${roomBase}/join`} target="_blank" rel="noopener">
               …or play on this device too →
             </a>
           </>
         )}
         <footer>
           <span className="muted">v {session?.version ?? '…'}</span>
-          <button className="small" onClick={update}>Update</button>
+          {session?.updatable !== false && (
+            <button className="small" onClick={update}>Update</button>
+          )}
         </footer>
       </div>
 

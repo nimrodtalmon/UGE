@@ -163,6 +163,14 @@ any hardware.
   the phone", UNO hotseat (locked handoff), Codenames one-phone (map device
   records shouted guesses), Trivia quick/classic. Poker stays phone-per-
   player (hotseat betting with hidden holes is too leaky to be fun).
+- 2026-08: Public deployment (Render): public mode auto-detects
+  `RENDER_EXTERNAL_URL` (or `UGE_PUBLIC=1`). Rooms = one Lobby per 4-letter
+  code (`Map` in `src/server/rooms.ts`), landing page hosts/joins rooms,
+  routes room-scoped under `/r/<code>` with the classic unscoped paths bound
+  to a default room so local Air/Termux/Mac-app flows are untouched. Scoped
+  syncs re-create missing rooms (free-tier sleep ⇒ reconnect, not strand);
+  idle rooms GC after 30 min; Update hidden in public mode (deploys via git
+  push). Game plugins needed zero changes.
 - 2026-08: Road mode: an optional gitignored `uge.config.json` can carry the
   WiFi credentials of whatever network the brain shares (phone hotspot /
   Internet Sharing); the table then shows a two-step QR (join WiFi → open

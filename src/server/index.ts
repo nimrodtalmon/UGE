@@ -7,10 +7,17 @@ import * as esbuild from 'esbuild';
 import QRCode from 'qrcode';
 import { lanAddress } from './lan.js';
 import { loadPlugins } from './games.js';
-import { Lobby } from './lobby.js';
+import { CODE_RE, DEFAULT_ROOM, Rooms } from './rooms.js';
 import type { SyncRequest } from '../shared/types.js';
 
-const PORT = 8000;
+const PORT = Number(process.env.PORT) || 8000;
+
+// public mode: a hosted deployment (Render sets RENDER_EXTERNAL_URL) — the
+// landing page offers rooms, join URLs use the public address, and in-place
+// git updates are disabled (deploys come from git push instead).
+const publicMode = Boolean(process.env.RENDER_EXTERNAL_URL) || process.env.UGE_PUBLIC === '1';
+const publicBase =
+  process.env.RENDER_EXTERNAL_URL ?? process.env.UGE_PUBLIC_URL ?? `http://${lanAddress()}:${PORT}`;
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const clientDir = path.join(root, 'src', 'client');
@@ -54,8 +61,6 @@ if (Object.keys(viewEntries).length > 0) {
   });
 }
 
-const joinUrl = `http://${lanAddress()}:${PORT}/join`;
-
 // optional local config (gitignored — may hold a WiFi password).
 // wifi: { ssid, password?, security? } → the table shows a join-this-WiFi QR
 // next to the join-the-game QR, for road mode (hotspot / Internet Sharing).
@@ -76,58 +81,88 @@ function wifiQrText(w: NonNullable<UgeConfig['wifi']>): string {
   return `WIFI:T:${security};S:${esc(w.ssid)};${pass};`;
 }
 
-let version = 'dev';
+let version = process.env.RENDER_GIT_COMMIT?.slice(0, 7) ?? 'dev';
 try {
   version = execSync('git rev-parse --short HEAD', { cwd: root }).toString().trim();
 } catch {
-  /* not a git checkout */
+  /* not a git checkout (e.g. a Render build) — RENDER_GIT_COMMIT covers it */
 }
 
-const lobby = new Lobby(plugins);
+const rooms = new Rooms(plugins);
+
+/** The public join URL for a room — the default room keeps the classic /join. */
+function joinUrlFor(code: string): string {
+  return code === DEFAULT_ROOM ? `${publicBase}/join` : `${publicBase}/r/${code}/join`;
+}
 
 const app = express();
 app.use(express.json());
 
-app.get('/', (_req, res) => res.sendFile(path.join(clientDir, 'table', 'index.html')));
-app.get('/join', (_req, res) => res.sendFile(path.join(clientDir, 'join', 'index.html')));
-app.use('/dist', express.static(distDir));
-app.use('/static', express.static(clientDir));
+// ---- room-scoped API (also serves the classic unscoped paths via the default room)
+const api = express.Router({ mergeParams: true });
+api.use((req, res, next) => {
+  const raw = (req.params as { code?: string }).code;
+  if (raw === undefined) {
+    res.locals.room = rooms.getOrCreate(DEFAULT_ROOM);
+    return next();
+  }
+  const code = raw.toUpperCase();
+  if (!CODE_RE.test(code)) return res.status(404).json({ error: 'no such room' });
+  // unknown codes are re-created on the fly, so a server restart (or a GC'd
+  // room) never strands polling devices — they reconnect into a fresh lobby
+  res.locals.room = rooms.getOrCreate(code);
+  next();
+});
+const lobbyOf = (res: express.Response) => res.locals.room.lobby as import('./lobby.js').Lobby;
+const codeOf = (res: express.Response) => res.locals.room.code as string;
 
-app.post('/api/lobby/sync', (req, res) => res.json(lobby.sync(req.body as SyncRequest)));
-app.post('/api/lobby/setup', (req, res) => {
-  lobby.setSetup(req.body.players, req.body.phones, req.body.hasTable);
-  res.json(lobby.snapshotFor(req.body.deviceId));
+api.post('/lobby/sync', (req, res) => res.json(lobbyOf(res).sync(req.body as SyncRequest)));
+api.post('/lobby/setup', (req, res) => {
+  lobbyOf(res).setSetup(req.body.players, req.body.phones, req.body.hasTable);
+  res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
 });
-app.post('/api/lobby/mode', (req, res) => {
-  lobby.setMode(req.body.modeId);
-  res.json(lobby.snapshotFor(req.body.deviceId));
+api.post('/lobby/mode', (req, res) => {
+  lobbyOf(res).setMode(req.body.modeId);
+  res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
 });
-app.post('/api/lobby/select', (req, res) => {
-  lobby.select(req.body.gameId ?? null);
-  res.json(lobby.snapshotFor(req.body.deviceId));
+api.post('/lobby/select', (req, res) => {
+  lobbyOf(res).select(req.body.gameId ?? null);
+  res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
 });
-app.post('/api/lobby/claim', (req, res) => {
-  lobby.claim(req.body.deviceId, req.body.role ?? null);
-  res.json(lobby.snapshotFor(req.body.deviceId));
+api.post('/lobby/claim', (req, res) => {
+  lobbyOf(res).claim(req.body.deviceId, req.body.role ?? null);
+  res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
 });
-app.post('/api/lobby/start', (req, res) => {
-  lobby.start();
-  res.json(lobby.snapshotFor(req.body.deviceId));
+api.post('/lobby/start', (req, res) => {
+  lobbyOf(res).start();
+  res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
 });
-app.post('/api/lobby/reset', (req, res) => {
-  lobby.reset();
-  res.json(lobby.snapshotFor(req.body.deviceId));
+api.post('/lobby/reset', (req, res) => {
+  lobbyOf(res).reset();
+  res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
 });
-app.post('/api/game/move', (req, res) => {
-  lobby.move(req.body.deviceId, req.body.name, req.body.args ?? []);
-  res.json(lobby.snapshotFor(req.body.deviceId));
-});
-
-app.get('/api/session', (_req, res) => {
-  res.json({ joinUrl, version, wifi: config.wifi ? { ssid: config.wifi.ssid } : null });
+api.post('/game/move', (req, res) => {
+  lobbyOf(res).move(req.body.deviceId, req.body.name, req.body.args ?? []);
+  res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
 });
 
-app.get('/api/wifi-qr.svg', async (_req, res) => {
+api.get('/session', (_req, res) => {
+  const code = codeOf(res);
+  res.json({
+    joinUrl: joinUrlFor(code),
+    version,
+    wifi: config.wifi ? { ssid: config.wifi.ssid } : null,
+    updatable: !publicMode,
+    roomCode: publicMode && code !== DEFAULT_ROOM ? code : null,
+  });
+});
+
+api.get('/qr.svg', async (_req, res) => {
+  const svg = await QRCode.toString(joinUrlFor(codeOf(res)), { type: 'svg', margin: 1 });
+  res.type('image/svg+xml').send(svg);
+});
+
+api.get('/wifi-qr.svg', async (_req, res) => {
   if (!config.wifi) {
     res.status(404).end();
     return;
@@ -137,23 +172,48 @@ app.get('/api/wifi-qr.svg', async (_req, res) => {
 });
 
 // The table screen's Update button: exit with code 42 so the start.sh
-// supervisor pulls the latest code and relaunches.
-app.post('/api/admin/update', (_req, res) => {
+// supervisor pulls the latest code and relaunches. On a hosted deployment
+// updates arrive via git push (auto-deploy), so this is a no-op there.
+api.post('/admin/update', (_req, res) => {
+  if (publicMode) {
+    res.json({ ok: false, reason: 'updates are deployed via git push' });
+    return;
+  }
   res.json({ ok: true });
   console.log('update requested — restarting via supervisor');
   setTimeout(() => process.exit(42), 200);
 });
 
-app.get('/api/qr.svg', async (_req, res) => {
-  const svg = await QRCode.toString(joinUrl, { type: 'svg', margin: 1 });
-  res.type('image/svg+xml').send(svg);
+app.use('/r/:code/api', api);
+app.use('/api', api);
+
+// room creation (used by the public landing page)
+app.post('/api/rooms', (_req, res) => {
+  const room = rooms.create();
+  res.json({ code: room.code });
 });
 
+// ---- pages
+const tableHtml = path.join(clientDir, 'table', 'index.html');
+const joinHtml = path.join(clientDir, 'join', 'index.html');
+const landingHtml = path.join(clientDir, 'landing', 'index.html');
+
+app.get('/', (_req, res) => res.sendFile(publicMode ? landingHtml : tableHtml));
+app.get('/join', (_req, res) => (publicMode ? res.redirect('/') : res.sendFile(joinHtml)));
+app.get('/r/:code', (req, res) =>
+  CODE_RE.test(req.params.code.toUpperCase()) ? res.sendFile(tableHtml) : res.redirect('/'),
+);
+app.get('/r/:code/join', (req, res) =>
+  CODE_RE.test(req.params.code.toUpperCase()) ? res.sendFile(joinHtml) : res.redirect('/'),
+);
+app.use('/dist', express.static(distDir));
+app.use('/static', express.static(clientDir));
+
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`UGE brain running.`);
+  console.log(`UGE brain running${publicMode ? ' (public mode)' : ''}.`);
   console.log(`  table: http://localhost:${PORT}`);
-  console.log(`  join:  ${joinUrl}`);
-  openBrowser(`http://localhost:${PORT}`);
+  console.log(`  join:  ${joinUrlFor(DEFAULT_ROOM)}`);
+  if (!publicMode) openBrowser(`http://localhost:${PORT}`);
 });
 
 /** Best-effort: pop the table view on the brain's own screen. */

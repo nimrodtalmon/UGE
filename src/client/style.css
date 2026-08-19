@@ -194,6 +194,19 @@ h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; color:
   padding: 2rem;
 }
 .center-screen .stack { display: flex; flex-direction: column; gap: 1rem; max-width: 22rem; width: 100%; }
+
+/* public landing (Host / join by code) + room badge on the table */
+.landing .code-row { display: flex; gap: 0.6rem; }
+.landing .code-row input {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 1.4rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+}
+.room-code { color: #c8ccd2; font-size: 1.1rem; }
+.room-code strong { color: #e4b83d; font-size: 1.5rem; letter-spacing: 0.2em; }
 .ok { color: #6fd08c; font-size: 3rem; }
 
 /* table layout — QR is the hero */

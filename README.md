@@ -40,6 +40,19 @@ The brain runs anywhere Node ≥ 22 runs — including an Android phone via
 Termux, hotspot and all: see [docs/android-brain.md](docs/android-brain.md).
 To write a new game, see [docs/adding-games.md](docs/adding-games.md).
 
+**Public server (internet play)**: the same code runs hosted (e.g. on
+Render) so players anywhere — mobile data included — can join. Public mode
+turns on automatically when `RENDER_EXTERNAL_URL` is set, or force it with
+`UGE_PUBLIC=1` (optionally `UGE_PUBLIC_URL=<https://…>` for the QR). The
+landing page then offers **Host a game night** (creates a room with a
+4-letter code) and a join-by-code box; each room is its own independent
+lobby at `/r/<code>`, idle rooms are dropped after 30 min, and the Update
+button is hidden (deploys come from `git push`). Local `npm start` behaves
+exactly as before — no landing page, no codes. Note: Render's free tier
+sleeps after ~15 min idle; the first visit takes ~30–60 s to wake. A server
+restart drops in-progress games, but everyone reconnects into the same room
+code automatically.
+
 ## Layout
 
 ```

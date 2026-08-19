@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UGE</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <div class="center-screen">
+      <div class="stack landing">
+        <h1>UGE</h1>
+        <p class="muted">Tabletop games — one screen is the table, phones are the hands.</p>
+        <button class="primary big-start" id="host">Host a game night</button>
+        <p class="muted">…or join one:</p>
+        <form id="joinForm" class="code-row">
+          <input
+            id="code"
+            maxlength="4"
+            placeholder="CODE"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+          />
+          <button class="primary" type="submit">Join</button>
+        </form>
+      </div>
+    </div>
+    <script>
+      document.getElementById('host').addEventListener('click', async () => {
+        const r = await fetch('/api/rooms', { method: 'POST' });
+        const { code } = await r.json();
+        location.href = '/r/' + code;
+      });
+      document.getElementById('joinForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const code = document.getElementById('code').value.trim().toUpperCase();
+        if (/^[A-Z2-9]{4}$/.test(code)) location.href = '/r/' + code + '/join';
+      });
+    </script>
+  </body>
+</html>
