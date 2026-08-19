@@ -1,0 +1,15 @@
+# Render blueprint — deploy UGE with "New + → Blueprint" in the Render
+# dashboard, or via scripts/deploy-render.sh. Public mode turns itself on
+# through RENDER_EXTERNAL_URL; free tier sleeps after ~15 min idle.
+services:
+  - type: web
+    name: uge
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: npm run start:once
+    autoDeploy: true
+    envVars:
+      - key: UGE_NO_OPEN
+        value: "1"
