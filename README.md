@@ -40,7 +40,8 @@ The brain runs anywhere Node ≥ 22 runs — including an Android phone via
 Termux, hotspot and all: see [docs/android-brain.md](docs/android-brain.md).
 To write a new game, see [docs/adding-games.md](docs/adding-games.md).
 
-**Public server (internet play)**: the same code runs hosted (e.g. on
+**Public server (internet play)**: live at
+**<https://uge-yxha.onrender.com>** — the same code runs hosted (on
 Render) so players anywhere — mobile data included — can join. Public mode
 turns on automatically when `RENDER_EXTERNAL_URL` is set, or force it with
 `UGE_PUBLIC=1` (optionally `UGE_PUBLIC_URL=<https://…>` for the QR). The
