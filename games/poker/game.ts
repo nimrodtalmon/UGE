@@ -35,6 +35,8 @@ export interface PokerState {
   currentBet: number;
   minRaise: number;
   toAct: number;
+  /** Seats facing an incomplete all-in raise: they may call or fold, not re-raise. */
+  noReraise: number[];
   handResult: string | null;
   showdown: boolean; // reveal non-folded holes during handover
   endsAt: number;
@@ -64,6 +66,8 @@ export interface PokerView {
   minRaise: number;
   bb: number;
   callAmount: number;
+  /** True when this seat may only call or fold (incomplete all-in raise). */
+  raiseClosed: boolean;
   handResult: string | null;
   endsAt: number;
   winner: number | null;
@@ -131,6 +135,7 @@ function startHand(s: PokerState, random: () => number, now: number): PokerState
   s.stage = 'preflop';
   s.currentBet = BB;
   s.minRaise = BB;
+  s.noReraise = [];
   s.handResult = null;
   s.showdown = false;
   s.toAct = nextFrom(s, bb, canAct);
@@ -202,6 +207,7 @@ function advance(s: PokerState, now: number): PokerState {
   }
   s.currentBet = 0;
   s.minRaise = BB;
+  s.noReraise = [];
   s.stage = s.stage === 'preflop' ? 'flop' : s.stage === 'flop' ? 'turn' : 'river';
   s.board.push(...s.deck.splice(0, s.stage === 'flop' ? 3 : 1));
   s.toAct = nextFrom(s, s.dealer, canAct);
@@ -234,6 +240,7 @@ const game: GameDef<PokerState, PokerView> = {
       currentBet: 0,
       minRaise: BB,
       toAct: -1,
+      noReraise: [],
       handResult: null,
       showdown: false,
       endsAt: 0,
@@ -267,6 +274,8 @@ const game: GameDef<PokerState, PokerView> = {
     raise(state, ctx, to: number) {
       const me = actorIndex(state, ctx);
       if (me < 0 || !Number.isInteger(to)) return state;
+      // facing an incomplete all-in raise: this seat may only call or fold
+      if (state.noReraise.includes(me)) return state;
       const s = clone(state);
       const p = s.seats[me]!;
       const maxTo = p.streetBet + p.chips;
@@ -275,7 +284,20 @@ const game: GameDef<PokerState, PokerView> = {
       pay(p, to - p.streetBet);
       p.acted = true;
       if (to > s.currentBet) {
-        s.minRaise = Math.max(s.minRaise, to - s.currentBet);
+        if (to >= s.currentBet + s.minRaise) {
+          // a full raise reopens the betting for everyone
+          s.minRaise = to - s.currentBet;
+          s.noReraise = [];
+        } else {
+          // an all-in short of a min-raise does NOT reopen the betting:
+          // seats that already acted get to call the extra chips, nothing more
+          s.noReraise = [
+            ...new Set([
+              ...s.noReraise,
+              ...s.seats.flatMap((q, i) => (q !== p && canAct(q) && q.acted ? [i] : [])),
+            ]),
+          ];
+        }
         s.currentBet = to;
         for (const q of s.seats) if (q !== p && canAct(q)) q.acted = false;
       }
@@ -324,6 +346,7 @@ const game: GameDef<PokerState, PokerView> = {
               state.seats[myIndex].chips,
             )
           : 0,
+      raiseClosed: myIndex >= 0 && state.noReraise.includes(myIndex),
       handResult: state.handResult,
       endsAt: state.endsAt,
       winner: state.winner,

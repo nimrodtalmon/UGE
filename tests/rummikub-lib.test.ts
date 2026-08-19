@@ -33,6 +33,9 @@ t('group joker value', meldValue([id(11, 0), id(11, 1), J1]) === 33);
 t('run value 3+4+5', meldValue([id(3, 2), id(4, 2), id(5, 2)]) === 12);
 t('run 12,13 + joker valued as 11+12+13', meldValue([id(12, 2), id(13, 2), J1]) === 36);
 t('rack value with joker', rackValue([id(5, 0), J1]) === 35);
+t('9 + two jokers reads as the run 9-10-11 (30)', meldValue([id(9, 0), J1, J2]) === 30);
+t('5 + two jokers prefers the run reading (18)', meldValue([id(5, 0), J1, J2]) === 18);
+t('13 + two jokers stays a group (39)', meldValue([id(13, 0), J1, J2]) === 39);
 
 const eq = (a: number[], b: number[]) => JSON.stringify(a) === JSON.stringify(b);
 t('display: run sorts ascending', eq(displayOrder([id(5, 2), id(3, 2), id(4, 2)]), [id(3, 2), id(4, 2), id(5, 2)]));

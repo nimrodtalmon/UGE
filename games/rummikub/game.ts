@@ -80,6 +80,9 @@ const game: GameDef<RkState, RkView> = {
       if (me !== state.turn || !payload || !Array.isArray(payload.melds)) return state;
       const melds = payload.melds;
       const appends = Array.isArray(payload.appends) ? payload.appends : [];
+      // reject malformed payloads instead of throwing mid-move
+      if (!melds.every((m) => Array.isArray(m) && m.every((id) => Number.isInteger(id)))) return state;
+      if (!appends.every((a) => a && Number.isInteger(a.meld) && Number.isInteger(a.tile))) return state;
 
       const used = [...melds.flat(), ...appends.map((a) => a.tile)];
       if (used.length === 0 || new Set(used).size !== used.length) return state;
@@ -125,7 +128,13 @@ const game: GameDef<RkState, RkView> = {
       if (me !== state.turn || !state.melded[me]) return state;
       if (!payload || !Array.isArray(payload.table)) return state;
       const table = payload.table;
-      if (!table.every((m) => Array.isArray(m) && isValidMeld(m))) return state;
+      if (
+        !table.every(
+          (m) => Array.isArray(m) && m.every((id) => Number.isInteger(id)) && isValidMeld(m),
+        )
+      ) {
+        return state;
+      }
 
       const flat = table.flat();
       const flatSet = new Set(flat);

@@ -41,21 +41,33 @@ export function isValidMeld(ids: number[]): boolean {
   return false;
 }
 
-/** Point value of a meld for the 30-point opening (jokers count generously). */
+/**
+ * Point value of a meld for the 30-point opening (jokers count generously).
+ * A joker-heavy meld can read as a group AND as a run (e.g. 9+J+J); the
+ * player gets the better of the two.
+ */
 export function meldValue(ids: number[]): number {
   const tiles = ids.map(decode);
   const jokers = tiles.filter((t) => t.joker).length;
   const rest = tiles.filter((t) => !t.joker);
   if (rest.length === 0) return 0;
-  if (rest.every((t) => t.n === rest[0]!.n)) {
-    return rest[0]!.n * ids.length; // group: jokers stand for the group number
+  let best = 0;
+  // group reading: jokers stand for the group number
+  if (ids.length <= 4 && rest.every((t) => t.n === rest[0]!.n)) {
+    best = rest[0]!.n * ids.length;
   }
-  // run: choose the highest window that still covers the real tiles
-  const ns = rest.map((t) => t.n).sort((a, b) => a - b);
-  const len = ids.length;
-  const start = Math.min(ns[0]!, 13 - len + 1);
-  void jokers;
-  return len * start + (len * (len - 1)) / 2;
+  // run reading: choose the highest window that still covers the real tiles
+  const ns = [...new Set(rest.map((t) => t.n))].sort((a, b) => a - b);
+  const oneColor = new Set(rest.map((t) => t.c)).size === 1;
+  if (oneColor && ns.length === rest.length && ids.length <= 13) {
+    const span = ns[ns.length - 1]! - ns[0]! + 1;
+    if (rest.length + jokers >= span) {
+      const len = ids.length;
+      const start = Math.min(ns[0]!, 13 - len + 1);
+      best = Math.max(best, len * start + (len * (len - 1)) / 2);
+    }
+  }
+  return best;
 }
 
 export const rackValue = (ids: number[]): number =>

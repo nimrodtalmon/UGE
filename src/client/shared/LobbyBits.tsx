@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
+import { hueOf } from '../../shared/avatar.js';
 import type { DeviceTile, GameEntry } from '../../shared/types.js';
 
 export function DeviceTiles(props: { devices: DeviceTile[]; myId: string | null }) {
@@ -8,6 +10,7 @@ export function DeviceTiles(props: { devices: DeviceTile[]; myId: string | null 
         <div
           key={d.id}
           className={['tile', d.id === props.myId && 'me', d.away && 'away'].filter(Boolean).join(' ')}
+          style={{ '--seat': `hsl(${hueOf(d.name)} 55% 52%)` } as CSSProperties}
         >
           <span className="avatar">{d.avatar}</span>
           <span className="who">
@@ -44,6 +47,12 @@ export function GameList(props: {
             className={classes.filter(Boolean).join(' ')}
             disabled={!props.onSelect}
             onClick={() => props.onSelect?.(selected ? null : manifest.id)}
+            style={
+              {
+                '--hue': hueOf(manifest.id),
+                '--accent': `hsl(${hueOf(manifest.id)} 55% 55%)`,
+              } as CSSProperties
+            }
           >
             <span className="game-icon">{manifest.icon ?? '🎲'}</span>
             <span className="game-name">{manifest.name}</span>
@@ -70,6 +79,30 @@ export function GameList(props: {
         </button>
       )}
       {props.games.length === 0 && <p className="muted">no games installed</p>}
+    </div>
+  );
+}
+
+const CONFETTI = ['🎉', '✨', '🎊', '⭐', '💚', '🧡'];
+
+/** Falling-emoji celebration for finished games — platform-wide, table screen. */
+export function Celebration() {
+  const bits = useMemo(
+    () =>
+      Array.from({ length: 32 }, (_, i) => ({
+        left: (i * 37 + 11) % 100,
+        delay: (i % 8) * 0.33,
+        char: CONFETTI[i % CONFETTI.length]!,
+      })),
+    [],
+  );
+  return (
+    <div className="celebrate" aria-hidden>
+      {bits.map((b, i) => (
+        <span key={i} style={{ left: `${b.left}%`, animationDelay: `${b.delay}s` }}>
+          {b.char}
+        </span>
+      ))}
     </div>
   );
 }

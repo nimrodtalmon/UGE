@@ -1,6 +1,7 @@
 import './style.css';
 import { useEffect, useMemo, useState } from 'react';
 import type { GameViewProps } from '../../../src/shared/plugin.js';
+import { useTurnBuzz } from '../../../src/shared/gameKit.js';
 import type { RkView } from '../game.js';
 import { canAppend, decode, displayOrder, isValidMeld, meldValue } from '../lib.js';
 import { Melds, TileFace } from './parts.js';
@@ -112,6 +113,7 @@ export default function HandView({ view, over, move }: GameViewProps<RkView>) {
     setStaged({ melds: [], appends: [] });
     setRearranging(false);
   }, [view.turn]);
+  useTurnBuzz(!over && view.rack !== null && view.myIndex === view.turn);
 
   if (over) {
     return (

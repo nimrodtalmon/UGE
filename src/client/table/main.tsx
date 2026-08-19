@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useLobby } from '../shared/useLobby.js';
 import { api, roomBase } from '../shared/room.js';
-import { DeviceTiles, GameList } from '../shared/LobbyBits.js';
+import { Celebration, DeviceTiles, GameList } from '../shared/LobbyBits.js';
 import { GameScreen } from '../shared/GameScreen.js';
 import type { GroupSetup } from '../../shared/types.js';
 
@@ -69,7 +69,7 @@ function Table() {
   } | null>(null);
   const [updating, setUpdating] = useState(false);
   const [editingSetup, setEditingSetup] = useState(false);
-  const { snapshot, deviceId, act } = useLobby({ name: 'Table', isTableScreen: true });
+  const { snapshot, deviceId, offline, act } = useLobby({ name: 'Table', isTableScreen: true });
 
   useEffect(() => {
     fetch(api('/api/session'))
@@ -110,7 +110,9 @@ function Table() {
   if (snapshot?.phase === 'playing' && snapshot.game) {
     return (
       <div className="game-shell">
+        {offline && <p className="table-offline">connection to the server lost — reconnecting…</p>}
         <GameScreen game={snapshot.game} move={(name, ...args) => act('/api/game/move', { name, args })} />
+        {snapshot.game.over && <Celebration />}
         <div className="game-controls">
           {snapshot.game.over && (
             <button className="small primary" onClick={() => act('/api/lobby/start')}>

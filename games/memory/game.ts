@@ -14,6 +14,8 @@ export interface MemoryState {
   current: number;
   scores: number[];
   mismatch: boolean;
+  /** Server time of the mismatch — resolve is rejected until players had a look. */
+  mismatchAt: number;
   /** One shared phone passed around; seats are virtual. */
   pass: boolean;
 }
@@ -46,13 +48,14 @@ const game: GameDef<MemoryState> = {
       current: 0,
       scores: Array.from({ length: seats }, () => 0),
       mismatch: false,
+      mismatchAt: 0,
       pass,
     };
   },
 
   moves: {
     flip(state, ctx, i: number) {
-      if (state.mismatch) return state;
+      if (state.mismatch || !Number.isInteger(i)) return state;
       const card = state.cards[i];
       if (!card || card.state !== 'down') return state;
       // only the current player's phone flips (pass mode: whoever holds it);
@@ -78,12 +81,14 @@ const game: GameDef<MemoryState> = {
           ),
         };
       }
-      return { ...state, cards, mismatch: true };
+      return { ...state, cards, mismatch: true, mismatchAt: ctx.now };
     },
 
     /** Flip a mismatched pair back and pass the turn. Sent by clients on a timer. */
-    resolve(state) {
-      if (!state.mismatch) return state;
+    resolve(state, ctx) {
+      // reject early (or stale, from a previous mismatch) resolves — everyone
+      // gets at least a second to memorise the two faces
+      if (!state.mismatch || ctx.now < state.mismatchAt + 1200) return state;
       return {
         ...state,
         mismatch: false,

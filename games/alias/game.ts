@@ -17,6 +17,8 @@ export interface AliasState {
   playerIds: string[];
   /** "Pass the phone" mode: one shared device, anyone holding it explains. */
   pass: boolean;
+  /** Pass mode: the device that started the current round — only it explains. */
+  explainerId: string | null;
   /** Team mode: rounds alternate 🔴/🔵 and scores has two entries. */
   teams: boolean;
   totalRounds: number;
@@ -48,7 +50,10 @@ function shuffle<T>(items: T[], random: () => number): T[] {
 }
 
 function canExplain(state: AliasState, ctx: { playerId: string; role: string }): boolean {
-  return state.pass ? ctx.role === 'hand' : state.playerIds[state.turn] === ctx.playerId;
+  if (!state.pass) return state.playerIds[state.turn] === ctx.playerId;
+  // pass mode: before the round starts any hand may start it; during the
+  // round only the device that started it explains (and sees the word)
+  return ctx.role === 'hand' && (state.phase !== 'round' || ctx.playerId === state.explainerId);
 }
 
 /** Where a point lands: the team (round parity) in team mode, else the seat. */
@@ -76,6 +81,7 @@ const game: GameDef<AliasState, AliasView> = {
       playerNames: players.map((p) => p.name),
       playerIds: players.map((p) => p.id),
       pass,
+      explainerId: null,
       teams,
       totalRounds,
     };
@@ -84,18 +90,18 @@ const game: GameDef<AliasState, AliasView> = {
   moves: {
     startRound(state, ctx) {
       if (state.phase !== 'ready' || !canExplain(state, ctx)) return state;
-      return { ...state, phase: 'round', endsAt: ctx.now + ROUND_MS };
+      return { ...state, phase: 'round', endsAt: ctx.now + ROUND_MS, explainerId: ctx.playerId };
     },
 
     gotIt(state, ctx) {
-      if (state.phase !== 'round' || !canExplain(state, ctx)) return state;
+      if (state.phase !== 'round' || ctx.now >= state.endsAt || !canExplain(state, ctx)) return state;
       const scores = [...state.scores];
       scores[scoreIdx(state)] = (scores[scoreIdx(state)] ?? 0) + 1;
       return { ...state, scores, ptr: state.ptr + 1 };
     },
 
     skip(state, ctx) {
-      if (state.phase !== 'round' || !canExplain(state, ctx)) return state;
+      if (state.phase !== 'round' || ctx.now >= state.endsAt || !canExplain(state, ctx)) return state;
       const skips = [...state.skips];
       skips[scoreIdx(state)] = (skips[scoreIdx(state)] ?? 0) + 1;
       return { ...state, skips, ptr: state.ptr + 1 };
@@ -106,9 +112,15 @@ const game: GameDef<AliasState, AliasView> = {
       if (state.phase !== 'round' || ctx.now < state.endsAt - 250) return state;
       const roundsPlayed = state.roundsPlayed + 1;
       if (roundsPlayed >= state.totalRounds) {
-        return { ...state, phase: 'done', roundsPlayed };
+        return { ...state, phase: 'done', roundsPlayed, explainerId: null };
       }
-      return { ...state, phase: 'ready', roundsPlayed, turn: (state.turn + 1) % state.totalRounds };
+      return {
+        ...state,
+        phase: 'ready',
+        roundsPlayed,
+        turn: (state.turn + 1) % state.totalRounds,
+        explainerId: null,
+      };
     },
   },
 
@@ -116,7 +128,9 @@ const game: GameDef<AliasState, AliasView> = {
     const myIndex = state.playerIds.findIndex((id) => id === playerId);
     const explaining =
       state.phase === 'round' &&
-      (state.pass ? role === 'hand' : playerId !== null && state.playerIds[state.turn] === playerId);
+      (state.pass
+        ? role === 'hand' && playerId === state.explainerId
+        : playerId !== null && state.playerIds[state.turn] === playerId);
     return {
       phase: state.phase,
       word: explaining ? (state.words[state.ptr % state.words.length] ?? null) : null,

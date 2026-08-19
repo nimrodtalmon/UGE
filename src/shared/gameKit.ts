@@ -51,3 +51,15 @@ export function useDeadline(opts: {
 export function formatSeconds(ms: number): string {
   return String(Math.max(0, Math.ceil(ms / 1000)));
 }
+
+/**
+ * Short vibration when it becomes this player's turn (Android browsers;
+ * silently a no-op elsewhere). Call from a hand view with its my-turn flag.
+ */
+export function useTurnBuzz(myTurn: boolean): void {
+  const prev = useRef(myTurn);
+  useEffect(() => {
+    if (myTurn && !prev.current) navigator.vibrate?.(60);
+    prev.current = myTurn;
+  }, [myTurn]);
+}

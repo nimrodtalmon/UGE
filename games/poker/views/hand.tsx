@@ -1,7 +1,7 @@
 import './style.css';
 import { useEffect, useState } from 'react';
 import type { GameViewProps } from '../../../src/shared/plugin.js';
-import { useDeadline } from '../../../src/shared/gameKit.js';
+import { useDeadline, useTurnBuzz } from '../../../src/shared/gameKit.js';
 import type { PokerView } from '../game.js';
 import { CardFace, Seats } from './parts.js';
 
@@ -12,8 +12,8 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
   const maxTo = me ? me.streetBet + me.chips + 0 : 0;
   const [raiseTo, setRaiseTo] = useState(minTo);
 
+  useTurnBuzz(myTurn);
   useEffect(() => {
-    if (myTurn) navigator.vibrate?.(80);
     setRaiseTo(Math.min(minTo, maxTo));
   }, [myTurn, minTo, maxTo]);
 
@@ -43,7 +43,8 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
   }
 
   const canCheck = view.callAmount === 0;
-  const canRaise = me.chips > view.callAmount;
+  // raiseClosed: an incomplete all-in raise means call-or-fold only
+  const canRaise = me.chips > view.callAmount && !view.raiseClosed;
   const clampedTo = Math.max(Math.min(raiseTo, maxTo), Math.min(minTo, maxTo));
 
   return (

@@ -131,7 +131,8 @@ const game: GameDef<WcState, WcView> = {
     let deck = shuffle(buildDeck(), random);
     const hands = Array.from({ length: seats }, () => deck.splice(0, 7));
     // first discard: keep flipping until it's a plain number card
-    let topIdx = deck.findIndex((c) => c.c !== 'w' && Number.isInteger(Number(c.s)));
+    // (a strict digit test — Number('+2') is 2, which let Draw Twos through)
+    let topIdx = deck.findIndex((c) => c.c !== 'w' && /^\d$/.test(c.s));
     if (topIdx < 0) topIdx = deck.length - 1;
     const top = deck.splice(topIdx, 1)[0]!;
     return {
@@ -207,10 +208,12 @@ const game: GameDef<WcState, WcView> = {
     },
   },
 
-  playerView(state, { playerId, players }) {
+  playerView(state, { playerId, role, players }) {
     const myIndex = players.findIndex((p) => p.id === playerId);
+    // hotseat: the acting hand only ever reaches the shared phone — the table
+    // and spectators must not carry it in their snapshots
     const hand = state.hotseat
-      ? state.unlocked
+      ? role === 'hand' && state.unlocked
         ? state.hands[state.turn]!
         : null
       : myIndex >= 0
@@ -227,7 +230,9 @@ const game: GameDef<WcState, WcView> = {
       dir: state.dir,
       drawCount: state.draw.length,
       pendingCardIdx:
-        state.pending && state.pending.player === (state.hotseat ? state.turn : myIndex) && (!state.hotseat || state.unlocked)
+        state.pending &&
+        state.pending.player === (state.hotseat ? state.turn : myIndex) &&
+        (!state.hotseat || (state.unlocked && role === 'hand'))
           ? state.pending.cardIdx
           : null,
       myIndex,

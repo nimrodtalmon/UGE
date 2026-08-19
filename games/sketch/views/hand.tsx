@@ -1,7 +1,7 @@
 import './style.css';
 import { useEffect, useRef, useState } from 'react';
 import type { GameViewProps } from '../../../src/shared/plugin.js';
-import { useDeadline, formatSeconds } from '../../../src/shared/gameKit.js';
+import { useDeadline, formatSeconds, useTurnBuzz } from '../../../src/shared/gameKit.js';
 import type { SketchView } from '../game.js';
 import { Picture, Scores } from './parts.js';
 
@@ -23,7 +23,18 @@ function DrawPad(props: { color: string; onStroke: (points: number[]) => void })
 
   const finish = () => {
     if (drawing.current && current.length >= 4) {
-      props.onStroke(current.length > 400 ? current.filter((_, i) => i % 2 === 0 || i < 4) : current);
+      // long strokes: drop every other POINT (x,y pair — never split a pair),
+      // keeping the final point, until the stroke fits the server's cap
+      let pts = current;
+      while (pts.length > 400) {
+        const out: number[] = [];
+        for (let p = 0; p * 2 + 1 < pts.length; p += 2) out.push(pts[p * 2]!, pts[p * 2 + 1]!);
+        const lx = pts[pts.length - 2]!;
+        const ly = pts[pts.length - 1]!;
+        if (out[out.length - 2] !== lx || out[out.length - 1] !== ly) out.push(lx, ly);
+        pts = out;
+      }
+      props.onStroke(pts);
     }
     drawing.current = false;
     setCurrent([]);
@@ -75,6 +86,7 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
     onExpire: () => move(view.phase === 'draw' ? 'timeUp' : 'next'),
   });
   const iDraw = view.myIndex === view.drawer;
+  useTurnBuzz(!over && view.phase === 'draw' && iDraw);
 
   // while drawing, freeze the page itself — a stroke swipe must never scroll/bounce it
   const lockScroll = !over && view.phase === 'draw' && iDraw;

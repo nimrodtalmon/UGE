@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Chess } from 'chess.js';
 import type { Square } from 'chess.js';
 import type { GameViewProps } from '../../../src/shared/plugin.js';
+import { useTurnBuzz } from '../../../src/shared/gameKit.js';
 import type { ChessView } from '../game.js';
 import { Board } from './Board.js';
 
@@ -12,6 +13,7 @@ export default function HandView({ view, over, move }: GameViewProps<ChessView>)
   const mySeat = view.shared ? (view.turn === 'w' ? 0 : 1) : view.myIndex;
   const myColor = mySeat === 0 ? 'w' : 'b';
   const myTurn = !over && view.turn === myColor && (view.shared || view.myIndex >= 0);
+  useTurnBuzz(myTurn && !view.shared);
   const targets =
     selected !== null
       ? chess.moves({ square: selected as Square, verbose: true }).map((m) => m.to as string)

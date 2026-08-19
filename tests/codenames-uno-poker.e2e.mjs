@@ -35,7 +35,7 @@ await table.waitForSelector('.cn-board', { timeout: 10000 });
 console.log('ok: codenames started (shared spymasters device claimed)');
 
 const spym = phones[0]; // the shared map device
-const operative = phones[2];
+let operative = phones[2]; // any operative for the privacy checks
 await spym.waitForSelector('.cn-card.hint', { timeout: 10000 });
 
 // privacy: only spymasters see key hints; operatives and table see plain cards
@@ -61,7 +61,24 @@ async function currentTeam() {
 }
 const team = await currentTeam();
 if (!team) fail('no turn banner on table');
+
+// operatives' phones are assigned alternating teams — find one per side
+const operatives = [phones[1], phones[2], phones[3]];
+let offTeam = null;
+operative = null;
+for (const p of operatives) {
+  const badge = (await p.textContent('.cn-myteam').catch(() => '')) ?? '';
+  if (badge.includes(team)) operative = operative ?? p;
+  else offTeam = offTeam ?? p;
+}
+if (!operative || !offTeam) fail('team badges missing on operative phones');
+
 const targets = key.flatMap((k, i) => (k === team ? [i] : []));
+// the wrong team's phone can't reveal anything — its board is disabled
+if (await offTeam.locator(`.cn-card:not([disabled]) >> nth=0`).count()) {
+  fail('off-team phone has an enabled board');
+}
+console.log('ok: off-team phone is locked out of guessing');
 for (const i of targets) {
   await operative.click(`.cn-card >> nth=${i}`);
   await operative.waitForFunction(
