@@ -67,10 +67,17 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 0 40px rgba(0, 0, 0, 0.35);
   min-width: min(90vw, 30rem);
 }
-.ld-bid-huge { font-size: 3.4rem; font-weight: 800; text-transform: capitalize; }
+/* both bid states hold the same height so the pit never jumps */
+.ld-bid-huge { font-size: 3.4rem; font-weight: 800; text-transform: capitalize; min-height: 5.4rem; }
 .ld-bid-die { font-size: 4.4rem; vertical-align: middle; }
-.ld-bid-none { font-size: 1.4rem; color: #b5a486; }
-.ld-bidder { color: #e4b83d; font-weight: 700; }
+.ld-bid-none {
+  display: flex;
+  align-items: center;
+  min-height: 5.4rem;
+  font-size: 1.4rem;
+  color: #b5a486;
+}
+.ld-bidder { color: #e4b83d; font-weight: 700; min-height: 1.5rem; }
 
 /* reveal */
 .ld-reveal { display: flex; flex-direction: column; gap: 0.35rem; align-items: stretch; }
@@ -94,9 +101,13 @@
 .ld-result { font-size: 1.25rem; font-weight: 700; }
 .ld-hint { color: #8a8f98; font-size: 0.9rem; }
 .ld-bid-line { color: #d5d2c8; }
+/* held space: lines above the stepper must not resize as the round moves on */
+.ld-hint.hold1 { min-height: 1.35rem; }
+.ld-bid-line.hold2 { min-height: 3rem; }
 
 /* phone controls */
-.ld-mine { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+/* the dice row keeps its height when it swaps to the "out of dice" line */
+.ld-mine { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; align-items: center; min-height: 3rem; }
 .ld-stepper { display: flex; align-items: center; gap: 0.8rem; }
 .ld-step {
   width: 3.2rem;
@@ -105,7 +116,8 @@
   font-weight: 800;
   border-radius: 14px;
 }
-.ld-qty { font-size: 2rem; font-weight: 800; min-width: 2.6rem; }
+/* wide enough for two digits: a growing number would slide − and + sideways */
+.ld-qty { font-size: 2rem; font-weight: 800; min-width: 3.2rem; }
 .ld-faces { display: flex; gap: 0.5rem; }
 .ld-face {
   width: 3.2rem;

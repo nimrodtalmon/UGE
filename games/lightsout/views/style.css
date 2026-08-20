@@ -8,8 +8,25 @@
   padding: 1rem;
 }
 .lo-title { letter-spacing: 0.2em; }
-.lo-hint { color: #8a8f98; }
-.lo-status { font-size: 1.2rem; min-height: 1.5rem; }
+/* two lines reserved: the player's name is prepended once it resolves, and a
+   rewrap here would drop the whole board under the finger mid-tap */
+.lo-hint {
+  color: #8a8f98;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+/* the win text is longer than "12 moves" — reserve both lines */
+.lo-status {
+  font-size: 1.2rem;
+  min-height: 3.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
 .lo-grid {
   display: grid;
   gap: 8px;

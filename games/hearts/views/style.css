@@ -100,7 +100,7 @@
 .ht-avatar { font-size: 1.15rem; }
 .ht-name { font-weight: 600; max-width: 7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ht-total { color: #e4b83d; font-weight: 700; }
-.ht-taken { color: #e4573d; font-size: 0.85rem; font-weight: 700; }
+.ht-taken { color: #e4573d; font-size: 0.85rem; font-weight: 700; min-width: 1.8rem; }
 .ht-passcheck { color: #6fd08c; font-size: 0.9rem; }
 
 /* current trick strip (phones) */
@@ -110,6 +110,9 @@
 .ht-mini-avatar { font-size: 1rem; }
 
 .ht-status { color: #8a8f98; min-height: 1.4rem; }
+/* on phones the status sits right above the fan and wraps to two lines when
+   it lists who we're waiting for — hold both lines so the cards stay put */
+.ht-phone .ht-status { min-height: 2.8rem; }
 .ht-status.mine { color: #6fd08c; font-weight: 700; animation: ht-pulse 1.2s infinite; }
 @keyframes ht-pulse { 50% { opacity: 0.55; } }
 .ht-over { font-size: 1.5rem; font-weight: 800; }
@@ -140,6 +143,7 @@
 .ht-slot.picked { opacity: 1; transform: translateY(-12px); }
 .ht-slot.picked .ht-card { box-shadow: 0 0 0 3px #8a6dd4, 0 2px 7px rgba(0, 0, 0, 0.4); }
 
+.ht-foot { display: grid; place-items: center; min-height: 3.6rem; }
 .ht-pass-btn {
   font-size: 1.15rem;
   font-weight: 700;

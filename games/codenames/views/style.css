@@ -20,8 +20,11 @@
 .cn-chip.red.current { border-color: #e4573d; box-shadow: 0 0 14px #e4573d66; }
 .cn-chip.blue.current { border-color: #3d8ae4; box-shadow: 0 0 14px #3d8ae466; }
 
-.cn-turn { font-size: 1.15rem; color: #c8ccd2; }
-.cn-over { font-size: 1.6rem; font-weight: 800; }
+/* turn banner and the game-over line swap in the same slot, and the banner's
+   suffix changes every turn — reserve the taller state so the grid stays put */
+.cn-turn { font-size: 1.15rem; color: #c8ccd2; min-height: 1.5rem; }
+.cn-over { font-size: 1.6rem; font-weight: 800; min-height: 2rem; }
+.cn-phone .cn-turn, .cn-phone .cn-over { min-height: 2.9rem; }
 .cn-role { font-weight: 800; letter-spacing: 0.04em; }
 .cn-hint-note { color: #8a8f98; font-size: 0.8rem; }
 
@@ -65,4 +68,6 @@
 .cn-card.revealed.k-assassin { background: #101114; border-color: #000; color: #e4573d; }
 
 .cn-endturn { margin-top: 0.4rem; }
-.cn-myteam { color: #8a8f98; font-size: 0.9rem; }
+.cn-endturn-slot { display: flex; justify-content: center; min-height: 3.4rem; }
+/* holds one line even when the player has no team yet */
+.cn-myteam { color: #8a8f98; font-size: 0.9rem; min-height: 1.2rem; }

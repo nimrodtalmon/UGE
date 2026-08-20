@@ -27,18 +27,22 @@ export default function TableView({ view, players, over, move, serverNow }: Game
         </div>
         <p className="pk-pot">pot {view.pot}</p>
       </div>
-      {over ? (
-        <p className="pk-result">{over.text}</p>
-      ) : view.stage === 'handover' ? (
-        <p className="pk-result">
-          {view.handResult} <span className="pk-next">· next hand in {formatSeconds(remaining)}s</span>
-        </p>
-      ) : (
-        <p className="pk-turn">
-          {players[view.toAct]?.name ?? view.names[view.toAct] ?? '…'} to act
-          {view.currentBet > 0 ? ` — bet is ${view.currentBet}` : ''}
-        </p>
-      )}
+      {/* fixed-height slot: these three lines differ in length, and the felt
+          above them should not hop every time the hand ends */}
+      <div className="pk-status">
+        {over ? (
+          <p className="pk-result">{over.text}</p>
+        ) : view.stage === 'handover' ? (
+          <p className="pk-result">
+            {view.handResult} <span className="pk-next">· next hand in {formatSeconds(remaining)}s</span>
+          </p>
+        ) : (
+          <p className="pk-turn">
+            {players[view.toAct]?.name ?? view.names[view.toAct] ?? '…'} to act
+            {view.currentBet > 0 ? ` — bet is ${view.currentBet}` : ''}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

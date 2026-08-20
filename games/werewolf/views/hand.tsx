@@ -66,15 +66,18 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
           {view.myRole === 'villager' && <span className="ww-role-sub">find the wolves before they find you</span>}
         </div>
         <p className="ww-hint">keep it secret — don't show your phone!</p>
-        {view.ready[me] ? (
-          <p className="ww-hint">
-            ✓ ready — waiting for the others ({readyCount}/{aliveSeats.length})
-          </p>
-        ) : (
-          <button className="ww-ready" onClick={() => move('ready')}>
-            Ready 🌙
-          </button>
-        )}
+        {/* fixed-height slot: button and confirmation must occupy the same space */}
+        <div className="ww-slot">
+          {view.ready[me] ? (
+            <p className="ww-hint">
+              ✓ ready — waiting for the others ({readyCount}/{aliveSeats.length})
+            </p>
+          ) : (
+            <button className="ww-ready" onClick={() => move('ready')}>
+              Ready 🌙
+            </button>
+          )}
+        </div>
       </div>
     );
   }
@@ -86,16 +89,18 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
       return (
         <div className="ww-screen">
           <h1 className="ww-banner">night {view.night} 🐺</h1>
-          <p className="ww-hint">
+          {/* two lines held: this text grows on every pick, and the column is
+              centred — a reflow slides the grid out from under the thumb */}
+          <p className="ww-hint hold2">
             {view.myPick === null ? 'choose tonight\'s victim' : 'you can retap to change your mind'} (
             {view.wolvesPicked}/{view.wolvesAlive} wolves have chosen)
           </p>
           <PlayerGrid players={players} targets={targets} picked={view.myPick} onPick={(i) => move('wolfPick', i)} />
-          {view.myPick !== null && (
-            <p className="ww-hint">
-              waiting for {view.wolvesPicked < view.wolvesAlive ? 'the rest of the pack' : 'the night to pass'}…
-            </p>
-          )}
+          <p className="ww-hint hold1">
+            {view.myPick !== null
+              ? `waiting for ${view.wolvesPicked < view.wolvesAlive ? 'the rest of the pack' : 'the night to pass'}…`
+              : ' '}
+          </p>
         </div>
       );
     }
@@ -166,7 +171,9 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
   return (
     <div className="ww-screen">
       <h1 className="ww-banner">the village votes 🗳️</h1>
-      <p className="ww-hint">
+      {/* two lines held: the tail appears on your first vote and would push the
+          grid + skip button down mid-tap */}
+      <p className="ww-hint hold2">
         votes are public — {voted}/{aliveSeats.length} cast
         {myVote !== null && ' · tap again to change'}
       </p>

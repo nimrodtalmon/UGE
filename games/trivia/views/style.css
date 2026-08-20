@@ -10,7 +10,16 @@
 }
 .tv-progress { color: #8a8f98; letter-spacing: 0.06em; }
 .tv-clock { color: #e4b83d; font-variant-numeric: tabular-nums; }
-.tv-question { max-width: 46rem; font-size: clamp(1.3rem, 3.5vw, 2.4rem); }
+/* two lines reserved: questions differ in length, and the tiles below them
+   must stay put from one question to the next */
+.tv-question {
+  max-width: 46rem;
+  font-size: clamp(1.3rem, 3.5vw, 2.4rem);
+  min-height: 2.8em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .tv-phone .tv-question { font-size: 1.3rem; }
 
 .tv-choices {
@@ -59,9 +68,18 @@ button.tv-choice:not(:disabled):active { transform: scale(0.97); }
 .tv-choice.tv-wrong { opacity: 0.25; }
 
 .tv-status { color: #8a8f98; min-height: 1.4rem; }
-.tv-feedback { font-size: 1.2rem; font-weight: 700; }
-.tv-feedback.right { color: #6fd08c; }
-.tv-feedback.wrong { color: #e08a6a; }
+/* one reserved line for reveal / locked-in / nothing — all the same height */
+.tv-verdict {
+  font-size: 1.2rem;
+  font-weight: 700;
+  min-height: 1.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tv-verdict.right { color: #6fd08c; }
+.tv-verdict.wrong { color: #e08a6a; }
+.tv-verdict.waiting { color: #8a8f98; font-size: 1rem; font-weight: 400; }
 .tv-over { font-size: 1.7rem; font-weight: 700; }
 
 .tv-bar { width: min(92vw, 44rem); height: 6px; border-radius: 3px; background: #262a31; overflow: hidden; }

@@ -72,7 +72,15 @@
 .wc-count { color: #8a8f98; font-size: 0.85rem; }
 .wc-dir { font-size: 1.5rem; color: #8a8f98; }
 
-.wc-turn { color: #8a8f98; font-size: 1.05rem; min-height: 1.4rem; }
+/* two lines reserved: long names wrap this line, and the hand below must not move */
+.wc-turn {
+  color: #8a8f98;
+  font-size: 1.05rem;
+  min-height: 2.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .wc-turn.mine { color: #6fd08c; font-weight: 700; animation: wc-pulse 1.2s infinite; }
 @keyframes wc-pulse { 50% { opacity: 0.55; } }
 .wc-over { font-size: 1.7rem; font-weight: 800; }
@@ -83,10 +91,13 @@
   flex-wrap: wrap;
   gap: 0.45rem;
   justify-content: center;
+  align-items: center;
   max-width: 96vw;
+  /* one card row always reserved, so a hand of 0–1 cards doesn't jump the buttons */
+  min-height: 5.4rem;
 }
 .wc-slot { padding: 0; background: none; border: none; opacity: 0.55; transition: transform 0.15s, opacity 0.2s; touch-action: none; }
-.wc-drag-hint { color: #8a8f98; font-size: 0.8rem; }
+.wc-drag-hint { color: #8a8f98; font-size: 0.8rem; min-height: 1.2rem; }
 .wc-slot.playable { opacity: 1; transform: translateY(-6px); }
 .wc-slot.playable:active { transform: translateY(-10px) scale(1.05); }
 .wc-slot.drawn { animation: wc-pulse 1s infinite; }

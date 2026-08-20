@@ -8,11 +8,24 @@
   padding: 1rem;
   text-align: center;
 }
-.sk-status { font-size: 1.05rem; color: #c8ccd2; min-height: 1.4rem; }
+/* 1.6rem holds the tallest one-line state (the 1.2em word) */
+.sk-status { font-size: 1.05rem; color: #c8ccd2; min-height: 1.6rem; }
+/* on a phone the word/hint plus the ticking clock can rewrap mid-round — hold
+   two lines so the pad never moves under a stroke, nor the guess box under a tap */
+.sk-drawing .sk-status, .sk-guessing .sk-status { min-height: 3.2rem; }
 .sk-word { color: #e4b83d; font-size: 1.2em; }
 .sk-hint-word { letter-spacing: 0.2em; font-weight: 700; color: #e4b83d; }
 .sk-over { font-size: 1.6rem; font-weight: 800; }
-.sk-right { color: #6fd08c; font-weight: 700; font-size: 1.2rem; }
+/* swaps in where the guess row was: same height, so the picture stays put */
+.sk-right {
+  color: #6fd08c;
+  font-weight: 700;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.1rem;
+}
 
 .sk-picture {
   width: min(92vw, 62vh, 34rem);
@@ -59,7 +72,14 @@
 .sk-guess.shake { animation: sk-shake 0.3s; }
 @keyframes sk-shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-.sk-wrong { color: #8a8f98; font-size: 0.9rem; }
+/* fixed two-line box (server keeps the last 5): the list grows, the layout doesn't */
+.sk-wrong {
+  color: #8a8f98;
+  font-size: 0.9rem;
+  height: 2.6rem;
+  overflow: hidden;
+  max-width: min(92vw, 60rem);
+}
 
 .sk-scores { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
 .sk-player {

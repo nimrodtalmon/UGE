@@ -8,11 +8,11 @@ export default function HandView({ view, over, move }: GameViewProps<CodenamesVi
   return (
     <div className="cn-screen cn-phone">
       <TeamChips view={view} />
-      {view.myTeam && (
-        <p className="cn-myteam">
-          you guess for {view.myTeam === 'red' ? '🔴 red' : '🔵 blue'}
-        </p>
-      )}
+      {/* always rendered: a line appearing above the grid would slide the words
+          down under the finger already reaching for one */}
+      <p className="cn-myteam">
+        {view.myTeam ? `you guess for ${view.myTeam === 'red' ? '🔴 red' : '🔵 blue'}` : ' '}
+      </p>
       {over ? (
         <p className="cn-over">{over.text}</p>
       ) : (
@@ -22,11 +22,15 @@ export default function HandView({ view, over, move }: GameViewProps<CodenamesVi
         />
       )}
       <Board view={view} mini onGuess={myTurn ? (i) => move('guess', i) : undefined} />
-      {!over && myTurn && (
-        <button className="cn-endturn" onClick={() => move('endTurn')}>
-          End {view.turn} turn
-        </button>
-      )}
+      {/* the slot stays even when the button is hidden — the column is centred,
+          so a button popping in would re-centre the grid mid-guess */}
+      <div className="cn-endturn-slot">
+        {!over && myTurn && (
+          <button className="cn-endturn" onClick={() => move('endTurn')}>
+            End {view.turn} turn
+          </button>
+        )}
+      </div>
     </div>
   );
 }

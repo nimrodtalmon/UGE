@@ -155,7 +155,9 @@ export default function HandView({ view, players, over, move }: GameViewProps<Wc
           </DragSlot>
         ))}
       </div>
-      {myTurn && <p className="wc-drag-hint">tap a card — or flick it at the pile</p>}
+      {/* always rendered: a hint popping in here would shove the Draw button
+          down under the finger that is already reaching for it */}
+      <p className="wc-drag-hint">{myTurn ? 'tap a card — or flick it at the pile' : ' '}</p>
 
       <div className="wc-actions">
         {view.pendingCardIdx !== null && myTurn ? (

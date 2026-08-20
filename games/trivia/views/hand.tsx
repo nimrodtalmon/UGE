@@ -33,6 +33,8 @@ export default function HandView({ view, over, move, serverNow }: GameViewProps<
   }
 
   const answeredRight = view.myAnswer !== null && view.myAnswer === view.correct;
+  const verdictClass =
+    view.phase === 'reveal' ? `tv-verdict ${answeredRight ? 'right' : 'wrong'}` : 'tv-verdict waiting';
 
   return (
     <div className="tv-screen tv-phone">
@@ -42,13 +44,19 @@ export default function HandView({ view, over, move, serverNow }: GameViewProps<
       </p>
       <h2 className="tv-question">{view.q}</h2>
 
-      {view.phase === 'reveal' ? (
-        <p className={answeredRight ? 'tv-feedback right' : 'tv-feedback wrong'}>
-          {answeredRight ? '+1 — correct! 🎉' : view.myAnswer === null ? 'too slow ⏱️' : 'nope 😅'}
-        </p>
-      ) : view.myAnswer !== null ? (
-        <p className="tv-status">Locked in — waiting for the others…</p>
-      ) : null}
+      {/* always rendered: "locked in" appearing on tap would push the answer
+          tiles down under the finger that just tapped one */}
+      <p className={verdictClass}>
+        {view.phase === 'reveal'
+          ? answeredRight
+            ? '+1 — correct! 🎉'
+            : view.myAnswer === null
+              ? 'too slow ⏱️'
+              : 'nope 😅'
+          : view.myAnswer !== null
+            ? 'Locked in — waiting for the others…'
+            : ' '}
+      </p>
 
       <div className="tv-choices tv-tap">
         {view.choices.map((c, i) => {

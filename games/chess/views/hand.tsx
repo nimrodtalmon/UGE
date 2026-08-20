@@ -48,11 +48,14 @@ export default function HandView({ view, over, move }: GameViewProps<ChessView>)
         targets={targets}
         onTap={!over ? tap : undefined}
       />
-      {!over && (
-        <button className="ch-resign" onClick={() => move('resign')}>
-          Resign 🏳️
-        </button>
-      )}
+      {/* reserved slot: the button vanishing at game over would re-centre the board */}
+      <div className="ch-resign-slot">
+        {!over && (
+          <button className="ch-resign" onClick={() => move('resign')}>
+            Resign 🏳️
+          </button>
+        )}
+      </div>
     </div>
   );
 }

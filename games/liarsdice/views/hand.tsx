@@ -105,7 +105,9 @@ export default function HandView({ view, over, move, serverNow }: GameViewProps<
         )}
       </div>
 
-      <p className="ld-bid-line">
+      {/* two lines held: this line grows from "no bid yet" to a full bid and
+          would push the stepper and the Bid/Dudo buttons down */}
+      <p className="ld-bid-line hold2">
         {bid ? (
           <>
             bid: <strong>{bid.quantity} {DIE[bid.face - 1]}</strong> by {view.names[view.bidder]}
@@ -159,7 +161,11 @@ export default function HandView({ view, over, move, serverNow }: GameViewProps<
               </button>
             )}
           </div>
-          {!legal && <p className="ld-hint">must beat {bid?.quantity} {bid ? DIE[bid.face - 1] : ''}</p>}
+          {/* always rendered: a hint appearing on an illegal step re-centres the
+              column and slides the stepper out from under the thumb */}
+          <p className="ld-hint hold1">
+            {legal ? ' ' : `must beat ${bid?.quantity ?? ''} ${bid ? DIE[bid.face - 1] : ''}`}
+          </p>
         </>
       ) : (
         <p className="ld-turn">{view.names[view.turn]} is thinking…</p>

@@ -60,14 +60,19 @@ export default function TableView({ view, players, over, move, serverNow }: Game
               ? `${answeredCount} / ${view.playerNames.length} locked in — answer on your phone`
               : 'get ready for the next one…'}
           </p>
-          {view.phase === 'question' && (
-            <div className="tv-bar">
-              <div
-                className="tv-bar-fill"
-                style={{ width: `${Math.max(0, Math.min(100, (remaining / 15000) * 100))}%` }}
-              />
-            </div>
-          )}
+          {/* the track always renders — a bar that vanishes on reveal would
+              bounce the whole board */}
+          <div className="tv-bar">
+            <div
+              className="tv-bar-fill"
+              style={{
+                width:
+                  view.phase === 'question'
+                    ? `${Math.max(0, Math.min(100, (remaining / 15000) * 100))}%`
+                    : '0%',
+              }}
+            />
+          </div>
         </>
       )}
     </div>

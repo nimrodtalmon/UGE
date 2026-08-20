@@ -12,7 +12,8 @@ export default function TableView({ view, over }: GameViewProps<BgView>) {
   return (
     <div className="bg-screen">
       <p className="bg-status">{status}</p>
-      {view.note && <p className="bg-note">{view.note}</p>}
+      {/* always rendered: the note comes and goes each turn and would jog the board */}
+      <p className="bg-note">{view.note ?? ' '}</p>
       <Dice view={view} />
       <Board view={view} perspective={0} big />
       <p className="bg-names">

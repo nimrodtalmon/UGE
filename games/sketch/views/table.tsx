@@ -28,15 +28,17 @@ export default function TableView({ view, players, over, move, serverNow }: Game
         </p>
       )}
       <Picture view={view} big />
-      {view.wrong.length > 0 && view.phase === 'draw' && (
-        <p className="sk-wrong">
-          {view.wrong.map((w, i) => (
-            <span key={i}>
-              {w.name}: “{w.text}” &nbsp;
-            </span>
-          ))}
-        </p>
-      )}
+      {/* always rendered at a fixed height: a ticker that grows guess by guess
+          would keep re-centring the drawing above it */}
+      <p className="sk-wrong">
+        {view.phase === 'draw' && view.wrong.length > 0
+          ? view.wrong.map((w, i) => (
+              <span key={i}>
+                {w.name}: “{w.text}” &nbsp;
+              </span>
+            ))
+          : ' '}
+      </p>
     </div>
   );
 }

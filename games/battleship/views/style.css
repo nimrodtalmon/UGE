@@ -10,8 +10,12 @@
 }
 .bs-phone { justify-content: flex-start; padding-top: 1.2rem; }
 
-/* status lines */
-.bs-status { font-size: 1.1rem; font-weight: 600; min-height: 1.5rem; }
+/* status lines — on a phone they swap between one and two lines every turn
+   ("Your shot — tap a square! 🎯" vs "… is aiming…"), so hold the taller state
+   or the target grid slides down under the finger already aiming at it;
+   1.9rem also covers the taller .over line, so the seas don't jump at game end */
+.bs-status { font-size: 1.1rem; font-weight: 600; min-height: 1.9rem; }
+.bs-phone .bs-status { min-height: 2.8rem; }
 .bs-status.mine { color: #6fd08c; animation: bs-pulse 1.2s infinite; }
 .bs-status.over { font-size: 1.5rem; }
 @keyframes bs-pulse { 50% { opacity: 0.55; } }

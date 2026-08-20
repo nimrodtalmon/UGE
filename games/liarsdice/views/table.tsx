@@ -88,6 +88,8 @@ export default function TableView({ view, players, over, move, serverNow }: Game
         </div>
       ) : (
         <div className="ld-pit">
+          {/* both states hold the same height so the pit doesn't jump when the
+              first bid lands */}
           {bid ? (
             <p className="ld-bid-huge">
               {numberWord(bid.quantity)} <span className="ld-bid-die">{DIE[bid.face - 1]}</span>
@@ -95,7 +97,7 @@ export default function TableView({ view, players, over, move, serverNow }: Game
           ) : (
             <p className="ld-bid-none">waiting for the first bid…</p>
           )}
-          {bid && <p className="ld-bidder">bid by {view.names[view.bidder]}</p>}
+          <p className="ld-bidder">{bid ? `bid by ${view.names[view.bidder]}` : ' '}</p>
           <p className="ld-turn">{players[view.turn]?.name ?? view.names[view.turn]} to act</p>
           <p className="ld-hint">{view.totalDice} dice in play</p>
         </div>

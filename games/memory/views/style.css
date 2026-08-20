@@ -31,12 +31,37 @@
 .mem-scores.small .mem-player { padding: 0.25rem 0.6rem; font-size: 0.85rem; }
 .mem-name { max-width: 8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* status lines */
-.mem-hint { color: #8a8f98; }
-.mem-turn { color: #8a8f98; font-size: 1.1rem; min-height: 1.5rem; }
+/* status lines — both sit above the grid, so both reserve their tallest state
+   (two lines: long names and the game-over text wrap where "your turn" doesn't) */
+.mem-hint {
+  color: #8a8f98;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.mem-turn {
+  color: #8a8f98;
+  font-size: 1.1rem;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
 .mem-turn.mine { color: #6fd08c; font-weight: 700; animation: mem-pulse 1.2s infinite; }
 @keyframes mem-pulse { 50% { opacity: 0.55; } }
-.mem-over { font-size: 1.6rem; font-weight: 700; text-align: center; }
+/* same reserved height as .mem-hint it replaces, so the grid doesn't hop at game end */
+.mem-over {
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 /* card grid — 3D flip */
 .mem-grid {

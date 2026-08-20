@@ -72,9 +72,10 @@ export default function TableView({ view, players, over, move, serverNow }: Game
               <span className="ht-avatar">{players[i]?.avatar ?? avatarFor(name)}</span>
               <span className="ht-name">{players[i]?.name ?? name}</span>
               <span className="ht-total">{view.scores[i]}</span>
-              {(view.handPoints[i] ?? 0) > 0 && (
-                <span className="ht-taken">+{view.handPoints[i]}</span>
-              )}
+              {/* held width: seats that grow mid-trick resize the ring columns */}
+              <span className="ht-taken">
+                {(view.handPoints[i] ?? 0) > 0 ? `+${view.handPoints[i]}` : ''}
+              </span>
               {view.phase === 'passing' && (
                 <span className="ht-passcheck">{view.passed[i] ? '✓' : '…'}</span>
               )}

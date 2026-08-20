@@ -11,6 +11,10 @@
 .ww-banner { font-size: clamp(1.5rem, 4vw, 2.6rem); }
 .ww-hint { color: #8a8f98; max-width: 32rem; }
 .ww-hint.done { color: #c8ccd2; }
+/* held space: status lines next to pick buttons never resize the column */
+.ww-hint.hold1 { min-height: 1.5rem; }
+.ww-hint.hold2 { min-height: 3rem; }
+.ww-slot { display: grid; place-items: center; min-height: 3.7rem; }
 .ww-over { font-size: 1.7rem; font-weight: 800; }
 .ww-announce { font-size: 1.25rem; font-weight: 700; max-width: 36rem; }
 
@@ -106,6 +110,8 @@
   background: #e4573d;
   color: #fff;
 }
+.ww-chip-votes.none { background: none; }
+.ww-chip-tick { display: inline-block; min-width: 0.9rem; }
 
 .ww-progress { display: flex; flex-direction: column; gap: 0.3rem; }
 

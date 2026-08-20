@@ -168,7 +168,7 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
   }
 
   return (
-    <div className="sk-screen">
+    <div className="sk-screen sk-guessing">
       <p className="sk-status">
         <span className="sk-hint-word">{view.hint}</span> · {formatSeconds(remaining)}s
       </p>

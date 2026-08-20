@@ -54,6 +54,7 @@
 }
 .st2-input:disabled { opacity: 0.6; }
 
+.st2-foot { display: grid; place-items: center; min-height: 3.8rem; width: min(92vw, 26rem); }
 .st2-stop {
   padding: 0.9rem 2.4rem;
   border-radius: 14px;
@@ -103,7 +104,7 @@
 }
 .st2-player.stopper { box-shadow: 0 0 12px var(--seat); }
 .st2-name { max-width: 8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.st2-tag { font-size: 0.85rem; color: #6fd08c; }
+.st2-tag { font-size: 0.85rem; color: #6fd08c; display: inline-block; min-width: 0.8rem; }
 
 .st2-bar { width: min(92vw, 44rem); height: 6px; border-radius: 3px; background: #262a31; overflow: hidden; }
 .st2-bar-fill { height: 100%; background: #e4b83d; transition: width 0.25s linear; }

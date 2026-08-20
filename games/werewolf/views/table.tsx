@@ -36,9 +36,15 @@ export default function TableView({ view, players, over, move, serverNow }: Game
               <span>{dead ? '💀' : avatarAt(players, i)}</span>
               <span className="ww-chip-name">{nameAt(players, i)}</span>
               {dead && r && <span className="ww-chip-role">{roleLabel(r)}</span>}
-              {!over && view.phase === 'reveal' && view.ready[i] && <span>✓</span>}
-              {!over && view.phase === 'vote' && !dead && tally[i]! > 0 && (
-                <strong className="ww-chip-votes">{tally[i]}</strong>
+              {/* the tick and the tally hold their width: a chip that grows
+                  mid-phase rewraps the whole village row */}
+              {!over && view.phase === 'reveal' && (
+                <span className="ww-chip-tick">{view.ready[i] ? '✓' : ''}</span>
+              )}
+              {!over && view.phase === 'vote' && !dead && (
+                <strong className={tally[i]! > 0 ? 'ww-chip-votes' : 'ww-chip-votes none'}>
+                  {tally[i]! > 0 ? tally[i] : ''}
+                </strong>
               )}
             </div>
           );

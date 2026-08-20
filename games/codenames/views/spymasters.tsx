@@ -27,10 +27,15 @@ export default function Spymasters({ view, over, move }: GameViewProps<Codenames
         />
       )}
       <Board view={view} mini onGuess={view.solo ? (i) => move('guess', i) : undefined} />
-      {view.solo && !over && (
-        <button className="cn-endturn" onClick={() => move('endTurn')}>
-          End {view.turn} turn
-        </button>
+      {/* reserved slot: the button vanishing at game over would re-centre the map */}
+      {view.solo && (
+        <div className="cn-endturn-slot">
+          {!over && (
+            <button className="cn-endturn" onClick={() => move('endTurn')}>
+              End {view.turn} turn
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

@@ -60,7 +60,9 @@ export default function HandView({ view, over, move }: GameViewProps<BgView>) {
   return (
     <div className="bg-screen bg-phone">
       <p className="bg-status">{status}</p>
-      {view.note && <p className="bg-note">{view.note}</p>}
+      {/* always rendered: a note popping in above the board would drop every
+          point down a line, right as the next checker is being tapped */}
+      <p className="bg-note">{view.note ?? ' '}</p>
       <Dice view={view} />
       <Board
         view={view}
@@ -74,20 +76,23 @@ export default function HandView({ view, over, move }: GameViewProps<BgView>) {
           if (sel !== null && offDice[0] !== undefined) play(sel, offDice[0]);
         }}
       />
-      {myTurn && view.phase === 'roll' && (
-        <button className="bg-roll" onClick={() => move('roll')}>
-          🎲 Roll
-        </button>
-      )}
-      {sel !== null && usable.length > 0 && (
-        <div className="bg-die-buttons">
-          {usable.map((s) => (
+      {/* both slots stay: the column is centred, so a button appearing on
+          selection would shift the board mid-move */}
+      <div className="bg-roll-slot">
+        {myTurn && view.phase === 'roll' && (
+          <button className="bg-roll" onClick={() => move('roll')}>
+            🎲 Roll
+          </button>
+        )}
+      </div>
+      <div className="bg-die-buttons">
+        {sel !== null &&
+          usable.map((s) => (
             <button key={s.die} className="bg-die-btn" onClick={() => play(sel, s.die)}>
               {s.to === 'off' ? `bear off · ${s.die}` : `play ${s.die}`}
             </button>
           ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 }

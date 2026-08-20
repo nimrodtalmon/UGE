@@ -65,20 +65,19 @@ function Rearrange(props: {
             {displayOrder(m).map((id) => (
               <TileFace key={id} id={id} selected={selected.includes(id)} onTap={() => toggle(id)} />
             ))}
-            {selected.length > 0 && (
-              <button className="rk-drop" onClick={() => moveSelected(i)}>
-                +
-              </button>
-            )}
+            {/* always rendered, just disabled: a drop target appearing on
+                selection would rewrap the sets and move the rack below */}
+            <button className="rk-drop" disabled={selected.length === 0} onClick={() => moveSelected(i)}>
+              +
+            </button>
           </span>
         ))}
         {work.length === 0 && <p className="rk-empty">no sets on the table yet</p>}
       </div>
-      {selected.length > 0 && (
-        <button className="rk-append" onClick={() => moveSelected('new')}>
-          new set from selected ({selected.length})
-        </button>
-      )}
+      {/* always rendered, just disabled — it sits right above the rack */}
+      <button className="rk-append" disabled={selected.length === 0} onClick={() => moveSelected('new')}>
+        new set from selected ({selected.length})
+      </button>
 
       <SortToggle sortBy={props.sortBy} setSortBy={props.setSortBy} />
       <div className="rk-rack">
@@ -93,8 +92,14 @@ function Rearrange(props: {
         </button>
         <button onClick={props.onCancel}>Cancel</button>
       </div>
-      {!allValid && <p className="rk-hint">sets in red aren't valid yet — every set must end up valid</p>}
-      {allValid && playedFromRack === 0 && <p className="rk-hint">play at least one tile from your rack</p>}
+      {/* one reserved line for both warnings, so Done/Cancel never move */}
+      <p className="rk-hint two">
+        {!allValid
+          ? "sets in red aren't valid yet — every set must end up valid"
+          : playedFromRack === 0
+            ? 'play at least one tile from your rack'
+            : ' '}
+      </p>
     </>
   );
 }
@@ -169,27 +174,32 @@ export default function HandView({ view, over, move }: GameViewProps<RkView>) {
       </p>
 
       <Melds view={view} />
-      {/* append: select exactly one tile, then pick a compatible set below */}
-      {myTurn && iOpened && selected.length === 1 && (
+      {/* append: select exactly one tile, then pick a compatible set below.
+          The bar keeps its slot all turn — buttons appearing on a tile tap
+          would shove the rack down under the next finger. */}
+      {myTurn && iOpened && (
         <div className="rk-appendbar">
-          {view.melds.map((_, i) =>
-            canAppend(meldWithStaged(i), selected[0]!) ? (
-              <button
-                key={i}
-                className="rk-append"
-                onClick={() => {
-                  setStaged((s) => ({ ...s, appends: [...s.appends, { meld: i, tile: selected[0]! }] }));
-                  setSelected([]);
-                }}
-              >
-                add to set {i + 1}
-              </button>
-            ) : null,
-          )}
+          {selected.length === 1
+            ? view.melds.map((_, i) =>
+                canAppend(meldWithStaged(i), selected[0]!) ? (
+                  <button
+                    key={i}
+                    className="rk-append"
+                    onClick={() => {
+                      setStaged((s) => ({ ...s, appends: [...s.appends, { meld: i, tile: selected[0]! }] }));
+                      setSelected([]);
+                    }}
+                  >
+                    add to set {i + 1}
+                  </button>
+                ) : null,
+              )
+            : null}
         </div>
       )}
 
-      {staged.melds.length > 0 && (
+      {/* same idea: one fixed-height staged strip, scrolled sideways when full */}
+      {myTurn && (
         <div className="rk-staged">
           {staged.melds.map((m, i) => (
             <span key={i} className="rk-meld staged">
@@ -198,10 +208,10 @@ export default function HandView({ view, over, move }: GameViewProps<RkView>) {
               ))}
             </span>
           ))}
+          {staged.appends.length > 0 && (
+            <span className="rk-hint">+{staged.appends.length} onto table sets</span>
+          )}
         </div>
-      )}
-      {staged.appends.length > 0 && (
-        <p className="rk-hint">{staged.appends.length} tile(s) staged onto table sets</p>
       )}
 
       <SortToggle sortBy={sortBy} setSortBy={setSortBy} />
@@ -250,8 +260,14 @@ export default function HandView({ view, over, move }: GameViewProps<RkView>) {
           </button>
         )}
       </div>
-      {myTurn && !iOpened && stagedTiles.length > 0 && stagedValue < 30 && (
-        <p className="rk-hint">opening needs 30+ points of new sets (you have {stagedValue})</p>
+      {/* reserved for the whole turn: this line grows to two lines, and it
+          would drag the buttons above it up as it appeared */}
+      {myTurn && !iOpened && (
+        <p className="rk-hint two">
+          {stagedTiles.length > 0 && stagedValue < 30
+            ? `opening needs 30+ points of new sets (you have ${stagedValue})`
+            : ' '}
+        </p>
       )}
     </div>
   );

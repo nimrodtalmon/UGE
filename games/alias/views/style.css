@@ -8,7 +8,9 @@
   padding: 1.2rem;
   text-align: center;
 }
-.al-big { font-size: clamp(1.5rem, 4vw, 2.6rem); }
+/* headline wraps to two lines for some rounds — reserve both so the Start
+   button underneath never moves between rounds */
+.al-big { font-size: clamp(1.5rem, 4vw, 2.6rem); min-height: 2.4em; }
 .al-hint { color: #8a8f98; max-width: 30rem; }
 .al-over { font-size: 1.7rem; font-weight: 700; }
 
@@ -26,6 +28,12 @@
 .al-word {
   font-size: clamp(2rem, 9vw, 3.2rem);
   font-weight: 800;
+  /* every word is a different length: hold two lines' worth so a wrapping word
+     never shoves Got it / Skip up under the thumb already tapping */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(2.4em + 2.8rem);
   padding: 1.4rem 1.6rem;
   border-radius: 16px;
   background: linear-gradient(160deg, #fbfaf6, #e8e5da);

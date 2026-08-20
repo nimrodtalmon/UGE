@@ -8,11 +8,21 @@
   padding: 1rem;
   text-align: center;
 }
-.rk-turn { color: #8a8f98; min-height: 1.4rem; }
+/* two lines reserved: "open with 30+ (staged: N)" wraps where "your turn" doesn't */
+.rk-turn {
+  color: #8a8f98;
+  min-height: 2.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
 .rk-turn.mine { color: #6fd08c; font-weight: 700; animation: rk-pulse 1.2s infinite; }
 @keyframes rk-pulse { 50% { opacity: 0.55; } }
 .rk-over { font-size: 1.5rem; font-weight: 800; max-width: 40rem; }
-.rk-hint { color: #c9a04e; font-size: 0.9rem; }
+.rk-hint { color: #c9a04e; font-size: 0.9rem; min-height: 1.2rem; }
+/* .two: the wrapping warnings — reserve the taller state up front */
+.rk-hint.two { min-height: 2.4rem; }
 .rk-empty { color: #6b7078; }
 
 .rk-tile {
@@ -38,6 +48,9 @@
   justify-content: center;
   max-width: 94vw;
 }
+/* on a phone the table's sets grow all game — clip them into a scroller so the
+   rack and buttons below keep their position */
+.rk-phone .rk-melds { min-height: 3.7rem; max-height: 32vh; overflow-y: auto; align-content: flex-start; }
 .rk-meld {
   display: inline-flex;
   gap: 3px;
@@ -67,10 +80,31 @@
 }
 .rk-melds.big .rk-tile { width: 2.4rem; height: 3.3rem; font-size: 1.3rem; }
 
-.rk-appendbar { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
-.rk-append { font-size: 0.85rem; padding: 0.4rem 0.8rem; border-color: #3d8a57; color: #6fd08c; }
+/* both strips keep one fixed row and scroll sideways instead of growing
+   downwards into the rack */
+.rk-appendbar {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: safe center;
+  max-width: 94vw;
+  min-height: 2.2rem;
+}
+.rk-append { font-size: 0.85rem; padding: 0.4rem 0.8rem; border-color: #3d8a57; color: #6fd08c; flex: none; }
 
-.rk-staged { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+.rk-staged {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: safe center;
+  max-width: 94vw;
+  min-height: 3.8rem;
+}
+.rk-staged .rk-meld { flex: none; }
 
 .rk-rack {
   display: flex;

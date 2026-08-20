@@ -121,25 +121,29 @@ export default function HandView({ view, over, move, serverNow }: GameViewProps<
         ))}
       </div>
 
-      {view.phase === 'closing' ? (
-        <p className="st2-status st2-stopped">
-          {view.stopper === view.myIndex
-            ? 'You stopped the round!'
-            : view.stopper !== null
-              ? `${view.names[view.stopper]} shouted STOP! — handing in…`
-              : 'Time! — handing in…'}
-        </p>
-      ) : view.iSubmitted ? (
-        <p className="st2-status">Handed in — waiting for the others…</p>
-      ) : (
-        <button
-          className="st2-stop"
-          disabled={!allFilled || locked}
-          onClick={() => move('stopRound', drafts.map((d) => d.trim()))}
-        >
-          🛑 STOP!
-        </button>
-      )}
+      {/* fixed-height foot: button and hand-in lines share one slot, so the
+          inputs never move while you're typing in them */}
+      <div className="st2-foot">
+        {view.phase === 'closing' ? (
+          <p className="st2-status st2-stopped">
+            {view.stopper === view.myIndex
+              ? 'You stopped the round!'
+              : view.stopper !== null
+                ? `${view.names[view.stopper]} shouted STOP! — handing in…`
+                : 'Time! — handing in…'}
+          </p>
+        ) : view.iSubmitted ? (
+          <p className="st2-status">Handed in — waiting for the others…</p>
+        ) : (
+          <button
+            className="st2-stop"
+            disabled={!allFilled || locked}
+            onClick={() => move('stopRound', drafts.map((d) => d.trim()))}
+          >
+            🛑 STOP!
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -105,14 +105,20 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
         })}
       </div>
 
-      {passing && !iPassed && (
-        <button
-          className="ht-pass-btn"
-          disabled={picked.length !== 3}
-          onClick={() => move('passCards', picked)}
-        >
-          Pass {PASS_ARROW[view.passDir]}
-        </button>
+      {/* the slot survives the pass: dropping the button would re-centre the
+          column and drag the fan down over the finger */}
+      {passing && (
+        <div className="ht-foot">
+          {!iPassed && (
+            <button
+              className="ht-pass-btn"
+              disabled={picked.length !== 3}
+              onClick={() => move('passCards', picked)}
+            >
+              Pass {PASS_ARROW[view.passDir]}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

@@ -36,8 +36,10 @@ export default function TableView({ view, players, over, move, serverNow }: Game
           >
             <span>{players[i]?.avatar ?? avatarFor(name)}</span>
             <span className="st2-name">{players[i]?.name ?? name}</span>
-            {view.submitted[i] && view.phase !== 'reveal' && view.phase !== 'done' && (
-              <span className="st2-tag">✓</span>
+            {/* the tick holds its width: a pill that grows when someone hands
+                in would rewrap the row and shove the round display around */}
+            {view.phase !== 'reveal' && view.phase !== 'done' && (
+              <span className="st2-tag">{view.submitted[i] ? '✓' : ''}</span>
             )}
             <strong>{view.scores[i]}</strong>
           </div>

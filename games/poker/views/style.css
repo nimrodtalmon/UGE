@@ -85,14 +85,18 @@
 .pk-mini-hole { display: inline-flex; gap: 0.15rem; transform: scale(0.72); transform-origin: left center; }
 
 .pk-turn { color: #8a8f98; min-height: 1.4rem; }
+/* one status line reserved on the table: the handover result wraps where "X to act" doesn't */
+.pk-status { min-height: 3.4rem; display: flex; align-items: center; justify-content: center; }
 .pk-turn.mine { color: #6fd08c; font-weight: 700; animation: pk-pulse 1.2s infinite; }
 @keyframes pk-pulse { 50% { opacity: 0.55; } }
 .pk-result { font-size: 1.25rem; font-weight: 700; }
 .pk-next { color: #8a8f98; font-weight: 400; font-size: 0.95rem; }
-.pk-chips-line { color: #e4b83d; font-weight: 700; }
+.pk-chips-line { color: #e4b83d; font-weight: 700; min-height: 1.5rem; }
 
 /* phone actions */
-.pk-hole { display: flex; gap: 0.7rem; }
+/* hole cards are dealt and cleared every hand — reserve their height or the
+   whole column (Fold/Call included) slides under the player's thumb */
+.pk-hole { display: flex; gap: 0.7rem; align-items: center; min-height: 6rem; }
 .pk-actions { display: flex; gap: 0.8rem; width: min(92vw, 24rem); }
 .pk-actions button { flex: 1; font-size: 1.15rem; font-weight: 700; padding: 1rem 0; border: none; border-radius: 14px; color: #fff; }
 .pk-fold { background: #6b2f2f; }
