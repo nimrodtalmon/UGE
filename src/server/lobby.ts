@@ -29,13 +29,18 @@ interface Device {
   name: string;
   avatar?: string;
   screen: { w: number; h: number };
-  isTableScreen: boolean;
+  /** Opened the host page — a UI hint only; roles are chosen, not sniffed. */
+  host: boolean;
+  /** Volunteered as the shared table screen (holds no seat). */
+  isTable: boolean;
+  /** Humans playing on this device (>1 when it gets passed around). */
+  seats: number;
   joinedAt: number;
   lastSeen: number;
 }
 
 function deviceAvatar(d: Device): string {
-  return d.isTableScreen ? '🖥️' : (d.avatar ?? avatarFor(d.name));
+  return d.isTable ? '🖥️' : (d.avatar ?? avatarFor(d.name));
 }
 
 export class Lobby {
@@ -45,7 +50,6 @@ export class Lobby {
   private selectedGameId: string | null = null;
   private phase: LobbyPhase = 'lobby';
   private session: GameSession | null = null;
-  private groupSetup: GroupSetup | null = null;
   private selectedModeId: string | null = null;
 
   constructor(private readonly games: GamePlugin[]) {}
@@ -58,7 +62,9 @@ export class Lobby {
       name: req.name,
       avatar: req.avatar,
       screen: req.screen,
-      isTableScreen: req.isTableScreen,
+      host: req.host === true,
+      isTable: existing?.isTable ?? false,
+      seats: existing?.seats ?? 1,
       joinedAt: existing?.joinedAt ?? Date.now(),
       lastSeen: Date.now(),
     });
@@ -70,16 +76,36 @@ export class Lobby {
     return { deviceId: id, snapshot: this.snapshotFor(id) };
   }
 
-  setSetup(players: number, phones: number, hasTable?: boolean): void {
-    const clamp = (v: number, lo: number, hi: number) =>
-      Number.isInteger(v) ? Math.max(lo, Math.min(hi, v)) : lo;
-    this.groupSetup = {
-      players: clamp(players, 1, 12),
-      phones: clamp(phones, 0, 12),
-      hasTable: hasTable !== false,
-    };
-    this.pickDefaultMode(); // the group changed — re-pick a mode that fits it
+  /** How many humans share this device (1 unless it's passed around). */
+  setSeats(deviceId: string, seats: number): void {
+    const d = this.devices.get(deviceId);
+    if (d && Number.isInteger(seats)) {
+      d.seats = Math.max(1, Math.min(12, seats));
+      this.pickDefaultMode(); // the group changed — re-pick a mode that fits it
+    }
     this.tick();
+  }
+
+  /** Volunteer (or stop volunteering) this device as the shared table screen. */
+  setTable(deviceId: string, on: boolean): void {
+    const d = this.devices.get(deviceId);
+    if (d && this.phase === 'lobby') {
+      d.isTable = on === true;
+      this.claims.delete(deviceId); // role is re-derived on the next tick
+      this.optOut.delete(deviceId);
+      this.pickDefaultMode();
+    }
+    this.tick();
+  }
+
+  /** The live group: one device is one player unless it says otherwise. */
+  private group(): GroupSetup {
+    const playing = [...this.devices.values()].filter((d) => !d.isTable);
+    return {
+      players: playing.reduce((sum, d) => sum + Math.max(1, d.seats), 0),
+      phones: playing.length,
+      hasTable: [...this.devices.values()].some((d) => d.isTable),
+    };
   }
 
   select(gameId: string | null): void {
@@ -107,9 +133,8 @@ export class Lobby {
       return;
     }
     const modes = this.modesOf(m);
-    const best = this.groupSetup
-      ? modes.find((mo) => this.modeOffer(m, mo, this.groupSetup!).offered)
-      : undefined;
+    const group = this.group();
+    const best = modes.find((mo) => this.modeOffer(m, mo, group).offered);
     this.selectedModeId = (best ?? modes[0]!).id;
   }
 
@@ -198,7 +223,7 @@ export class Lobby {
       plugin.def,
       players,
       { id: mode.id, config: mode.config ?? {} },
-      this.groupSetup,
+      this.group(),
     );
     this.phase = 'playing';
   }
@@ -219,6 +244,7 @@ export class Lobby {
 
   snapshotFor(deviceId?: string): LobbySnapshot {
     const { canStart, blockers } = this.startState();
+    const me = deviceId ? this.devices.get(deviceId) : undefined;
     return {
       phase: this.phase,
       devices: [...this.devices.values()]
@@ -227,7 +253,8 @@ export class Lobby {
           id: d.id,
           name: d.name,
           avatar: deviceAvatar(d),
-          isTableScreen: d.isTableScreen,
+          isTable: d.isTable,
+          seats: d.seats,
           role: this.claims.get(d.id) ?? null,
           away: Date.now() - d.lastSeen > AWAY_MS,
         })),
@@ -236,8 +263,16 @@ export class Lobby {
       canStart,
       blockers,
       game: this.activeGameFor(deviceId ?? null),
-      setup: this.groupSetup,
+      setup: this.group(),
       selectedModeId: this.selectedGameId ? this.selectedModeId : null,
+      me: me
+        ? {
+            id: me.id,
+            seats: me.seats,
+            isTable: me.isTable,
+            role: this.claims.get(me.id) ?? null,
+          }
+        : null,
     };
   }
 
@@ -285,28 +320,26 @@ export class Lobby {
       }
     }
     const m = this.selectedPlugin()?.manifest;
-    // phones auto-join as players (opting out is explicit) — in the lobby only
-    if (this.phase === 'lobby' && m && m.roles.hand !== 'none') {
+    if (this.phase !== 'lobby' || !m) return;
+    // a device that volunteered as the table shows the board and holds no seat
+    if (m.roles.table !== 'none') {
+      for (const d of this.devices.values()) {
+        if (d.isTable) this.claims.set(d.id, 'table');
+      }
+    }
+    // every other device auto-joins as a player (sitting out is explicit)
+    if (m.roles.hand !== 'none') {
       const free = [...this.devices.values()]
-        .filter((d) => !d.isTableScreen && !this.claims.has(d.id) && !this.optOut.has(d.id))
+        .filter((d) => !d.isTable && !this.claims.has(d.id) && !this.optOut.has(d.id))
         .sort((a, b) => a.joinedAt - b.joinedAt);
       for (const d of free) {
         if (!this.hasCapacity(m, 'hand')) break;
         this.claims.set(d.id, 'hand');
       }
     }
-    if (m && m.roles.table !== 'none' && ![...this.claims.values()].includes('table')) {
-      const best = [...this.devices.values()]
-        .filter((d) => !this.claims.has(d.id))
-        .sort(
-          (a, b) =>
-            Number(b.isTableScreen) - Number(a.isTableScreen) ||
-            b.screen.w * b.screen.h - a.screen.w * a.screen.h,
-        )[0];
-      // required: any free screen will do; optional: only a real table screen
-      if (best && (m.roles.table === 'required' || best.isTableScreen)) {
-        this.claims.set(best.id, 'table');
-      }
+    // a device that stopped being the table must not keep the role
+    for (const [id, role] of this.claims) {
+      if (role === 'table' && !this.devices.get(id)?.isTable) this.claims.delete(id);
     }
   }
 
@@ -323,32 +356,21 @@ export class Lobby {
     if (!p.def) {
       return { manifest: m, feasible: false, reason: 'not playable yet', modes: this.modesOf(m).map(bare) };
     }
-    // with a declared group, a game fits if ANY of its modes fits the plan
-    if (this.groupSetup) {
-      const modes = this.modesOf(m).map((mo) => ({
-        id: mo.id,
-        name: mo.name,
-        tagline: mo.tagline,
-        ...this.modeOffer(m, mo, this.groupSetup!),
-      }));
-      const anyFit = modes.some((x) => x.fits);
-      return {
-        manifest: m,
-        feasible: anyFit,
-        reason: anyFit ? undefined : modes[0]?.reason,
-        modes,
-      };
-    }
-    const phones = [...this.devices.values()].filter((d) => !d.isTableScreen).length;
-    if (m.roles.hand !== 'none' && phones < m.players.min) {
-      return {
-        manifest: m,
-        feasible: false,
-        reason: `needs ${m.players.min}+ phone${m.players.min === 1 ? '' : 's'} (${phones} joined)`,
-        modes: this.modesOf(m).map(bare),
-      };
-    }
-    return { manifest: m, feasible: true, modes: this.modesOf(m).map(bare) };
+    // a game fits if ANY of its modes fits who is actually here
+    const group = this.group();
+    const modes = this.modesOf(m).map((mo) => ({
+      id: mo.id,
+      name: mo.name,
+      tagline: mo.tagline,
+      ...this.modeOffer(m, mo, group),
+    }));
+    const anyFit = modes.some((x) => x.fits);
+    return {
+      manifest: m,
+      feasible: anyFit,
+      reason: anyFit ? undefined : modes[0]?.reason,
+      modes,
+    };
   }
 
   private startState(): { canStart: boolean; blockers: string[] } {
@@ -366,13 +388,15 @@ export class Lobby {
       if (!roles.includes(extra)) blockers.push(`waiting for a ${extra.replace(/-/g, ' ')}`);
     }
     if (m.roles.hand !== 'none') {
-      // gate start on minimum viable DEVICES for the chosen mode (humans can share)
+      // the live group must fit the chosen mode (humans may share a device)
       const mode = this.selectedMode();
+      const fit = this.modeFit(m, mode, this.group());
+      if (!fit.fits && fit.reason) blockers.push(fit.reason);
       const needed = this.neededPhones(m, mode, (mode.players ?? m.players).min);
       const playing = roles.filter((r) => r !== 'table').length;
-      if (playing < needed) {
+      if (fit.fits && playing < needed) {
         const missing = needed - playing;
-        blockers.push(`waiting for ${missing} more phone${missing === 1 ? '' : 's'}`);
+        blockers.push(`waiting for ${missing} more device${missing === 1 ? '' : 's'}`);
       }
     }
     return { canStart: blockers.length === 0, blockers };

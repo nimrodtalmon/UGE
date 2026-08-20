@@ -1,94 +1,92 @@
 // e2e test — needs a freshly started brain (UGE_NO_OPEN=1 npm run start:once) on :8000
 // and a Chromium binary (default /opt/pw-browsers/chromium, override with UGE_CHROMIUM).
-import { chromium } from 'playwright-core';
+// The platform flow: land ready to play, add people, hand over the table role.
+import { launch, openHome, beTable, setSeats, startGame, endGame } from './helpers.mjs';
 
-const browser = await chromium.launch({ executablePath: process.env.UGE_CHROMIUM ?? '/opt/pw-browsers/chromium', headless: true });
+const browser = await launch();
 const fail = (msg) => { console.error('FAIL:', msg); process.exit(1); };
 
-const table = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
-table.on('pageerror', (e) => fail(`table pageerror: ${e.message}`));
-await table.goto('http://localhost:8000/');
-// the game-night wizard comes first, defaulting to 1 player / 1 phone
-await table.waitForSelector('.st-players', { timeout: 10000 });
-if ((await table.textContent('.st-players strong')).trim() !== '1') fail('players should default to 1');
-if ((await table.textContent('.st-phones strong')).trim() !== '1') fail('phones should default to 1');
-// phones follow players until touched
-await table.click('.st-players button:has-text("+")');
-if ((await table.textContent('.st-phones strong')).trim() !== '2') fail('phones did not follow players');
-await table.click('.st-players button:has-text("−")');
-await table.click('button:has-text("Continue")');
-await table.waitForSelector('img[alt^="Join QR"]', { timeout: 10000 });
-await table.waitForSelector('p:has-text("1 player · 1 phone")', { timeout: 5000 });
-console.log('ok: setup wizard → 1 player / 1 phone, table page up with QR');
+// ---------- opening UGE puts you straight in the game, alone ----------
+const host = await openHome(browser, {
+  path: '/',
+  name: 'Nimrod',
+  viewport: { width: 1280, height: 860 },
+  onError: (e) => fail(`host pageerror: ${e.message}`),
+});
+if (!(await host.textContent('.setup-line')).includes('1 player · 1 device')) {
+  fail('a lone device should be a 1-player group');
+}
+await host.waitForSelector('button.game.ready:has-text("Lights Out")', { timeout: 8000 });
+if (await host.locator('button.game:has-text("Memory")').count()) fail('2-player game visible with 1 player');
+console.log('ok: no wizard — one device lands as a 1-player group with fitting games');
 
-const phone = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
-phone.on('pageerror', (e) => fail(`phone pageerror: ${e.message}`));
-await phone.goto('http://localhost:8000/join');
-await phone.fill('input', 'Nimrod');
-await phone.click('button:has-text("Join the lobby")');
-await phone.waitForSelector('h2:has-text("At the table")', { timeout: 10000 });
-await table.waitForSelector('.tile:has-text("Nimrod")', { timeout: 10000 });
-console.log('ok: phone joined, tile on table');
+// solo play with no table screen at all
+await startGame(host, 'Lights Out');
+await host.waitForSelector('.lo-grid', { timeout: 10000 });
+await host.click('.lo-cell >> nth=12');
+await host.waitForFunction(() => document.querySelector('.lo-status')?.textContent?.includes('1 moves'), null, { timeout: 5000 });
+if (!(await host.locator('button:has-text("End game")').count())) fail('no game controls without a table');
+console.log('ok: solo play on one device — no table screen involved');
+await endGame(host);
 
-// only fitting games show; the rest hide behind an expander
-await table.waitForSelector('button.game.ready:has-text("Lights Out")', { timeout: 10000 });
-if (await table.locator('button.game:has-text("Memory")').count()) fail('non-fitting game visible before expanding');
-await table.click('.games-more');
-const memoryReason = (await table.textContent('button.game:has-text("Memory")')).trim();
-if (!memoryReason.includes('for 2+ players')) fail(`memory reason wrong: ${memoryReason}`);
-console.log('ok: non-fitting games hidden until expanded, with reasons');
+// ---------- a phone joins: the group grows by itself ----------
+const phone = await openHome(browser, {
+  path: '/join',
+  name: 'Dana',
+  onError: (e) => fail(`phone pageerror: ${e.message}`),
+});
+await host.waitForSelector('.tile:has-text("Dana")', { timeout: 10000 });
+await host.waitForFunction(
+  () => document.querySelector('.setup-line')?.textContent?.includes('2 players · 2 devices'),
+  null, { timeout: 8000 },
+);
+// Lights Out is 1-player only, so it drops out of the fitting list
+await host.waitForFunction(
+  () => !document.querySelector('button.game:not(.games-more)')?.textContent?.includes('Lights Out'),
+  null, { timeout: 8000 },
+);
+await host.click('.games-more');
+const reason = (await host.textContent('button.game:has-text("Lights Out")')).trim();
+if (!reason.includes('up to 1 player')) fail(`expected a fit reason, got: ${reason}`);
+console.log('ok: a second device joins — group and game list follow automatically');
 
-await table.click('button.game:has-text("Lights Out")');
-// auto-join: start enables without any claim tap
-await table.waitForSelector('button:has-text("Start Lights Out"):not([disabled])', { timeout: 10000 });
-await phone.waitForSelector('p:has-text("in as")', { timeout: 10000 });
-console.log('ok: phone auto-joined as player');
-
-await table.click('button:has-text("Start Lights Out")');
-await table.waitForSelector('.lo-grid', { timeout: 10000 });
+// ---------- hand the big screen the table role ----------
+await beTable(host);
+await host.waitForFunction(
+  () => document.querySelector('.setup-line')?.textContent?.includes('1 player · 1 device · table screen'),
+  null, { timeout: 8000 },
+);
+await startGame(host, 'Lights Out');
+await host.waitForSelector('.lo-grid', { timeout: 10000 });
 await phone.waitForSelector('.lo-grid', { timeout: 10000 });
-console.log('ok: game views rendered on both screens');
+if (await host.locator('.lo-cell:not([disabled])').count()) fail('table board should be display-only');
+console.log('ok: table role handed over — board on the table, controls on the phone');
 
-if (await table.locator('.lo-cell:not([disabled])').count()) fail('table board should be display-only');
-console.log('ok: table board is display-only');
-
-const litBefore = await table.locator('.lo-cell.on').count();
 await phone.click('.lo-cell >> nth=12');
-await phone.waitForFunction(() => document.querySelector('.lo-status')?.textContent?.includes('1 moves'), null, { timeout: 5000 });
-await table.waitForFunction(() => document.querySelector('.lo-status')?.textContent?.includes('1 moves'), null, { timeout: 5000 });
-const litAfter = await table.locator('.lo-cell.on').count();
-console.log(`ok: phone move propagated to table (lit ${litBefore} -> ${litAfter})`);
+await host.waitForFunction(() => document.querySelector('.lo-status')?.textContent?.includes('1 moves'), null, { timeout: 6000 });
+console.log('ok: phone move propagated to the table');
 
 // mid-game rename via the floating chip must reach the running game
 await phone.click('.profile-chip');
 await phone.waitForSelector('.avatar-grid', { timeout: 5000 });
 await phone.fill('input', 'Zorro');
 await phone.click('button:has-text("Save")');
-await phone.waitForSelector('p.lo-hint:has-text("Zorro")', { timeout: 6000 });
+await phone.waitForSelector('p.lo-hint:has-text("Zorro")', { timeout: 8000 });
 console.log('ok: mid-game rename shows in the running game');
 
-await table.click('button:has-text("End game")');
-await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 5000 });
-await table.waitForSelector('.tile:has-text("Zorro")', { timeout: 6000 });
+await endGame(host);
+await host.waitForSelector('.tile:has-text("Zorro")', { timeout: 8000 });
 console.log('ok: end game returns everyone to the lobby, rename kept');
 
-// no table screen declared: games still fit and start (table is optional)
-await table.evaluate(() => fetch('/api/lobby/setup', {
-  method: 'POST', headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ players: 1, phones: 1, hasTable: false }),
-}));
-await table.waitForSelector('button.game.ready:has-text("Lights Out")', { timeout: 8000 });
-// selection survives "End game" — only click the box if it isn't selected yet
-if (!(await table.locator('button.game.selected:has-text("Lights Out")').count())) {
-  await table.click('button.game:has-text("Lights Out")');
-}
-await table.waitForSelector('button:has-text("Start Lights Out"):not([disabled])', { timeout: 8000 });
-await table.click('button:has-text("Start Lights Out")');
-await phone.waitForSelector('.lo-grid', { timeout: 8000 });
-console.log('ok: tableless group — game fits, starts, plays on the phone');
-await table.click('button:has-text("End game")');
-await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 5000 });
+// ---------- "3 of us on this phone" grows the group without more devices ----------
+await setSeats(phone, 3);
+await host.waitForFunction(
+  () => document.querySelector('.setup-line')?.textContent?.includes('3 players · 1 device'),
+  null, { timeout: 8000 },
+);
+await host.waitForSelector('button.game.ready:has-text("Memory")', { timeout: 8000 });
+console.log('ok: shared-device seats unlock pass-the-phone games');
 
-if (process.env.SCRATCH) await table.screenshot({ path: process.env.SCRATCH + '/table.png' });
+if (process.env.SCRATCH) await host.screenshot({ path: process.env.SCRATCH + '/table.png' });
 await browser.close();
 console.log('ALL LIGHTSOUT TESTS PASSED');

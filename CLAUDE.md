@@ -177,6 +177,18 @@ any hardware.
   Dice Poker (Yahtzee rules, renamed), Hearts. Each built as a pure plugin
   (no platform changes), audited for playerView leaks + hostile input, and
   covered by tests/more-games.e2e.mjs.
+- 2026-08: **Flow rev (v2)**: the setup wizard is gone. Opening UGE lands you
+  in a home screen as a ready-to-play player (auto name+avatar, editable);
+  the group is DERIVED live from connected devices — one device = one player
+  unless it says "N of us here" (per-device `seats`), and any device may
+  volunteer as the table screen (`isTable`, opt-in; the table holds no seat).
+  Endpoints: `/api/lobby/{seats,table}` replace `/api/lobby/setup`. One
+  unified client (`src/client/shared/App.tsx`) serves `/` and `/join`; the
+  only difference is the localStorage identity key, so one machine can still
+  open a second tab as a player. The room panel ("＋ Add people") holds the
+  QR, the table toggle, the seats stepper, room code/switch, and Update.
+  Solo play needs no table at all; game controls appear on every device when
+  no table exists. Tests share `tests/helpers.mjs`.
 - 2026-08: Feedback round: UNO cards can be flicked at the pile to play;
   game screens are fixed viewport boxes (no page scroll/bounce during play);
   Sketch runs 3 drawings per player (cap 15); ALL games mark the table

@@ -117,8 +117,12 @@ const lobbyOf = (res: express.Response) => res.locals.room.lobby as import('./lo
 const codeOf = (res: express.Response) => res.locals.room.code as string;
 
 api.post('/lobby/sync', (req, res) => res.json(lobbyOf(res).sync(req.body as SyncRequest)));
-api.post('/lobby/setup', (req, res) => {
-  lobbyOf(res).setSetup(req.body.players, req.body.phones, req.body.hasTable);
+api.post('/lobby/seats', (req, res) => {
+  lobbyOf(res).setSeats(req.body.deviceId, req.body.seats);
+  res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
+});
+api.post('/lobby/table', (req, res) => {
+  lobbyOf(res).setTable(req.body.deviceId, req.body.on === true);
   res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
 });
 api.post('/lobby/mode', (req, res) => {

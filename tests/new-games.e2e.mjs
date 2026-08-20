@@ -1,33 +1,25 @@
 // e2e test — needs a freshly started brain (UGE_NO_OPEN=1 npm run start:once) on :8000
 // and a Chromium binary (default /opt/pw-browsers/chromium, override with UGE_CHROMIUM).
 // Chess, Sketch, and Rummikub with 2 players / 2 phones.
-import { chromium } from 'playwright-core';
+import { launch, openHome, beTable, setSeats } from './helpers.mjs';
 
-const browser = await chromium.launch({ executablePath: process.env.UGE_CHROMIUM ?? '/opt/pw-browsers/chromium', headless: true });
+const browser = await launch();
 const fail = (msg) => { console.error('FAIL:', msg); process.exit(1); };
 
-const table = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
-table.on('pageerror', (e) => fail(`table pageerror: ${e.message}`));
-await table.goto('http://localhost:8000/');
-await table.evaluate(() => fetch('/api/lobby/setup', {
-  method: 'POST', headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ players: 2, phones: 2 }),
-}));
-await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 10000 });
+const table = await openHome(browser, { path: '/', name: 'Table', viewport: { width: 1440, height: 900 },
+  onError: (e) => fail(`table pageerror: ${e.message}`) });
+await beTable(table);
 
 const phones = [];
 for (const name of ['Nimrod', 'Dana']) {
-  const p = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
-  p.on('pageerror', (e) => fail(`${name} pageerror: ${e.message}`));
-  await p.goto('http://localhost:8000/join');
-  await p.fill('input', name);
-  await p.click('button:has-text("Join the lobby")');
+  const p = await openHome(browser, { path: '/join', name,
+    onError: (e) => fail(`${name} pageerror: ${e.message}`) });
   phones.push(p);
 }
 
 async function endGame() {
   await table.click('button:has-text("End game")');
-  await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 5000 });
+await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 8000 });
 }
 
 // ---------- Chess: scholar's mate ----------

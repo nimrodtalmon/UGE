@@ -60,11 +60,15 @@ export interface ModeEntry {
   offered: boolean;
 }
 
-/** The group declared on the table before anyone joins ("game night setup"). */
+/**
+ * The group, derived live from who is connected: one device = one player
+ * unless it says otherwise ("3 of us on this phone"), and any device may
+ * volunteer as the shared table screen. Nothing is declared up front.
+ */
 export interface GroupSetup {
   players: number;
   phones: number;
-  /** A screen free to act as the table (TV, laptop, spare tablet). */
+  /** A screen is acting as the table (TV, laptop, spare tablet). */
   hasTable: boolean;
 }
 
@@ -72,7 +76,10 @@ export interface DeviceTile {
   id: string;
   name: string;
   avatar: string;
-  isTableScreen: boolean;
+  /** Volunteered as the shared table screen (shows the board, holds no seat). */
+  isTable: boolean;
+  /** Humans playing on this device — 1 unless it's being passed around. */
+  seats: number;
   role: string | null;
   /** Stopped polling recently (locked phone, backgrounded tab) but not yet dropped. */
   away: boolean;
@@ -107,8 +114,11 @@ export interface LobbySnapshot {
   canStart: boolean;
   blockers: string[];
   game: ActiveGame | null;
-  setup: GroupSetup | null;
+  /** Live group derived from connected devices. */
+  setup: GroupSetup;
   selectedModeId: string | null;
+  /** This device: its own seat count and whether it's acting as the table. */
+  me: { id: string; seats: number; isTable: boolean; role: string | null } | null;
 }
 
 export interface SyncRequest {
@@ -116,7 +126,8 @@ export interface SyncRequest {
   name: string;
   avatar?: string;
   screen: { w: number; h: number };
-  isTableScreen: boolean;
+  /** Opened the host page (`/`) rather than a join link — only a UI hint. */
+  host?: boolean;
 }
 
 export interface SyncResponse {

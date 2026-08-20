@@ -1,25 +1,19 @@
 // e2e test — needs a freshly started brain (UGE_NO_OPEN=1 npm run start:once) on :8000
 // and a Chromium binary (default /opt/pw-browsers/chromium, override with UGE_CHROMIUM).
-// Covers the shared-phone modes: 4 declared players, 1 declared phone.
-import { chromium } from 'playwright-core';
+// Covers the shared-phone modes: four people sharing a single phone.
+import { launch, openHome, beTable, setSeats } from './helpers.mjs';
 
-const browser = await chromium.launch({ executablePath: process.env.UGE_CHROMIUM ?? '/opt/pw-browsers/chromium', headless: true });
+const browser = await launch();
 const fail = (msg) => { console.error('FAIL:', msg); process.exit(1); };
 
-const table = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
-table.on('pageerror', (e) => fail(`table pageerror: ${e.message}`));
-await table.goto('http://localhost:8000/');
-await table.evaluate(() => fetch('/api/lobby/setup', {
-  method: 'POST', headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ players: 4, phones: 1 }),
-}));
-await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 10000 });
+const table = await openHome(browser, { path: '/', name: 'Table', viewport: { width: 1440, height: 900 },
+  onError: (e) => fail(`table pageerror: ${e.message}`) });
+await beTable(table);
 
-const phone = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
-phone.on('pageerror', (e) => fail(`phone pageerror: ${e.message}`));
-await phone.goto('http://localhost:8000/join');
-await phone.fill('input', 'Nimrod');
-await phone.click('button:has-text("Join the lobby")');
+const phone = await openHome(browser, { path: '/join', name: 'Nimrod',
+  onError: (e) => fail(`phone pageerror: ${e.message}`) });
+// four humans sharing one phone — the group the shared-device modes are for
+await setSeats(phone, 4);
 
 // pass-capable games fit 4 players / 1 phone; phone-per-player games hide
 for (const name of ['Memory', 'Alias', 'UNO', 'Codenames']) {
@@ -33,7 +27,7 @@ console.log('ok: only shared-phone-capable games fit 4 players / 1 phone');
 
 async function endGame() {
   await table.click('button:has-text("End game")');
-  await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 5000 });
+await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 8000 });
 }
 
 // ---------- Memory: pass the phone ----------

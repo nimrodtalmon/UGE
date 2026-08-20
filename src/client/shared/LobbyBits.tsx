@@ -17,6 +17,7 @@ export function DeviceTiles(props: { devices: DeviceTile[]; myId: string | null 
             {d.name}
             {d.away ? ' 💤' : ''}
           </span>
+          {d.seats > 1 && !d.isTable && <span className="badge seats">{d.seats} here</span>}
           {d.role && <span className={`badge ${d.role === 'table' ? 'table' : ''}`}>{d.role === 'hand' ? 'player' : d.role}</span>}
         </div>
       ))}
@@ -75,7 +76,7 @@ export function GameList(props: {
       {hidden.length > 0 && (
         <button className="games-more" onClick={() => setShowAll(true)}>
           +{hidden.length} more game{hidden.length === 1 ? '' : 's'}
-          <span className="meta">don't fit your group</span>
+          <span className="meta">add people to unlock</span>
         </button>
       )}
       {props.games.length === 0 && <p className="muted">no games installed</p>}

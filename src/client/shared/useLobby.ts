@@ -18,8 +18,8 @@ async function post<T>(url: string, body: unknown): Promise<T> {
  * Register this browser as a device and keep a live lobby snapshot via
  * polling. Device identity survives reloads through localStorage.
  */
-export function useLobby(me: { name: string; avatar?: string; isTableScreen: boolean } | null) {
-  const storageKey = me?.isTableScreen ? 'uge:table-id' : 'uge:device-id';
+export function useLobby(me: { name: string; avatar?: string; host: boolean } | null) {
+  const storageKey = me?.host ? 'uge:table-id' : 'uge:device-id';
   const [snapshot, setSnapshot] = useState<LobbySnapshot | null>(null);
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [offline, setOffline] = useState(false);
@@ -43,7 +43,7 @@ export function useLobby(me: { name: string; avatar?: string; isTableScreen: boo
           name: me.name,
           avatar: me.avatar,
           screen: { w: window.screen.width, h: window.screen.height },
-          isTableScreen: me.isTableScreen,
+          host: me.host,
         });
         if (stopped) return;
         localStorage.setItem(storageKey, res.deviceId);
@@ -65,7 +65,7 @@ export function useLobby(me: { name: string; avatar?: string; isTableScreen: boo
       clearInterval(timer);
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, [me?.name, me?.avatar, me?.isTableScreen, storageKey]);
+  }, [me?.name, me?.avatar, me?.host, storageKey]);
 
   /**
    * POST a lobby/game mutation. deviceId is injected so every endpoint can

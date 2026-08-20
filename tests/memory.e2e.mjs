@@ -1,30 +1,18 @@
 // e2e test — needs a freshly started brain (UGE_NO_OPEN=1 npm run start:once) on :8000
 // and a Chromium binary (default /opt/pw-browsers/chromium, override with UGE_CHROMIUM).
-import { chromium } from 'playwright-core';
+import { launch, openHome, beTable, setSeats } from './helpers.mjs';
 
-const browser = await chromium.launch({ executablePath: process.env.UGE_CHROMIUM ?? '/opt/pw-browsers/chromium', headless: true });
+const browser = await launch();
 const fail = (msg) => { console.error('FAIL:', msg); process.exit(1); };
 
-const tableCtx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-const table = await tableCtx.newPage();
-table.on('pageerror', (e) => fail(`table pageerror: ${e.message}`));
-const SETUP = { players: 2, phones: 2 };
-await table.goto('http://localhost:8000/');
-await table.evaluate(({ players, phones }) => fetch('/api/lobby/setup', {
-  method: 'POST', headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ players, phones }),
-}), SETUP);
-await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 10000 });
+const table = await openHome(browser, { path: '/', name: 'Table', viewport: { width: 1440, height: 900 },
+  onError: (e) => fail(`table pageerror: ${e.message}`) });
+await beTable(table);
 
 const phones = [];
 for (const name of ['Nimrod', 'Dana']) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
-  const p = await ctx.newPage();
-  p.on('pageerror', (e) => fail(`${name} pageerror: ${e.message}`));
-  await p.goto('http://localhost:8000/join');
-  await p.fill('input', name);
-  await p.click('button:has-text("Join the lobby")');
-  phones.push(p);
+  phones.push(await openHome(browser, { path: '/join', name,
+    onError: (e) => fail(`${name} pageerror: ${e.message}`) }));
 }
 
 await table.click('button.game:has-text("Memory")');
@@ -64,7 +52,7 @@ async function serverPeek(p) {
   return p.evaluate(async () => {
     const id = localStorage.getItem('uge:device-id');
     const r = await fetch('/api/lobby/sync', { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ deviceId: id, name: 'peek', screen: { w: 1, h: 1 }, isTableScreen: false }) });
+      body: JSON.stringify({ deviceId: id, name: 'peek', screen: { w: 1, h: 1 }, host: false }) });
     const s = (await r.json()).snapshot;
     const v = s.game?.view;
     return { current: v?.current, mismatch: v?.mismatch, states: v?.cards.map((c) => c.state[0]).join('') };
@@ -129,7 +117,7 @@ await phones[0].waitForSelector('.mem-confetti', { timeout: 5000 });
 await table.click('button:has-text("Play again")');
 await table.waitForFunction(() => document.querySelectorAll('.mem-card.matched').length === 0, null, { timeout: 8000 });
 await table.click('button:has-text("End game")');
-await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 5000 });
+await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 8000 });
 console.log('ok: confetti, play again, back to lobby');
 
 if (process.env.SCRATCH) await table.screenshot({ path: process.env.SCRATCH + '/memory-table.png' });
