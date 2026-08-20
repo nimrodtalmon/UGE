@@ -33,5 +33,19 @@
         "hotseat": true
       }
     }
-  ]
+  ],
+  "bots": {
+    "levels": [
+      {
+        "id": "easy",
+        "name": "Easy",
+        "tagline": "plays the first card that fits"
+      },
+      {
+        "id": "normal",
+        "name": "Normal",
+        "tagline": "saves its wilds and picks its colours"
+      }
+    ]
+  }
 }

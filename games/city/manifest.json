@@ -1,0 +1,40 @@
+{
+  "id": "city",
+  "name": "Tiny City",
+  "players": {
+    "min": 1,
+    "max": 1
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
+  "icon": "🏙️",
+  "tagline": "zone it, grow it, keep them happy",
+  "modes": [
+    {
+      "id": "sandbox",
+      "name": "Sandbox",
+      "tagline": "no fail state",
+      "choice": true,
+      "config": {
+        "sandbox": true
+      }
+    },
+    {
+      "id": "mayor",
+      "name": "Mayor",
+      "tagline": "20 years to 2000 people",
+      "choice": true,
+      "config": {
+        "goal": 2000,
+        "years": 20
+      }
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import type { GameDef } from '../../src/shared/plugin.js';
+import { decide } from './bot.js';
 
 const START_DICE = 5;
 const REVEAL_MS = 8_000;
@@ -203,6 +204,25 @@ const game: GameDef<LdState, LdView> = {
     return state.winner !== null
       ? { text: `${state.names[state.winner]} out-bluffs everyone! 🎲` }
       : null;
+  },
+
+  /**
+   * AI opponent — see bot.ts. It weighs the bid against its OWN cup and the
+   * public dice counts; the other cups are in the state and stay unread, so it
+   * is bluffing on the same information a person has. The reveal is left to the
+   * clients' timer.
+   */
+  bot(state, { seat, level, random }) {
+    if (state.winner !== null || state.phase !== 'bidding' || state.turn !== seat) return null;
+    const me = state.seats[seat];
+    if (!me || me.out) return null;
+    // the bidder's dice COUNT is public — their faces are not, and stay unread
+    const bidderDice = state.bidder >= 0 && state.bidder !== seat
+      ? (state.seats[state.bidder]?.dice.length ?? 0)
+      : 0;
+    const action = decide(state.bid, me.dice, totalDice(state), bidderDice, level, random);
+    if (action.kind === 'bid') return { name: 'bid', args: [action.quantity, action.face] };
+    return state.bid === null ? null : { name: 'dudo' };
   },
 };
 

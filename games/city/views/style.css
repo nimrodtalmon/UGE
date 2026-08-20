@@ -1,0 +1,304 @@
+/* Tiny City — every class prefixed ct-. Heights are reserved everywhere the
+   text changes, so the map never moves under a thumb between taps. */
+
+.ct-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.8rem 0.4rem;
+  text-align: center;
+}
+/* the phone is a fixed box: the map scrolls inside itself, the page never does.
+   the platform's game controls sit top-right — keep clear of them */
+.ct-phone {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  justify-content: flex-start;
+  padding: 2.7rem 0.4rem 0.5rem;
+  gap: 0.45rem;
+  overscroll-behavior: none;
+}
+/* on a short phone the map is the only thing allowed to give ground */
+.ct-phone > * { flex: 0 0 auto; }
+.ct-phone .ct-map { flex: 0 1 auto; }
+.ct-title { font-size: 1.6rem; font-weight: 800; letter-spacing: 0.12em; margin: 0; }
+
+/* ---- stats: four fixed boxes, one of them holding the happiness bar ---- */
+.ct-stats {
+  display: flex;
+  gap: 0.4rem;
+  max-width: 100%;
+}
+.ct-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12rem;
+  height: 3.4rem;
+  min-width: 4.9rem;
+  padding: 0 0.55rem;
+  border-radius: 12px;
+  background: #1a1e26;
+  border: 1px solid #2c323c;
+}
+.ct-stats.ct-big .ct-stat { height: 4.6rem; min-width: 7.5rem; }
+.ct-stat-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: #8a8f98;
+  line-height: 1;
+}
+.ct-stat-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.ct-stats.ct-big .ct-stat-value { font-size: 1.7rem; }
+.ct-bad { color: #e2645f; }
+
+.ct-bar {
+  width: 3.6rem;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.ct-stats.ct-big .ct-bar { width: 6rem; height: 7px; }
+.ct-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: #6fd08c;
+  transition: width 0.3s ease-out;
+}
+.ct-bar-fill.ct-low { background: #e2645f; }
+
+/* one reserved line of plumbing: rooms, jobs, power, the books, the target */
+.ct-meters {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-height: 1.3rem;
+  margin: 0;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: #8a8f98;
+  white-space: nowrap;
+}
+
+/* ---- palette: big chips, one selected, scrolls sideways ---- */
+.ct-palette {
+  display: flex;
+  gap: 0.45rem;
+  max-width: 100%;
+  padding: 0.1rem 0.35rem 0.3rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.ct-palette::-webkit-scrollbar { display: none; }
+.ct-chip {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 0;
+  border-radius: 14px;
+  background: #23272e;
+  border: 1px solid #3f4756;
+  color: #9aa1ad;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.ct-chip-icon { font-size: 1.4rem; line-height: 1; }
+.ct-chip-cost { font-size: 0.66rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ct-chip.ct-poor { opacity: 0.4; }
+.ct-chip.ct-on {
+  background: #2f6f47;
+  border-color: #6fd08c;
+  color: #eaf6ee;
+  box-shadow: 0 0 0 2px rgba(111, 208, 140, 0.35);
+}
+.ct-chip.ct-raze.ct-on {
+  background: #7a4a24;
+  border-color: #e0a35e;
+  box-shadow: 0 0 0 2px rgba(224, 163, 94, 0.35);
+}
+.ct-chip:disabled { opacity: 0.35; cursor: default; }
+
+/* ---- the map: scrolls inside itself, never scrolls the page ---- */
+.ct-map {
+  min-height: 0;
+  max-width: 100%;
+  overflow: auto;
+  padding: 5px;
+  border-radius: 12px;
+  background: #16202a;
+  border: 1px solid #2c323c;
+  touch-action: manipulation;
+}
+.ct-grid {
+  --ct-cell: clamp(2rem, calc((100vw - 2.4rem) / var(--ct-w)), 2.9rem);
+  display: grid;
+  grid-template-columns: repeat(var(--ct-w), var(--ct-cell));
+  gap: 2px;
+}
+.ct-map.ct-big .ct-grid {
+  --ct-cell: clamp(2rem, min(calc(78vw / var(--ct-w)), calc(46vh / var(--ct-h))), 4.6rem);
+  gap: 3px;
+}
+
+.ct-tile {
+  position: relative;
+  width: var(--ct-cell);
+  height: var(--ct-cell);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  background: #34512f;
+  font-size: calc(var(--ct-cell) * 0.58);
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+/* the table's map is all disabled buttons — keep it looking like a city */
+.ct-tile:disabled { opacity: 1; cursor: default; }
+.ct-emoji { line-height: 1; }
+
+.ct-k-empty { background: #34512f; }
+.ct-k-water { background: #1d3f63; }
+.ct-k-road { background: #4a4e57; }
+.ct-k-house { background: #3d5c37; }
+.ct-k-shop { background: #4a5340; }
+.ct-k-factory { background: #55503c; }
+.ct-k-park { background: #2f5c34; }
+.ct-k-plant { background: #5a4a3a; }
+
+/* a laptop can be a hand too, and the platform's global button hover would
+   wash the tiles grey */
+@media (hover: hover) {
+  .ct-tile:not(:disabled):hover {
+    filter: brightness(1.3);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  .ct-chip:not(:disabled):hover { border-color: #6b7686; }
+  .ct-chip.ct-on:not(:disabled):hover { background: #2f6f47; border-color: #6fd08c; }
+}
+
+.ct-warn,
+.ct-level {
+  position: absolute;
+  font-size: calc(var(--ct-cell) * 0.3);
+  font-weight: 800;
+  line-height: 1;
+  border-radius: 4px;
+  padding: 1px 2px;
+}
+.ct-warn {
+  top: -1px;
+  right: -1px;
+  color: #1b1f27;
+  background: #e4b83d;
+}
+.ct-level {
+  bottom: -1px;
+  right: -1px;
+  color: #eaf6ee;
+  background: rgba(0, 0, 0, 0.45);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- one status line: guard warning, result, or standing advice ---- */
+.ct-hint {
+  min-height: 2.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 0.5rem;
+  max-width: 92vw;
+  font-size: 0.85rem;
+  color: #8a8f98;
+  text-align: center;
+}
+.ct-hint.ct-warned { color: #e4b83d; font-weight: 700; }
+.ct-hint.ct-over { color: #e6e9ee; font-size: 1.15rem; font-weight: 800; }
+
+/* ---- the year button ---- */
+.ct-actions {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.5rem;
+  width: min(94vw, 24rem);
+}
+.ct-next {
+  flex: 1;
+  height: 3.2rem;
+  border-radius: 14px;
+  border: 1px solid #3d8a57;
+  background: #1c3a29;
+  color: #6fd08c;
+  font-size: 1.1rem;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.ct-next:disabled { opacity: 0.4; cursor: default; }
+.ct-reset {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 14px;
+  border: 1px solid #3f4756;
+  background: #23272e;
+  color: #9aa1ad;
+  font-size: 1.2rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.ct-reset.ct-armed { border-color: #e4b83d; color: #e4b83d; }
+
+/* ---- the log: the last eight years, newest first ---- */
+.ct-log {
+  list-style: none;
+  margin: 0;
+  padding: 0.45rem 0.6rem;
+  width: min(96vw, 30rem);
+  min-height: 5rem;
+  max-height: 6.4rem;
+  overflow-y: auto;
+  border-radius: 12px;
+  background: #1a1e26;
+  border: 1px solid #2c323c;
+  text-align: left;
+  font-size: 0.73rem;
+  line-height: 1.45;
+  color: #8a8f98;
+  font-variant-numeric: tabular-nums;
+}
+.ct-log.ct-big {
+  width: min(84vw, 54rem);
+  min-height: 7.5rem;
+  max-height: 11rem;
+  font-size: 0.95rem;
+}
+.ct-log-line { padding: 0.05rem 0; }
+.ct-log-line.ct-fresh { color: #e6e9ee; font-weight: 600; }

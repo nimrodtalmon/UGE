@@ -1,0 +1,571 @@
+/* Hotel Empire — every class is prefixed ho- so nothing leaks between games.
+   Heights of anything that changes weekly (stats, report, warnings) are
+   reserved, so settling a week never shifts the buttons under a thumb. */
+
+.ho-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 0.6rem;
+  text-align: center;
+  color: #e6e9ee;
+}
+/* the platform's game controls sit top-right; the next-week bar is pinned
+   to the bottom — keep clear of both */
+.ho-phone {
+  padding-top: 2.8rem;
+  padding-bottom: 5.4rem;
+}
+.ho-phone > * {
+  width: min(100%, 30rem);
+}
+.ho-table {
+  padding-top: 1.2rem;
+}
+/* the pinned bar and the sheet span the viewport, not the content column */
+.ho-phone > .ho-bottom,
+.ho-phone > .ho-sheet-wrap {
+  width: auto;
+}
+
+.ho-over {
+  margin: 0;
+  min-height: 1.7rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+.ho-over.quiet {
+  color: #8a8f98;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.ho-table .ho-over {
+  font-size: 1.6rem;
+}
+
+/* ---- stats strip ------------------------------------------------------- */
+.ho-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+}
+.ho-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.15rem;
+  min-height: 4.3rem;
+  padding: 0.4rem 0.25rem;
+  border-radius: 12px;
+  background: #1a1e26;
+  border: 1px solid #333a45;
+}
+.ho-stat-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7d838d;
+}
+.ho-stat-value {
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  min-height: 1.35rem;
+  line-height: 1.35rem;
+}
+.ho-stat-sub {
+  font-size: 0.65rem;
+  color: #8a8f98;
+  min-height: 1.6rem;
+  line-height: 0.8rem;
+}
+.ho-bar {
+  width: 80%;
+  height: 0.5rem;
+  margin-top: 0.35rem;
+  border-radius: 999px;
+  background: #2a303b;
+  overflow: hidden;
+}
+.ho-bar-fill {
+  width: var(--ho-fill, 0%);
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #b8823a, #e4b83d);
+  transition: width 0.4s;
+}
+.ho-stats.big .ho-stat {
+  min-height: 5.6rem;
+}
+.ho-stats.big .ho-stat-value {
+  font-size: 1.6rem;
+  min-height: 2rem;
+  line-height: 2rem;
+}
+.ho-stats.big .ho-stat-sub {
+  font-size: 0.8rem;
+  line-height: 1rem;
+}
+
+/* ---- weekly report card (fixed height, empty or full) ------------------ */
+.ho-report {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 8.4rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 14px;
+  background: #1d232e;
+  border: 1px solid #38414f;
+}
+.ho-report.empty {
+  justify-content: center;
+  border-style: dashed;
+  border-color: #333a45;
+  background: #171b22;
+}
+.ho-report-hint {
+  margin: 0;
+  color: #7d838d;
+  font-size: 0.85rem;
+}
+.ho-report-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 1rem;
+}
+.ho-profit {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.ho-good {
+  color: #6fd08c;
+}
+.ho-bad {
+  color: #e0655f;
+}
+.ho-report-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.3rem;
+}
+.ho-report-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.3rem 0.1rem;
+  border-radius: 9px;
+  background: #151920;
+}
+.ho-report-grid span {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7d838d;
+}
+.ho-report-grid strong {
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+.ho-report-note {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #98a0ac;
+  min-height: 1.1rem;
+}
+
+/* ---- the tower --------------------------------------------------------- */
+.ho-tower {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.4rem 0.4rem 0;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #141a24, #10141b);
+  border: 1px solid #2c3341;
+}
+.ho-roof {
+  font-size: 0.75rem;
+  color: #98a0ac;
+  padding: 0.2rem 0;
+  border-bottom: 1px dashed #333a45;
+}
+.ho-floor {
+  display: flex;
+  align-items: stretch;
+  gap: 0.3rem;
+}
+.ho-floor-no {
+  width: 1.2rem;
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6d7481;
+}
+.ho-slots {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.3rem;
+}
+.ho-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.05rem;
+  min-height: 3.5rem;
+  padding: 0.2rem 0.1rem;
+  border-radius: 10px;
+  border: 1px solid #39424f;
+  background: #222a36;
+  color: inherit;
+  font: inherit;
+  overflow: hidden;
+}
+button.ho-slot {
+  cursor: pointer;
+}
+.ho-slot-icon {
+  font-size: 1.15rem;
+  line-height: 1.3rem;
+}
+.ho-slot-name {
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+.ho-slot-sub {
+  font-size: 0.58rem;
+  color: #9aa2ae;
+  font-variant-numeric: tabular-nums;
+}
+.ho-slot.ho-room {
+  background: #23303f;
+  border-color: #38556e;
+}
+.ho-slot.ho-fac {
+  background: #2a2740;
+  border-color: #4a4470;
+}
+.ho-slot.ho-reception {
+  grid-column: span 2;
+  background: #2f2a1c;
+  border-color: #6b5a2a;
+}
+.ho-slot.ho-empty {
+  background: #161b22;
+  border: 2px dashed #3a434f;
+  color: #5b6472;
+}
+button.ho-slot.ho-empty:active {
+  background: #1d242e;
+}
+.ho-plus {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.ho-street {
+  height: 0.4rem;
+  border-radius: 0 0 12px 12px;
+  background: repeating-linear-gradient(90deg, #3b4351 0 12px, #2b323d 12px 24px);
+}
+
+/* ---- purchase buttons -------------------------------------------------- */
+.ho-buys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+.ho-buy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  min-height: 3.2rem;
+  padding: 0.45rem 0.2rem;
+  border-radius: 12px;
+  border: 1px solid #3f4756;
+  background: #232a34;
+  color: #e6e9ee;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ho-buy em {
+  font-style: normal;
+  font-size: 0.66rem;
+  font-weight: 500;
+  color: #9aa2ae;
+}
+.ho-buy:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+.ho-buy:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+/* ---- rate / staff panels ----------------------------------------------- */
+.ho-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 12px;
+  background: #1a1e26;
+  border: 1px solid #333a45;
+}
+.ho-panel-title {
+  margin: 0;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7d838d;
+  text-align: left;
+}
+.ho-panel-hint {
+  margin: 0;
+  min-height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  color: #7d838d;
+}
+.ho-rate {
+  display: grid;
+  grid-template-columns: 4rem auto 1fr;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.6rem;
+}
+.ho-rate-name {
+  font-size: 0.85rem;
+  text-align: left;
+  white-space: nowrap;
+}
+.ho-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.ho-step {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 9px;
+  border: 1px solid #3f4756;
+  background: #262e3a;
+  color: #e6e9ee;
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+.ho-step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.ho-step-value {
+  min-width: 3.1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.ho-rate-mood {
+  font-size: 0.68rem;
+  text-align: right;
+  color: #8a8f98;
+}
+.ho-rate-mood.bargain {
+  color: #6fd08c;
+}
+.ho-rate-mood.pricey {
+  color: #e4b83d;
+}
+.ho-rate-mood.greedy {
+  color: #e0655f;
+}
+.ho-warn {
+  margin: 0;
+  min-height: 1.2rem;
+  font-size: 0.75rem;
+  color: #6d7481;
+}
+.ho-warn.on {
+  color: #e4b83d;
+  font-weight: 700;
+}
+
+/* ---- pinned next-week bar ---------------------------------------------- */
+.ho-bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0.55rem 0.7rem calc(0.55rem + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, #12151be0, #12151b);
+  z-index: 20;
+}
+.ho-next {
+  width: min(100%, 30rem);
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #2f8f56, #247144);
+  color: #f2fff6;
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35);
+}
+.ho-next:active {
+  transform: scale(0.98);
+}
+
+/* ---- build sheet -------------------------------------------------------- */
+.ho-sheet-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: #0b0d12cc;
+}
+.ho-sheet {
+  width: min(100%, 30rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.9rem 0.8rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  border-radius: 18px 18px 0 0;
+  background: #171c24;
+  border: 1px solid #333a45;
+  max-height: 88dvh;
+  overflow-y: auto;
+}
+.ho-sheet-title {
+  margin: 0;
+  font-weight: 800;
+}
+.ho-sheet-sub {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #8a8f98;
+}
+.ho-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.ho-option {
+  display: grid;
+  grid-template-columns: 2.6rem 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.6rem;
+  border-radius: 12px;
+  border: 1px solid #39424f;
+  background: #23303f;
+  color: #e6e9ee;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ho-option.fac {
+  background: #2a2740;
+  border-color: #4a4470;
+}
+.ho-option:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+.ho-option-icon {
+  font-size: 1.3rem;
+}
+.ho-option-text {
+  display: flex;
+  flex-direction: column;
+}
+.ho-option-text em {
+  font-style: normal;
+  font-size: 0.7rem;
+  color: #9aa2ae;
+}
+.ho-option-cost {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.ho-danger,
+.ho-cancel {
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #3f4756;
+  background: #262e3a;
+  color: #e6e9ee;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ho-danger {
+  background: #4a2626;
+  border-color: #7a3b3b;
+}
+
+/* ---- table screen ------------------------------------------------------- */
+.ho-table .ho-stats {
+  width: min(96vw, 60rem);
+}
+.ho-columns {
+  display: grid;
+  grid-template-columns: minmax(18rem, 26rem) minmax(18rem, 30rem);
+  gap: 1rem;
+  align-items: start;
+  width: min(96vw, 60rem);
+}
+.ho-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.ho-ledger {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-variant-numeric: tabular-nums;
+}
+.ho-ledger-row {
+  display: grid;
+  grid-template-columns: 3.4rem 3rem 3.4rem 1fr 1fr 1fr;
+  gap: 0.3rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 8px;
+  background: #1a1e26;
+  font-size: 0.82rem;
+}
+.ho-ledger-row.head {
+  background: none;
+  color: #7d838d;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ho-ledger-empty {
+  color: #7d838d;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .ho-columns {
+    grid-template-columns: 1fr;
+  }
+}

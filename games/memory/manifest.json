@@ -33,5 +33,24 @@
         "pass": true
       }
     }
-  ]
+  ],
+  "bots": {
+    "levels": [
+      {
+        "id": "easy",
+        "name": "Easy",
+        "tagline": "forgets almost everything"
+      },
+      {
+        "id": "normal",
+        "name": "Normal",
+        "tagline": "remembers about half the table"
+      },
+      {
+        "id": "sharp",
+        "name": "Sharp",
+        "tagline": "forgets a card once in a while"
+      }
+    ]
+  }
 }

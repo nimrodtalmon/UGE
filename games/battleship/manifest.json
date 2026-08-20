@@ -5,5 +5,24 @@
   "roles": { "table": "optional", "hand": "per-player", "extras": [] },
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "🚢",
-  "tagline": "sink the fleet"
+  "tagline": "sink the fleet",
+  "bots": {
+    "levels": [
+      {
+        "id": "easy",
+        "name": "Easy",
+        "tagline": "fires wherever"
+      },
+      {
+        "id": "normal",
+        "name": "Normal",
+        "tagline": "finishes off what it hits"
+      },
+      {
+        "id": "sharp",
+        "name": "Sharp",
+        "tagline": "searches in a checkerboard, follows the hull"
+      }
+    ]
+  }
 }

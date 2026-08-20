@@ -1,4 +1,5 @@
 import type { GameDef } from '../../src/shared/plugin.js';
+import { bestColor, choose, randomColor } from './bot.js';
 
 export type Color = 'r' | 'g' | 'b' | 'y';
 export type Sym = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'skip' | 'rev' | '+2' | 'wild' | '+4';
@@ -245,6 +246,40 @@ const game: GameDef<WcState, WcView> = {
     return state.winner !== null
       ? { text: `${state.playerNames[state.winner]} wins! 🎉` }
       : null;
+  },
+
+  /**
+   * AI opponent — see bot.ts. It reads its OWN hand and the discard pile only;
+   * the other hands and the draw order stay as hidden from it as they are from
+   * a person sitting in that seat.
+   */
+  bot(state, { seat, level, random }) {
+    if (state.winner !== null || state.turn !== seat) return null;
+    // hotseat is a pass-the-phone mode: a bot never grabs the phone itself, so
+    // it simply has nothing to do until the seat is unlocked
+    if (state.hotseat && !state.unlocked) return null;
+    const hand = state.hands[seat];
+    if (!hand || hand.length === 0) return null;
+    const top = state.discard[state.discard.length - 1];
+    if (!top) return null;
+
+    // just drew a playable card: play it (calling a colour if it is a wild)
+    if (state.pending) {
+      if (state.pending.player !== seat) return null;
+      const idx = state.pending.cardIdx;
+      const card = hand[idx];
+      if (!card || !isLegal(card, top, state.color)) return { name: 'keep' };
+      if (card.c !== 'w') return { name: 'play', args: [idx] };
+      const color = level === 'easy' ? randomColor(random) : bestColor(hand, idx, random);
+      return { name: 'play', args: [idx, color] };
+    }
+
+    const choice = choose(hand, top, state.color, level, random);
+    if (!choice) return { name: 'draw' };
+    return {
+      name: 'play',
+      args: choice.color === undefined ? [choice.cardIdx] : [choice.cardIdx, choice.color],
+    };
   },
 };
 

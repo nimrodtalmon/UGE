@@ -18,7 +18,8 @@ if (!groupLine.includes('1 player') || !groupLine.includes('1 device')) {
   fail(`a lone device should be a 1-player group, got: ${groupLine}`);
 }
 await host.waitForSelector('button.game.ready:has-text("Lights Out")', { timeout: 8000 });
-if (await host.locator('button.game:has-text("Memory")').count()) fail('2-player game visible with 1 player');
+// Hearts needs 4 and ships no AI, so it must stay out of a lone player's list
+if (await host.locator('button.game:has-text("Hearts")').count()) fail('4-player game visible with 1 player');
 console.log('ok: no wizard — one device lands as a 1-player group with fitting games');
 
 // solo play with no table screen at all

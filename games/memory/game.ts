@@ -1,4 +1,5 @@
 import type { GameDef } from '../../src/shared/plugin.js';
+import { pick, recallOf } from './bot.js';
 
 const FACES = ['🐤', '🦊', '🐙', '🦄', '🍉', '🍕', '🚀', '🎈', '🌵', '🐳', '⚽', '🎲'];
 
@@ -18,6 +19,11 @@ export interface MemoryState {
   mismatchAt: number;
   /** One shared phone passed around; seats are virtual. */
   pass: boolean;
+  /**
+   * Every card that has been turned face up, in flip order. Public knowledge —
+   * the whole table saw those faces — and the only thing a bot may remember.
+   */
+  seen: number[];
 }
 
 function shuffle<T>(items: T[], random: () => number): T[] {
@@ -50,6 +56,7 @@ const game: GameDef<MemoryState> = {
       mismatch: false,
       mismatchAt: 0,
       pass,
+      seen: [],
     };
   },
 
@@ -67,13 +74,16 @@ const game: GameDef<MemoryState> = {
       }
       const firstIdx = state.cards.findIndex((c) => c.state === 'up');
       const cards = state.cards.map((c, j) => (j === i ? { ...c, state: 'up' as const } : c));
-      if (firstIdx === -1) return { ...state, cards };
+      // everyone at the table just saw this face — remember that it was shown
+      const seen = state.seen.includes(i) ? state.seen : [...state.seen, i];
+      if (firstIdx === -1) return { ...state, cards, seen };
       if (cards[firstIdx]!.face === card.face) {
         const scores = [...state.scores];
         scores[state.current] = (scores[state.current] ?? 0) + 1;
         return {
           ...state,
           scores,
+          seen,
           cards: cards.map((c, j) =>
             j === i || j === firstIdx
               ? { ...c, state: 'matched' as const, matchedBy: state.current }
@@ -81,7 +91,7 @@ const game: GameDef<MemoryState> = {
           ),
         };
       }
-      return { ...state, cards, mismatch: true, mismatchAt: ctx.now };
+      return { ...state, cards, seen, mismatch: true, mismatchAt: ctx.now };
     },
 
     /** Flip a mismatched pair back and pass the turn. Sent by clients on a timer. */
@@ -113,6 +123,18 @@ const game: GameDef<MemoryState> = {
     return winners.length === 1
       ? { text: `${winners[0]} wins with ${top} pairs! 🏆` }
       : { text: `It's a tie — ${winners.join(' & ')} (${top} pairs)` };
+  },
+
+  /**
+   * AI opponent. It never reads a face-down card it was not shown: see bot.ts.
+   * One flip per call, and it holds off while a mismatch is on display so the
+   * humans get their look (the clients' resolve timer clears it).
+   */
+  bot(state, { seat, level, random }) {
+    if (state.mismatch || state.current !== seat) return null;
+    if (state.cards.every((c) => c.state === 'matched')) return null;
+    const i = pick(state.cards, state.seen, recallOf(level), random(), random());
+    return i === null ? null : { name: 'flip', args: [i] };
   },
 };
 

@@ -1,4 +1,5 @@
 import type { GameDef } from '../../src/shared/plugin.js';
+import { aim } from './bot.js';
 
 /**
  * Classic Battleship, two phones + table. House-rule simplifications:
@@ -198,6 +199,18 @@ const game: GameDef<BsState, BsView> = {
       }
     }
     return null;
+  },
+
+  /**
+   * AI opponent — see bot.ts. It fires on its own shot marks alone: the
+   * opponent's fleet sits in the same state object and is never read here.
+   */
+  bot(state, { seat, level, random }) {
+    if (seat !== 0 && seat !== 1) return null;
+    if (state.phase === 'place') return state.ready[seat] ? null : { name: 'ready' };
+    if (state.current !== seat) return null;
+    const shot = aim(state.shots[seat === 0 ? 1 : 0], level, random);
+    return shot ? { name: 'fire', args: [shot.x, shot.y] } : null;
   },
 };
 

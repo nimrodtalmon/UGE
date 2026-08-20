@@ -58,5 +58,25 @@ if (!blackMoved) fail('the AI did not reply');
 console.log('ok: the AI answered on its own and handed the turn back');
 await endGame(me);
 
+// ---------- a bot plays a hidden-hand game too ----------
+await me.click('.seg:has-text("Ready")');
+await me.waitForSelector('.game.ready:has-text("Memory")', { timeout: 10000 });
+await me.click('.game:has-text("Memory")');
+await me.waitForSelector('.bot-row', { timeout: 8000 });
+await me.click('button:has-text("Start Memory")');
+await me.waitForSelector('.mem-card', { timeout: 10000 });
+// play my turn: flip two cards, then the AI must take its turn unaided
+for (const n of [0, 1]) {
+  const card = me.locator('.mem-card.down:not([disabled])').first();
+  if (await card.count()) await card.click().catch(() => {});
+  await me.waitForTimeout(600);
+}
+await me.waitForFunction(
+  () => document.querySelectorAll('.mem-card.up, .mem-card.matched').length > 0,
+  null, { timeout: 10000 },
+);
+console.log('ok: memory — the AI takes its own turns');
+await endGame(me);
+
 await browser.close();
 console.log('ALL BOT TESTS PASSED');

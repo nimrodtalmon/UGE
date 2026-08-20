@@ -1,0 +1,40 @@
+{
+  "id": "hotel",
+  "name": "Hotel Empire",
+  "players": {
+    "min": 1,
+    "max": 1
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
+  "icon": "🏨",
+  "tagline": "build rooms, delight guests, count the cash",
+  "modes": [
+    {
+      "id": "relaxed",
+      "name": "Relaxed",
+      "tagline": "no bankruptcy",
+      "choice": true,
+      "config": {
+        "relaxed": true
+      }
+    },
+    {
+      "id": "tycoon",
+      "name": "Tycoon",
+      "tagline": "reach $50k in 24 weeks",
+      "choice": true,
+      "config": {
+        "goal": 50000,
+        "weeks": 24
+      }
+    }
+  ]
+}
