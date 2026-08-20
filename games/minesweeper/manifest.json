@@ -1,0 +1,54 @@
+{
+  "id": "minesweeper",
+  "name": "Minesweeper",
+  "players": {
+    "min": 1,
+    "max": 1
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
+  "icon": "💣",
+  "tagline": "don't tap the bomb",
+  "modes": [
+    {
+      "id": "easy",
+      "name": "Easy",
+      "tagline": "9×9 · 10 mines",
+      "choice": true,
+      "config": {
+        "w": 9,
+        "h": 9,
+        "mines": 10
+      }
+    },
+    {
+      "id": "medium",
+      "name": "Medium",
+      "tagline": "12×12 · 25 mines",
+      "choice": true,
+      "config": {
+        "w": 12,
+        "h": 12,
+        "mines": 25
+      }
+    },
+    {
+      "id": "hard",
+      "name": "Hard",
+      "tagline": "14×18 · 50 mines",
+      "choice": true,
+      "config": {
+        "w": 14,
+        "h": 18,
+        "mines": 50
+      }
+    }
+  ]
+}

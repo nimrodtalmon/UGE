@@ -38,13 +38,16 @@ games/<id>/
 A manifest-only folder shows up in the lobby as "not playable yet" — useful
 for stubbing.
 
-The table asks for the group first ("N players, M phones, table screen
-yes/no") and matches games against it. Phone need defaults to one per player
-(when `hand` is per-player) plus one per extra role; set `phones.min` when
-devices can be shared (Codenames: one spymasters device + one shared
-guessing phone → 2). `players` counts HUMANS, `phones` counts devices, and
-the table screen is its own question — keep the three separate when
-declaring requirements.
+Nothing is declared up front: the lobby derives the group from who is
+connected — one device is one player unless it says "N of us here", and any
+device may volunteer as the table screen. Games are matched against that
+live group, so the list reshapes itself as people join.
+
+Phone need defaults to one per player (when `hand` is per-player) plus one
+per extra role; set `phones.min` when devices can be shared (Codenames: one
+spymasters device + one shared guessing phone → 2). `players` counts HUMANS,
+`phones` counts devices, and the table screen is separate — keep the three
+apart when declaring requirements.
 
 Current audit of the built-in games (players × phones). Every built-in game
 declares the table screen **optional** — phones carry all the info needed to
@@ -72,6 +75,10 @@ still play everything:
 | Battleship | — | 2 | one per player |
 | Yatze | phone each / pass | 1–8 | per player / 1 |
 | Hearts | — | 4 | one per player |
+| Solitaire | — | 1 | 1 |
+| 2048 | — | 1 | 1 |
+| Minesweeper | easy / medium / hard | 1 | 1 |
+| Word Hunt | solo / race | 1–6 | one per player |
 
 ## Modes — several ways to play one game
 

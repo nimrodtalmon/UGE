@@ -177,6 +177,13 @@ any hardware.
   Dice Poker (Yahtzee rules, renamed), Hearts. Each built as a pure plugin
   (no platform changes), audited for playerView leaks + hostile input, and
   covered by tests/more-games.e2e.mjs.
+- 2026-08: Lobby redesign + solo shelf: the home screen is an app bar of
+  tappable pills (avatar → profile sheet, room code → invite sheet with
+  copy/switch room), a group card of avatar bubbles, per-game gradient
+  cards with a Ready/Solo/Party/All segmented filter (replacing the "+N
+  more" expander), a sticky bottom start bar, and bottom sheets instead of
+  overlays. Four one-player games added: Solitaire, 2048, Minesweeper,
+  Word Hunt (Wordle-style, solo + race). Library: 22 games.
 - 2026-08: **Flow rev (v2)**: the setup wizard is gone. Opening UGE lands you
   in a home screen as a ready-to-play player (auto name+avatar, editable);
   the group is DERIVED live from connected devices — one device = one player

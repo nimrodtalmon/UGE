@@ -1,0 +1,140 @@
+.sol-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 0.8rem 0.4rem;
+  text-align: center;
+}
+.sol-title { font-size: 1.6rem; font-weight: 800; margin: 0; }
+/* two lines reserved: the win text and "no moves left" wrap where the count doesn't */
+.sol-status {
+  color: #8a8f98;
+  min-height: 2.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 92vw;
+}
+.sol-status.stuck { color: #c9a04e; font-weight: 600; }
+.sol-status.won { color: #6fd08c; font-size: 1.3rem; font-weight: 800; }
+.sol-hint { color: #6b7078; font-size: 0.8rem; min-height: 1.1rem; }
+
+/* one knob drives every measurement: 7 columns must always fit the screen */
+.sol-board {
+  --sol-w: min(2.7rem, 12vw);
+  --sol-face: linear-gradient(160deg, #fdfcf8, #ebe8df);
+  --sol-back: repeating-linear-gradient(45deg, #2a3350 0 5px, #34406b 5px 10px);
+  --sol-empty: rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.sol-board.big { --sol-w: min(5.4rem, 11vw); gap: 0.9rem; }
+
+.sol-row {
+  display: grid;
+  grid-template-columns: repeat(7, var(--sol-w));
+  gap: 0.25rem;
+  justify-content: center;
+}
+.sol-board.big .sol-row { gap: 0.6rem; }
+.sol-slot { display: flex; flex-direction: column; align-items: center; }
+.sol-count { color: #6b7078; font-size: 0.65rem; line-height: 1.4; }
+.sol-board.big .sol-count { font-size: 0.9rem; }
+
+/* cards */
+.sol-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: var(--sol-w);
+  height: calc(var(--sol-w) * 1.4);
+  padding: 0;
+  border: none;
+  border-radius: calc(var(--sol-w) * 0.14);
+  background: var(--sol-face);
+  color: #22242a;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+/* the table's board is all disabled buttons — keep it looking like cards */
+.sol-card:disabled { opacity: 1; }
+.sol-card.red { color: #c0392b; }
+.sol-card.down {
+  background: var(--sol-back);
+  border: 1px solid #46528a;
+}
+.sol-card.slot {
+  background: var(--sol-empty);
+  border: 1px dashed #ffffff33;
+  box-shadow: none;
+  color: #ffffff33;
+}
+/* a laptop can be a hand too, and the platform's global button hover would
+   wash the faces grey — three classes beat it */
+@media (hover: hover) {
+  .sol-card:not(:disabled):hover { background: var(--sol-face); border-color: transparent; }
+  .sol-card.down:not(:disabled):hover { background: var(--sol-back); border-color: #46528a; }
+  .sol-card.slot:not(:disabled):hover { background: var(--sol-empty); border-color: #ffffff55; }
+}
+.sol-card.sel {
+  position: relative;
+  z-index: 2;
+  transform: translateY(-7px);
+  box-shadow: 0 0 0 3px #e4b83d, 0 5px 10px rgba(0, 0, 0, 0.5);
+}
+.sol-card.hot { box-shadow: 0 0 0 3px #6fd08c, 0 0 12px #6fd08c66; border-color: #6fd08c; }
+.sol-rank { font-size: calc(var(--sol-w) * 0.42); }
+.sol-suit { font-size: calc(var(--sol-w) * 0.38); }
+.sol-ghost { font-size: calc(var(--sol-w) * 0.5); }
+
+/* tableau: columns of overlapping cards */
+.sol-piles { align-items: start; }
+.sol-pile { display: flex; flex-direction: column; align-items: center; }
+.sol-pile > * + * { margin-top: calc(var(--sol-w) * -0.98); }
+.sol-pile > * + .sol-card.down { margin-top: calc(var(--sol-w) * -1.14); }
+
+/* the ⤒ badge rides the selected card — bigger than it looks, for thumbs */
+.sol-wrap { position: relative; display: block; }
+.sol-wrap:has(> .sol-card.sel) { z-index: 3; }
+.sol-home {
+  position: absolute;
+  top: -0.85rem;
+  /* the waste sits in the last column — keep the badge inside the screen */
+  right: calc(var(--sol-w) * -0.2);
+  z-index: 4;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid #6fd08c;
+  border-radius: 50%;
+  background: #14301f;
+  color: #6fd08c;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.sol-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+}
+.sol-btn {
+  padding: 0.7rem 1.2rem;
+  border: 1px solid #3a4048;
+  border-radius: 12px;
+  background: #1d2026;
+  color: #f2f2ef;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.sol-btn.primary { border-color: #3d8a57; background: #1c3a29; color: #6fd08c; }

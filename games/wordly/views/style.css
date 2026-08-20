@@ -1,0 +1,167 @@
+.wl-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 0.8rem 0.6rem;
+  text-align: center;
+  user-select: none;
+}
+.wl-title { margin: 0; font-size: 1.3rem; color: #c8ccd2; letter-spacing: 0.12em; }
+/* one fixed line: the status swaps between tries-left and a complaint, and
+   the board must not jump when it does */
+.wl-status { color: #c8ccd2; font-size: 1.05rem; min-height: 1.5rem; }
+.wl-warn { color: #e4b83d; }
+.wl-over { font-size: 1.6rem; font-weight: 800; }
+.wl-answer { color: #c8ccd2; }
+.wl-answer strong { color: #e4b83d; letter-spacing: 0.18em; font-size: 1.2em; }
+.wl-done { display: flex; flex-direction: column; align-items: center; gap: 0.7rem; }
+
+/* board */
+.wl-board {
+  --wl-tile: min(15vw, 3.5rem);
+  --wl-gap: 0.4rem;
+  --wl-empty: #1d2026;
+  --wl-line: #3a4048;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wl-gap);
+}
+.wl-board.wl-small { --wl-tile: min(4.5vw, 1.5rem); --wl-gap: 0.2rem; }
+.wl-table .wl-board:not(.wl-small) { --wl-tile: min(9vh, 4.4rem); }
+.wl-row { display: flex; gap: var(--wl-gap); }
+.wl-tile {
+  --wl-face: #343941;
+  width: var(--wl-tile);
+  height: var(--wl-tile);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--wl-tile) * 0.5);
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  border: 2px solid var(--wl-line);
+  border-radius: 8px;
+  background-color: var(--wl-empty);
+}
+/* a letter lands: a small pop, so typing feels like pressing something */
+.wl-filled { border-color: #6b7078; animation: wl-pop 0.12s ease; }
+@keyframes wl-pop { 50% { transform: scale(1.09); } }
+
+/* a guess lands: the row flips over letter by letter, colour showing at the
+   halfway point (fill-mode both keeps the tile blank during its delay) */
+.wl-flip { animation: wl-flip 0.5s ease both; animation-delay: calc(var(--i) * 0.16s); }
+@keyframes wl-flip {
+  0% {
+    transform: rotateX(0deg);
+    background-color: var(--wl-empty);
+    border-color: var(--wl-line);
+    color: transparent;
+  }
+  49% {
+    transform: rotateX(90deg);
+    background-color: var(--wl-empty);
+    border-color: var(--wl-line);
+    color: transparent;
+  }
+  50% {
+    transform: rotateX(90deg);
+    background-color: var(--wl-face);
+    border-color: var(--wl-face);
+    color: #f2f2ef;
+  }
+  100% {
+    transform: rotateX(0deg);
+    background-color: var(--wl-face);
+    border-color: var(--wl-face);
+    color: #f2f2ef;
+  }
+}
+.wl-shake { animation: wl-shake 0.5s; }
+@keyframes wl-shake {
+  10%, 90% { transform: translateX(-4px); }
+  30%, 70% { transform: translateX(6px); }
+  50% { transform: translateX(-6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wl-flip, .wl-filled, .wl-shake { animation: none; }
+}
+
+/* keyboard — ours, not the phone's: a native one would cover the board */
+.wl-keyboard {
+  width: 100%;
+  max-width: 32rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.wl-keyrow { display: flex; gap: 0.28rem; }
+.wl-half { flex: 0.5; }
+.wl-key {
+  flex: 1;
+  min-width: 0;
+  height: 3.2rem;
+  padding: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 8px;
+  background: #363b44;
+  border: 1px solid #454b55;
+  touch-action: manipulation;
+}
+.wl-key.wl-wide { flex: 1.7; font-size: 0.72rem; letter-spacing: 0.04em; }
+
+/* mark colours — shared by tiles and keys, so the keyboard reads like the board */
+.wl-green { --wl-face: #4a9a5b; background-color: var(--wl-face); border-color: var(--wl-face); }
+.wl-yellow { --wl-face: #b8973a; background-color: var(--wl-face); border-color: var(--wl-face); }
+.wl-key.wl-grey { --wl-face: #22262c; background-color: var(--wl-face); border-color: #2c313a; color: #767c85; }
+.wl-tile.wl-grey { --wl-face: #343941; background-color: var(--wl-face); border-color: var(--wl-face); }
+
+/* rivals: how far along, never which letters */
+.wl-progress { display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: center; }
+.wl-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: #1d2026;
+  border: 1px solid #3a4048;
+  font-size: 0.88rem;
+}
+.wl-chip.wl-won { border-color: #4a9a5b; background: #223028; }
+.wl-chip.wl-out { opacity: 0.55; }
+.wl-chipname { max-width: 6.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* table: one card per player, colours only */
+.wl-cards { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+.wl-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 14px;
+  background: #1d2026;
+  border: 2px solid #3a4048;
+}
+.wl-card.wl-won { border-color: #4a9a5b; }
+.wl-card.wl-out { opacity: 0.6; }
+.wl-cardhead { display: flex; align-items: center; gap: 0.4rem; font-size: 0.95rem; }
+
+.wl-standings { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.wl-standings li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: #1d2026;
+  border: 1px solid #3a4048;
+}
+.wl-rank { color: #8a8f98; width: 1.2rem; text-align: right; }
+.wl-standings strong { margin-left: auto; color: #c8ccd2; font-size: 0.9rem; }

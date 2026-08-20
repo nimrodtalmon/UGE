@@ -1,0 +1,158 @@
+.ms-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem 0.5rem;
+  text-align: center;
+}
+/* the platform's game controls sit at the top right — keep clear of them */
+.ms-phone { justify-content: flex-start; padding-top: 2.6rem; }
+.ms-title { letter-spacing: 0.15em; font-size: 1.6rem; margin: 0; }
+
+/* ---- header: mines left · timer · restart ---- */
+.ms-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.ms-readout {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.15rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 10px;
+  background: #1a1e26;
+  border: 1px solid #333a45;
+  min-width: 4.6rem;
+}
+.ms-restart {
+  font-size: 1.15rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 10px;
+  background: #23272e;
+  border: 1px solid #3f4756;
+  color: inherit;
+  cursor: pointer;
+}
+.ms-restart:disabled { opacity: 0.4; cursor: default; }
+
+/* space is always reserved so the confirm line never shifts the board */
+.ms-confirm {
+  min-height: 1.3rem;
+  font-size: 0.85rem;
+  color: transparent;
+  margin: 0;
+}
+.ms-confirm.on { color: #e4b83d; font-weight: 700; animation: ms-pulse 1.2s infinite; }
+.ms-confirm.hint { color: #8a8f98; }
+@keyframes ms-pulse { 50% { opacity: 0.5; } }
+
+/* two lines held: the hint is one line, the result text often wraps to two */
+.ms-status {
+  min-height: 2.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a8f98;
+  font-size: 0.95rem;
+  margin: 0;
+  padding: 0 0.5rem;
+}
+.ms-status.over { color: #e6e9ee; font-size: 1.25rem; font-weight: 700; }
+
+/* ---- board: scrolls inside itself, never scrolls the page ---- */
+.ms-board {
+  max-width: 100%;
+  overflow: auto;
+  touch-action: manipulation;
+  padding: 6px;
+  border-radius: 12px;
+  background: #1a1e26;
+  border: 1px solid #333a45;
+}
+.ms-grid {
+  --ms-cell: clamp(2rem, calc((100vw - 2.2rem) / var(--ms-w)), 2.9rem);
+  display: grid;
+  grid-template-columns: repeat(var(--ms-w), var(--ms-cell));
+  gap: 2px;
+  touch-action: manipulation;
+}
+.ms-board.big .ms-grid {
+  --ms-cell: clamp(1.6rem, min(calc(88vw / var(--ms-w)), calc(64vh / var(--ms-h))), 4.5rem);
+}
+
+.ms-cell {
+  width: var(--ms-cell);
+  height: var(--ms-cell);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--ms-cell) * 0.55);
+  font-weight: 800;
+  line-height: 1;
+  border-radius: 3px;
+  background: #4a5464;
+  border: 2px solid #5d6878;
+  border-top-color: #737e8f;
+  border-left-color: #737e8f;
+  border-bottom-color: #39424f;
+  border-right-color: #39424f;
+  color: #e6e9ee;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+.ms-cell:disabled { cursor: default; opacity: 1; }
+
+/* revealed cells are sunken and light, so the classic number colours read */
+.ms-cell-open {
+  background: #cfd3da;
+  border: 2px solid #aeb4be;
+  border-bottom-color: #e4e7ec;
+  border-right-color: #e4e7ec;
+  color: #1b1f27;
+}
+.ms-n1 { color: #1f5fd0; }
+.ms-n2 { color: #1f7a34; }
+.ms-n3 { color: #cc2f28; }
+.ms-n4 { color: #16237a; }
+.ms-n5 { color: #8a4415; }
+.ms-n6 { color: #12807f; }
+.ms-n7 { color: #101318; }
+.ms-n8 { color: #6c7280; }
+
+.ms-cell-mine {
+  background: #cfd3da;
+  border: 2px solid #aeb4be;
+}
+.ms-cell-boom { background: #d64541; border-color: #e57b78; }
+/* a flag left on a safe cell after the game ends */
+.ms-cell-wrong { background: #6b4a4a; border-color: #8a5c5c; }
+
+/* ---- dig / flag segmented control ---- */
+.ms-tools {
+  display: flex;
+  gap: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #3f4756;
+  width: min(92vw, 22rem);
+}
+.ms-tool {
+  flex: 1;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 0.85rem 0.6rem;
+  border: none;
+  border-radius: 0;
+  background: #23272e;
+  color: #9aa1ad;
+  cursor: pointer;
+}
+.ms-tool.on { background: #2f6f47; color: #eaf6ee; }
+.ms-tool:disabled { opacity: 0.45; cursor: default; }

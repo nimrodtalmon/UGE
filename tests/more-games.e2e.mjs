@@ -51,11 +51,12 @@ await endGame();
 // ---------- Battleship ----------
 await start('Battleship');
 for (const p of phones) {
-  await p.waitForSelector('button:has-text("Ready")', { timeout: 10000 });
+  // wait for the GAME screen — 'Ready' alone also matches the lobby filter tab
+  await p.waitForSelector('.bs-screen button:has-text("Ready")', { timeout: 10000 });
   if (!(await p.locator('.bs-cell.ship').count())) fail('phone does not see its own ships');
 }
 if (await table.locator('.bs-cell.ship').count()) fail('table sees un-hit ship cells');
-for (const p of phones) await p.click('button:has-text("Ready")');
+for (const p of phones) await p.click('.bs-screen button:has-text("Ready")');
 const shooter = await phoneWith(phones, '.bs-section:has(.bs-label:has-text("Target")) button.bs-cell:not([disabled])');
 await shooter.click('.bs-section:has(.bs-label:has-text("Target")) button.bs-cell >> nth=44');
 await shooter.waitForFunction(
@@ -155,7 +156,7 @@ for (const p of phones) {
 }
 if (wolves !== 1) fail(`expected exactly 1 wolf among 4 players, saw ${wolves}`);
 if (await table.locator('.ww-role-title').count()) fail('table shows a role');
-for (const p of phones) await p.click('button:has-text("Ready")');
+for (const p of phones) await p.click('.ww-screen button:has-text("Ready")');
 await table.waitForSelector('.ww-banner:has-text("sleeps")', { timeout: 10000 });
 console.log('ok: werewolf — roles private (1 wolf), all ready, night falls');
 await endGame();

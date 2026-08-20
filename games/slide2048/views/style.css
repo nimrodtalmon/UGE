@@ -1,0 +1,118 @@
+.sl-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 1rem;
+  text-align: center;
+}
+.sl-title { letter-spacing: 0.2em; }
+
+/* score / best tile / moves */
+.sl-stats {
+  display: flex;
+  gap: 0.6rem;
+}
+.sl-stat {
+  min-width: 5.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  background: #22262d;
+  border: 1px solid #3a4048;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.sl-stat-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8a8f98;
+}
+.sl-stat-value { font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+
+/* one reserved line: the win banner and the game-over text swap in and out
+   without ever moving the board under a finger mid-swipe */
+.sl-banner {
+  min-height: 2.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  text-align: center;
+}
+.sl-won { color: #e4b83d; }
+.sl-hint { color: #8a8f98; min-height: 1.4rem; }
+/* space always held so arming the guard never shifts the button */
+.sl-confirm { color: #e4b83d; font-weight: 700; min-height: 1.4rem; }
+
+/* the swipe surface: touch gestures here must move tiles, never the page */
+.sl-pad {
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.sl-board {
+  display: grid;
+  gap: 8px;
+  width: min(92vw, 52vh, 26rem);
+  padding: 8px;
+  border-radius: 18px;
+  background: #1a1e26;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+.sl-board.sl-big { width: min(84vw, 62vh, 40rem); }
+
+.sl-cell {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: #22262d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sl-tile {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: #2b2620;
+}
+
+/* colour ramp by value */
+.sl-pale { background: linear-gradient(160deg, #efe6d8, #ded2be); }
+.sl-orange { background: linear-gradient(160deg, #f2b179, #ec8d53); color: #fff8f0; }
+.sl-red { background: linear-gradient(160deg, #f57c5f, #e8503a); color: #fff8f0; }
+.sl-gold { background: linear-gradient(160deg, #f2d16b, #e4b83d); color: #33291a; }
+.sl-purple { background: linear-gradient(160deg, #b78ce0, #8f5fd0); color: #fdf7ff; }
+
+/* font shrinks as the digits pile up (cqw keeps phone and table in step) */
+.sl-board { container-type: inline-size; }
+.sl-d1 { font-size: 11cqw; }
+.sl-d2 { font-size: 11cqw; }
+.sl-d3 { font-size: 9cqw; }
+.sl-d4 { font-size: 7cqw; }
+.sl-d5 { font-size: 5.5cqw; }
+.sl-d6 { font-size: 4.5cqw; }
+
+/* new tiles and merge results pop once; transform only, so it never reflows */
+@keyframes sl-pop {
+  0% { transform: scale(0.6); }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.sl-pop { animation: sl-pop 140ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .sl-pop { animation: none; }
+}
+
+.sl-new {
+  padding: 0.7rem 1.4rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.sl-new.sl-armed { border-color: #e4b83d; color: #e4b83d; }

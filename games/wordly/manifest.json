@@ -1,0 +1,19 @@
+{
+  "id": "wordly",
+  "name": "Word Hunt",
+  "players": { "min": 1, "max": 6 },
+  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "🔤",
+  "tagline": "six tries, five letters",
+  "modes": [
+    { "id": "solo", "name": "Solo", "tagline": "just you and the word" },
+    {
+      "id": "race",
+      "name": "Race",
+      "tagline": "same word, first to solve",
+      "players": { "min": 2, "max": 6 },
+      "choice": true
+    }
+  ]
+}
