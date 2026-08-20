@@ -395,6 +395,43 @@ export function App({ host = false }: { host?: boolean }) {
               ▶ Start {selected.manifest.name}
             </button>
           </div>
+          {/* AI opponents: offered by games that ship a bot, pre-filled when
+              there aren't enough humans to play at all */}
+          {selected.manifest.bots && (
+            <div className="bot-row">
+              <div className="bot-count">
+                <span className="bot-label">🤖 AI opponents</span>
+                <div className="stepper small">
+                  <button
+                    disabled={snapshot.bots === 0}
+                    onClick={() => act('/api/lobby/bots', { count: snapshot.bots - 1 })}
+                  >
+                    −
+                  </button>
+                  <strong>{snapshot.bots}</strong>
+                  <button
+                    disabled={players >= selected.manifest.players.max}
+                    onClick={() => act('/api/lobby/bots', { count: snapshot.bots + 1 })}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              {snapshot.bots > 0 && (
+                <div className="bot-levels">
+                  {selected.manifest.bots.levels.map((lv) => (
+                    <button
+                      key={lv.id}
+                      className={snapshot.botLevel === lv.id ? 'chip on' : 'chip'}
+                      onClick={() => act('/api/lobby/bots', { count: snapshot.bots, level: lv.id })}
+                    >
+                      {lv.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           {/* only genuine choices appear — the lobby auto-picks the mode that
               best uses the devices that are actually here */}
           {selected.modes.filter((mo) => mo.offered).length > 1 && (

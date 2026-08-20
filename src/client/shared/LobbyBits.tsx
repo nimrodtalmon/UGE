@@ -11,7 +11,9 @@ export function PeopleStrip(props: { devices: DeviceTile[]; myId: string | null 
       {props.devices.map((d) => (
         <div
           key={d.id}
-          className={['person', 'tile', d.id === props.myId && 'me', d.away && 'away'].filter(Boolean).join(' ')}
+          className={['person', 'tile', d.id === props.myId && 'me', d.away && 'away', d.bot && 'is-bot']
+            .filter(Boolean)
+            .join(' ')}
           style={{ '--seat': `hsl(${hueOf(d.name)} 60% 55%)` } as CSSProperties}
         >
           <span className="bubble">
@@ -79,7 +81,7 @@ export function GameGrid(props: {
   }
   return (
     <div className="games">
-      {props.games.map(({ manifest, feasible, reason }) => {
+      {props.games.map(({ manifest, feasible, reason, viaBots }) => {
         const selected = manifest.id === props.selectedGameId;
         const hue = hueOf(manifest.id);
         return (
@@ -93,7 +95,9 @@ export function GameGrid(props: {
             <span className="game-name">{manifest.name}</span>
             <span className="game-tagline">{manifest.tagline ?? ''}</span>
             <span className="game-foot">
-              {feasible ? (
+              {feasible && viaBots ? (
+                <span className="meta bot-hint">🤖 vs AI</span>
+              ) : feasible ? (
                 <span className="meta">
                   {manifest.players.min === manifest.players.max
                     ? `${manifest.players.min}p`

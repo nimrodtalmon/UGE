@@ -23,6 +23,10 @@ import { GameSession } from './session.js';
  */
 const AWAY_MS = 5_000;
 const REMOVE_MS = 45_000;
+/** A bot waits this long before playing, so its move feels like a person's. */
+const BOT_THINK_MS = 900;
+
+const BOT_NAMES = ['Robo', 'Chip', 'Ada', 'Vera', 'Otto', 'Pixel'];
 
 interface Device {
   id: string;
@@ -51,6 +55,10 @@ export class Lobby {
   private phase: LobbyPhase = 'lobby';
   private session: GameSession | null = null;
   private selectedModeId: string | null = null;
+  /** AI opponents filling seats, and the difficulty they all play at. */
+  private bots = 0;
+  private botLevel: string | null = null;
+  private nextBotAt = 0;
 
   constructor(private readonly games: GamePlugin[]) {}
 
@@ -98,8 +106,8 @@ export class Lobby {
     this.tick();
   }
 
-  /** The live group: one device is one player unless it says otherwise. */
-  private group(): GroupSetup {
+  /** Humans present: one device is one player unless it says otherwise. */
+  private humans(): { players: number; phones: number; hasTable: boolean } {
     const playing = [...this.devices.values()].filter((d) => !d.isTable);
     return {
       players: playing.reduce((sum, d) => sum + Math.max(1, d.seats), 0),
@@ -108,11 +116,59 @@ export class Lobby {
     };
   }
 
+  /** The live group as the games see it — humans plus any AI opponents. */
+  private group(bots = this.bots): GroupSetup {
+    const h = this.humans();
+    return { ...h, players: h.players + bots };
+  }
+
+  /** Bots never hold a phone, so they don't count toward device needs. */
+  private botsIn(setup: GroupSetup): number {
+    return Math.max(0, setup.players - this.humans().players);
+  }
+
+  private botLevels(m: Manifest): { id: string; name: string }[] {
+    return m.bots?.levels ?? [];
+  }
+
+  /** Set the number of AI opponents (and optionally the difficulty). */
+  setBots(count: number, level?: string): void {
+    const m = this.selectedPlugin()?.manifest;
+    if (this.phase !== 'lobby' || !m || this.botLevels(m).length === 0) return;
+    if (Number.isInteger(count)) {
+      const room = Math.max(0, m.players.max - this.humans().players);
+      this.bots = Math.max(0, Math.min(room, count));
+    }
+    const levels = this.botLevels(m);
+    if (level !== undefined && levels.some((l) => l.id === level)) this.botLevel = level;
+    if (this.botLevel === null || !levels.some((l) => l.id === this.botLevel)) {
+      this.botLevel = (levels[Math.min(1, levels.length - 1)] ?? levels[0]!).id;
+    }
+    this.pickDefaultMode();
+    this.tick();
+  }
+
+  /** Seats an AI would have to fill for this game to be playable at all. */
+  private botFillFor(m: Manifest): number {
+    if (this.botLevels(m).length === 0) return 0;
+    const have = this.humans().players;
+    const min = Math.min(...this.modesOf(m).map((mo) => (mo.players ?? m.players).min));
+    return have > 0 && have < min ? min - have : 0;
+  }
+
   select(gameId: string | null): void {
     if (this.phase === 'lobby' && (gameId === null || this.games.some((g) => g.manifest.id === gameId))) {
       this.selectedGameId = gameId;
       this.claims.clear();
       this.optOut.clear();
+      this.bots = 0;
+      this.botLevel = null;
+      const m = this.selectedPlugin()?.manifest;
+      // too few humans but the game brings an AI? offer it, pre-filled
+      if (m) {
+        const fill = this.botFillFor(m);
+        if (fill > 0) this.setBots(fill);
+      }
       this.pickDefaultMode();
     }
     this.tick();
@@ -142,14 +198,15 @@ export class Lobby {
   private modeOffer(m: Manifest, mode: GameMode, setup: GroupSetup): { fits: boolean; reason?: string; offered: boolean } {
     const fit = this.modeFit(m, mode, setup);
     if (!fit.fits) return { ...fit, offered: false };
+    const humans = setup.players - this.botsIn(setup);
     const maxNeed = Math.max(
       ...this.modesOf(m)
         .filter((mo) => this.modeFit(m, mo, setup).fits)
-        .map((mo) => this.neededPhones(m, mo, setup.players)),
+        .map((mo) => this.neededPhones(m, mo, humans)),
     );
     return {
       ...fit,
-      offered: mode.choice === true || this.neededPhones(m, mode, setup.players) === maxNeed,
+      offered: mode.choice === true || this.neededPhones(m, mode, humans) === maxNeed,
     };
   }
 
@@ -163,6 +220,7 @@ export class Lobby {
     return modes.find((mo) => mo.id === this.selectedModeId) ?? modes[0]!;
   }
 
+  /** `players` here counts HUMANS — AI seats need no device. */
   private neededPhones(m: Manifest, mode: GameMode, players: number): number {
     return (
       mode.phones?.min ??
@@ -180,7 +238,7 @@ export class Lobby {
     if (setup.players > pr.max) {
       return { fits: false, reason: `up to ${pr.max} player${pr.max === 1 ? '' : 's'}` };
     }
-    const needed = this.neededPhones(m, mode, setup.players);
+    const needed = this.neededPhones(m, mode, setup.players - this.botsIn(setup));
     if (setup.phones < needed) {
       return {
         fits: false,
@@ -218,6 +276,15 @@ export class Lobby {
       .filter((d) => this.claims.get(d.id) === 'hand')
       .sort((a, b) => a.joinedAt - b.joinedAt)
       .map((d) => ({ id: d.id, name: d.name, avatar: deviceAvatar(d) }));
+    // AI opponents sit after the humans, in seat order
+    players.push(
+      ...this.botIds().map((id, i) => ({
+        id,
+        name: BOT_NAMES[i % BOT_NAMES.length]!,
+        avatar: '🤖',
+      })),
+    );
+    this.nextBotAt = Date.now() + BOT_THINK_MS;
     const mode = this.selectedMode();
     this.session = new GameSession(
       plugin.def,
@@ -257,7 +324,19 @@ export class Lobby {
           seats: d.seats,
           role: this.claims.get(d.id) ?? null,
           away: Date.now() - d.lastSeen > AWAY_MS,
-        })),
+        }))
+        .concat(
+          this.botIds().map((id, i) => ({
+            id,
+            bot: true,
+            name: BOT_NAMES[i % BOT_NAMES.length]!,
+            avatar: '🤖',
+            isTable: false,
+            seats: 1,
+            role: 'hand' as string | null,
+            away: false,
+          })),
+        ),
       games: this.games.map((p) => this.gameEntry(p)),
       selectedGameId: this.selectedGameId,
       canStart,
@@ -265,6 +344,8 @@ export class Lobby {
       game: this.activeGameFor(deviceId ?? null),
       setup: this.group(),
       selectedModeId: this.selectedGameId ? this.selectedModeId : null,
+      bots: this.bots,
+      botLevel: this.botLevel,
       me: me
         ? {
             id: me.id,
@@ -302,7 +383,12 @@ export class Lobby {
   private hasCapacity(m: Manifest, role: string): boolean {
     if (role !== 'hand') return true;
     const playing = [...this.claims.values()].filter((r) => r !== 'table').length;
-    return playing < m.players.max;
+    return playing + this.bots < m.players.max;
+  }
+
+  /** Seat ids for the AI opponents in the running (or next) game. */
+  private botIds(): string[] {
+    return Array.from({ length: this.bots }, (_, i) => `bot:${i + 1}`);
   }
 
   private selectedPlugin(): GamePlugin | null {
@@ -320,7 +406,11 @@ export class Lobby {
       }
     }
     const m = this.selectedPlugin()?.manifest;
-    if (this.phase !== 'lobby' || !m) return;
+    if (this.phase === 'playing') {
+      this.runBots();
+      return;
+    }
+    if (!m) return;
     // a device that volunteered as the table shows the board and holds no seat
     if (m.roles.table !== 'none') {
       for (const d of this.devices.values()) {
@@ -340,6 +430,24 @@ export class Lobby {
     // a device that stopped being the table must not keep the role
     for (const [id, role] of this.claims) {
       if (role === 'table' && !this.devices.get(id)?.isTable) this.claims.delete(id);
+    }
+  }
+
+  /**
+   * Let each AI seat play, one move per beat, so the table can be watched.
+   * Driven by the polling clients — with nobody connected, nothing to watch.
+   */
+  private runBots(): void {
+    const session = this.session;
+    if (!session || session.over || this.bots === 0 || !this.botLevel) return;
+    if (Date.now() < this.nextBotAt) return;
+    for (const id of this.botIds()) {
+      const mv = session.botMove(id, this.botLevel);
+      if (mv && typeof mv.name === 'string') {
+        session.applyMove(id, 'hand', mv.name, mv.args ?? []);
+        this.nextBotAt = Date.now() + BOT_THINK_MS;
+        return; // one bot move per beat
+      }
     }
   }
 
@@ -365,12 +473,22 @@ export class Lobby {
       ...this.modeOffer(m, mo, group),
     }));
     const anyFit = modes.some((x) => x.fits);
-    return {
-      manifest: m,
-      feasible: anyFit,
-      reason: anyFit ? undefined : modes[0]?.reason,
-      modes,
-    };
+    if (anyFit) return { manifest: m, feasible: true, modes };
+    // short of players, but this game brings its own opponents
+    const fill = this.botFillFor(m);
+    if (fill > 0) {
+      const withBots = this.group(fill);
+      const botModes = this.modesOf(m).map((mo) => ({
+        id: mo.id,
+        name: mo.name,
+        tagline: mo.tagline,
+        ...this.modeOffer(m, mo, withBots),
+      }));
+      if (botModes.some((x) => x.fits)) {
+        return { manifest: m, feasible: true, modes: botModes, viaBots: fill };
+      }
+    }
+    return { manifest: m, feasible: false, reason: modes[0]?.reason, modes };
   }
 
   private startState(): { canStart: boolean; blockers: string[] } {
@@ -392,7 +510,9 @@ export class Lobby {
       const mode = this.selectedMode();
       const fit = this.modeFit(m, mode, this.group());
       if (!fit.fits && fit.reason) blockers.push(fit.reason);
-      const needed = this.neededPhones(m, mode, (mode.players ?? m.players).min);
+      // AI seats need no device, so only the humans have to be here
+      const humansNeeded = Math.max(0, (mode.players ?? m.players).min - this.bots);
+      const needed = this.neededPhones(m, mode, humansNeeded);
       const playing = roles.filter((r) => r !== 'table').length;
       if (fit.fits && playing < needed) {
         const missing = needed - playing;

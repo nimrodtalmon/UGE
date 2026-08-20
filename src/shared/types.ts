@@ -29,6 +29,17 @@ export interface Manifest {
    * Absent → one implicit default mode from the top-level fields.
    */
   modes?: GameMode[];
+  /**
+   * Offered when game.ts exports a `bot`: the platform can fill empty seats
+   * with AI opponents at one of these difficulties.
+   */
+  bots?: { levels: BotLevel[] };
+}
+
+export interface BotLevel {
+  id: string;
+  name: string;
+  tagline?: string;
 }
 
 export interface GameMode {
@@ -74,6 +85,8 @@ export interface GroupSetup {
 
 export interface DeviceTile {
   id: string;
+  /** An AI opponent filling a seat, not a real device. */
+  bot?: boolean;
   name: string;
   avatar: string;
   /** Volunteered as the shared table screen (shows the board, holds no seat). */
@@ -90,6 +103,8 @@ export interface GameEntry {
   feasible: boolean;
   reason?: string;
   modes: ModeEntry[];
+  /** Playable only because AI opponents would fill the missing seats. */
+  viaBots?: number;
 }
 
 export type LobbyPhase = 'lobby' | 'playing';
@@ -117,6 +132,9 @@ export interface LobbySnapshot {
   /** Live group derived from connected devices. */
   setup: GroupSetup;
   selectedModeId: string | null;
+  /** AI opponents that will fill seats when the game starts. */
+  bots: number;
+  botLevel: string | null;
   /** This device: its own seat count and whether it's acting as the table. */
   me: { id: string; seats: number; isTable: boolean; role: string | null } | null;
 }

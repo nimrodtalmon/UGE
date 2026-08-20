@@ -1,4 +1,4 @@
-import type { GameDef, GameResult, PlayerInfo } from '../shared/plugin.js';
+import type { BotMove, GameDef, GameResult, PlayerInfo } from '../shared/plugin.js';
 
 /** One running game: holds state, applies moves, filters per-device views. */
 export class GameSession {
@@ -25,6 +25,24 @@ export class GameSession {
       ...(args as never[]),
     );
     this.over = this.def.isOver?.(this.state) ?? null;
+  }
+
+  /** Ask the game what this AI seat wants to play (null = not its turn). */
+  botMove(playerId: string, level: string): BotMove | null {
+    const seat = this.players.findIndex((p) => p.id === playerId);
+    if (this.over || seat < 0 || !this.def.bot) return null;
+    try {
+      return this.def.bot(this.state, {
+        seat,
+        playerId,
+        level,
+        players: this.players,
+        random: Math.random,
+        now: Date.now(),
+      });
+    } catch {
+      return null; // a broken bot must never take the room down
+    }
   }
 
   /** Keep player identity live — lobby renames show up mid-game. */

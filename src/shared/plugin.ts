@@ -36,6 +36,23 @@ export interface GameResult {
   text: string;
 }
 
+/** What a bot is told when it is asked to move. */
+export interface BotCtx {
+  /** Seat this bot plays (index into `players`). */
+  seat: number;
+  playerId: string;
+  /** Level id from the manifest's `bots.levels`. */
+  level: string;
+  players: PlayerInfo[];
+  random: () => number;
+  now: number;
+}
+
+export interface BotMove {
+  name: string;
+  args?: unknown[];
+}
+
 export interface GameDef<S = unknown, V = unknown> {
   setup(ctx: SetupCtx): S;
   /** Each move returns the next state (or the same state to reject). */
@@ -43,6 +60,13 @@ export interface GameDef<S = unknown, V = unknown> {
   /** Filter what a given device may see (hidden hands, key cards). Defaults to full state. */
   playerView?(state: S, ctx: { playerId: string | null; role: string; players: PlayerInfo[] }): V;
   isOver?(state: S): GameResult | null;
+  /**
+   * Optional AI opponent. Called for each bot seat whenever the platform is
+   * ready to let it act; return the move to play, or null when it is not this
+   * seat's turn (or it has nothing to do). Must be pure and use ctx.random.
+   * Declare the offered difficulties in the manifest's `bots.levels`.
+   */
+  bot?(state: S, ctx: BotCtx): BotMove | null;
 }
 
 /** Props every role view receives from the platform shell. */

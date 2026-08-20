@@ -125,6 +125,10 @@ api.post('/lobby/table', (req, res) => {
   lobbyOf(res).setTable(req.body.deviceId, req.body.on === true);
   res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
 });
+api.post('/lobby/bots', (req, res) => {
+  lobbyOf(res).setBots(req.body.count, req.body.level);
+  res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
+});
 api.post('/lobby/mode', (req, res) => {
   lobbyOf(res).setMode(req.body.modeId);
   res.json(lobbyOf(res).snapshotFor(req.body.deviceId));

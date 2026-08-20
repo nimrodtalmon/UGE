@@ -1,5 +1,6 @@
 import { Chess } from 'chess.js';
 import type { GameDef } from '../../src/shared/plugin.js';
+import { pickMove } from './bot.js';
 
 export interface ChessState {
   fen: string;
@@ -103,6 +104,15 @@ const game: GameDef<ChessState, ChessView> = {
 
   isOver(state) {
     return state.overText ? { text: state.overText } : null;
+  },
+
+  /** AI opponent: plays the seat it was given, when it is that seat's turn. */
+  bot(state, { seat, level, random }) {
+    if (state.overText) return null;
+    const chess = new Chess(state.fen);
+    if ((chess.turn() === 'w' ? 0 : 1) !== seat) return null;
+    const mv = pickMove(state.fen, level, random);
+    return mv ? { name: 'move', args: [mv.from, mv.to] } : null;
   },
 };
 

@@ -1,19 +1,56 @@
 {
   "id": "chess",
   "name": "Chess",
-  "players": { "min": 2, "max": 2 },
-  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
-  "pieces": { "static": 0, "dynamic": 0 },
+  "players": {
+    "min": 2,
+    "max": 2
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
   "icon": "♟️",
   "tagline": "the classic",
   "modes": [
-    { "id": "phones", "name": "Phone each", "tagline": "move from your own phone" },
+    {
+      "id": "phones",
+      "name": "Phone each",
+      "tagline": "move from your own phone"
+    },
     {
       "id": "shared",
       "name": "One shared phone",
       "tagline": "nothing to hide — pass it between moves",
-      "phones": { "min": 1 },
-      "config": { "shared": true }
+      "phones": {
+        "min": 1
+      },
+      "config": {
+        "shared": true
+      }
     }
-  ]
+  ],
+  "bots": {
+    "levels": [
+      {
+        "id": "easy",
+        "name": "Easy",
+        "tagline": "plays loose"
+      },
+      {
+        "id": "normal",
+        "name": "Normal",
+        "tagline": "looks ahead"
+      },
+      {
+        "id": "hard",
+        "name": "Hard",
+        "tagline": "searches deeper"
+      }
+    ]
+  }
 }
