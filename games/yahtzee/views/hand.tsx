@@ -75,11 +75,13 @@ export default function HandView({ view, players, over, move }: GameViewProps<Ya
         {view.rollsLeft === 0 ? 'No rolls left — pick a box' : `Roll (${view.rollsLeft} left)`}
       </button>
 
-      {pendingCat && (
-        <p className="yz-confirm">
-          tap again to score {scoreFor(pendingCat.id, view.dice)} in {pendingCat.name}
-        </p>
-      )}
+      {/* always rendered: a line that appears on tap would shove the picker
+          down under the finger that is about to tap it again */}
+      <p className="yz-confirm">
+        {pendingCat
+          ? `tap again to score ${scoreFor(pendingCat.id, view.dice)} in ${pendingCat.name}`
+          : ' '}
+      </p>
 
       <div className="yz-picker">
         {CATEGORIES.map((c) => {

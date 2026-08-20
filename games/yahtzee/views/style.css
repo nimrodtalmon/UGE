@@ -25,7 +25,8 @@
   font-weight: 700;
   font-size: 1.05rem;
 }
-.yz-confirm { color: #e4b83d; font-weight: 700; animation: yz-pulse 1.2s infinite; }
+/* space is always reserved so tapping never shifts the buttons below it */
+.yz-confirm { color: #e4b83d; font-weight: 700; min-height: 1.5rem; animation: yz-pulse 1.2s infinite; }
 
 /* dice */
 .yz-dice { display: flex; gap: 0.5rem; justify-content: center; }
