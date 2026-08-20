@@ -1,14 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useLobby } from './useLobby.js';
 import { api, roomBase } from './room.js';
-import { Celebration, DeviceTiles, GameList } from './LobbyBits.js';
+import {
+  Celebration,
+  GameGrid,
+  PeopleStrip,
+  Segmented,
+  Sheet,
+  filterGames,
+  type GameFilter,
+} from './LobbyBits.js';
 import { GameScreen } from './GameScreen.js';
 import { AVATARS, avatarFor, randomIdentity } from '../../shared/avatar.js';
 
 /**
- * One app for every device. You land ready to play as yourself; the room
- * panel is where you add people (QR), hand this screen the table role, or
- * say how many of you share this device. Nothing is declared up front.
+ * One app for every device. You land ready to play as yourself; sheets hold
+ * everything else (invite, table role, shared device, your look). Nothing is
+ * declared up front — the group is whoever is connected.
  */
 
 export interface Profile {
@@ -35,130 +43,135 @@ function loadProfile(host: boolean): Profile {
   return fresh;
 }
 
-function ProfileEditor(props: { initial: Profile; onSave: (p: Profile) => void; onClose: () => void }) {
+function ProfileSheet(props: { initial: Profile; onSave: (p: Profile) => void; onClose: () => void }) {
   const [name, setName] = useState(props.initial.name);
   const [picked, setPicked] = useState(props.initial.avatar);
   const save = () => name.trim() && props.onSave({ name: name.trim(), avatar: picked });
   return (
-    <div className="center-screen editor">
-      <div className="stack">
-        <div className="big-avatar">{picked}</div>
-        <h1>UGE</h1>
-        <p className="muted">Your name & look</p>
-        <input
-          placeholder="your name"
-          value={name}
-          maxLength={20}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && save()}
-        />
-        <div className="avatar-grid">
-          {AVATARS.map((a) => (
-            <button
-              key={a}
-              className={a === picked ? 'avatar-pick on' : 'avatar-pick'}
-              onClick={() => setPicked(a)}
-            >
-              {a}
-            </button>
-          ))}
-        </div>
-        <button className="primary" disabled={!name.trim()} onClick={save}>
-          Save
-        </button>
-        <button className="small" onClick={props.onClose}>
-          Cancel
-        </button>
+    <Sheet title="You" onClose={props.onClose}>
+      <div className="big-avatar">{picked}</div>
+      <input
+        placeholder="your name"
+        value={name}
+        maxLength={20}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && save()}
+      />
+      <div className="avatar-grid">
+        {AVATARS.map((a) => (
+          <button key={a} className={a === picked ? 'avatar-pick on' : 'avatar-pick'} onClick={() => setPicked(a)}>
+            {a}
+          </button>
+        ))}
       </div>
-    </div>
+      <button className="primary wide" disabled={!name.trim()} onClick={save}>
+        Save
+      </button>
+    </Sheet>
   );
 }
 
-/** The room panel: add people, hand over the table role, share a device. */
-function RoomPanel(props: {
+/** Invite people, hand over the table role, share a device, switch room. */
+function InviteSheet(props: {
   session: Session | null;
   meSeats: number;
   meIsTable: boolean;
-  phones: number;
   onSeats: (n: number) => void;
   onTable: (on: boolean) => void;
   onUpdate: () => void;
   onClose: () => void;
 }) {
+  const [copied, setCopied] = useState<string | null>(null);
+  const copy = async (what: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(what);
+      setTimeout(() => setCopied(null), 1500);
+    } catch {
+      /* clipboard blocked — the QR and the text are both on screen anyway */
+    }
+  };
   return (
-    <div className="overlay room-panel">
-      <div className="room-inner">
-        <button className="room-close" onClick={props.onClose}>
-          ✕
-        </button>
-        <h2 className="room-h">Add people</h2>
-        {props.session?.roomCode && (
-          <p className="room-code">
-            room <strong>{props.session.roomCode}</strong>{' '}
-            <a className="room-switch" href="/">
-              ⇄ switch
-            </a>
-          </p>
-        )}
-        {props.session?.wifi && (
-          <div className="wifi-step">
-            <p className="muted">1 · join WiFi “{props.session.wifi.ssid}”</p>
-            <img className="wifi-qr" src={api('/api/wifi-qr.svg')} alt={`WiFi QR for ${props.session.wifi.ssid}`} />
+    <Sheet title="Invite & room" onClose={props.onClose}>
+      {props.session?.wifi && (
+        <div className="row wifi-step">
+          <img className="wifi-qr" src={api('/api/wifi-qr.svg')} alt={`WiFi QR for ${props.session.wifi.ssid}`} />
+          <div className="row-text">
+            <strong>1 · join the WiFi</strong>
+            <span className="muted">{props.session.wifi.ssid}</span>
           </div>
-        )}
-        <p className="muted">{props.session?.wifi ? '2 · scan to join' : 'Scan to join on another phone'}</p>
-        <a href={`${roomBase}/join`} target="_blank" rel="noopener">
-          <img className="room-qr" src={api('/api/qr.svg')} alt="Join QR" />
-        </a>
-        <a className="join-url" href={`${roomBase}/join`} target="_blank" rel="noopener">
-          <code>{props.session?.joinUrl ?? '…'}</code>
-        </a>
+        </div>
+      )}
+      <a className="qr-card" href={`${roomBase}/join`} target="_blank" rel="noopener">
+        <img src={api('/api/qr.svg')} alt="Join QR" />
+        <span className="muted">{props.session?.wifi ? '2 · scan to join' : 'scan to join'}</span>
+      </a>
+      <button className="link-row" onClick={() => copy('url', props.session?.joinUrl ?? '')}>
+        <code>{props.session?.joinUrl ?? '…'}</code>
+        <span className="copy">{copied === 'url' ? '✓ copied' : 'copy'}</span>
+      </button>
 
-        <h2 className="room-h">This screen</h2>
-        <button
-          className={props.meIsTable ? 'toggle on wide' : 'toggle wide'}
-          onClick={() => props.onTable(!props.meIsTable)}
-        >
-          {props.meIsTable ? '🖥️ acting as the table' : '📺 use as the table screen'}
-        </button>
-        <p className="muted setup-hint">
-          the table shows the shared board for everyone — it doesn't hold a seat
-        </p>
-
-        {!props.meIsTable && (
-          <>
-            <h2 className="room-h">Playing on this device</h2>
-            <div className="stepper-row">
-              <span>{props.meSeats === 1 ? 'just me' : `${props.meSeats} of us`}</span>
-              <div className="stepper">
-                <button onClick={() => props.onSeats(Math.max(1, props.meSeats - 1))}>−</button>
-                <strong>{props.meSeats}</strong>
-                <button onClick={() => props.onSeats(Math.min(12, props.meSeats + 1))}>+</button>
-              </div>
-            </div>
-            <p className="muted setup-hint">
-              more than one? games that pass a single phone around become available
-            </p>
-          </>
-        )}
-
-        <footer className="room-foot">
-          <span className="muted">v {props.session?.version ?? '…'}</span>
-          {props.session?.updatable !== false && (
-            <button className="small" onClick={props.onUpdate}>
-              Update
+      {props.session?.roomCode && (
+        <div className="room-row">
+          <div className="room-code-big">
+            <span className="muted">room</span>
+            <strong>{props.session.roomCode}</strong>
+          </div>
+          <div className="room-acts">
+            <button onClick={() => copy('code', props.session!.roomCode!)}>
+              {copied === 'code' ? '✓' : 'copy'}
             </button>
-          )}
-        </footer>
-      </div>
-    </div>
+            <a className="btn" href="/">
+              switch room
+            </a>
+          </div>
+        </div>
+      )}
+
+      <h4 className="sheet-h">This screen</h4>
+      <button
+        className={props.meIsTable ? 'switch on' : 'switch'}
+        onClick={() => props.onTable(!props.meIsTable)}
+      >
+        <span className="switch-text">
+          <strong>{props.meIsTable ? '🖥️ acting as the table' : '📺 use as the table screen'}</strong>
+          <span className="muted">shows the shared board · holds no seat</span>
+        </span>
+        <span className="knob" />
+      </button>
+
+      {!props.meIsTable && (
+        <>
+          <h4 className="sheet-h">Playing on this device</h4>
+          <div className="stepper-row">
+            <span>{props.meSeats === 1 ? 'just me' : `${props.meSeats} of us`}</span>
+            <div className="stepper">
+              <button onClick={() => props.onSeats(Math.max(1, props.meSeats - 1))}>−</button>
+              <strong>{props.meSeats}</strong>
+              <button onClick={() => props.onSeats(Math.min(12, props.meSeats + 1))}>+</button>
+            </div>
+          </div>
+          <p className="muted hint">more than one? pass-the-phone games unlock</p>
+        </>
+      )}
+
+      <footer className="sheet-foot room-foot">
+        <span className="muted">v {props.session?.version ?? '…'}</span>
+        {props.session?.updatable !== false && (
+          <button className="small" onClick={props.onUpdate}>
+            Update
+          </button>
+        )}
+      </footer>
+    </Sheet>
   );
 }
 
 export function App({ host = false }: { host?: boolean }) {
   const [profile, setProfile] = useState<Profile>(() => loadProfile(host));
   const [session, setSession] = useState<Session | null>(null);
-  const [panel, setPanel] = useState<null | 'room' | 'profile'>(null);
+  const [sheet, setSheet] = useState<null | 'invite' | 'profile'>(null);
+  const [filter, setFilter] = useState<GameFilter>('ready');
   const [updating, setUpdating] = useState(false);
   const { snapshot, deviceId, offline, act } = useLobby({ ...profile, host });
 
@@ -173,7 +186,7 @@ export function App({ host = false }: { host?: boolean }) {
     localStorage.setItem(host ? 'uge:table-name' : 'uge:name', p.name);
     localStorage.setItem(host ? 'uge:table-avatar' : 'uge:avatar', p.avatar);
     setProfile(p);
-    setPanel(null);
+    setSheet(null);
   };
 
   async function update() {
@@ -215,27 +228,23 @@ export function App({ host = false }: { host?: boolean }) {
 
   const me = snapshot.me;
   const iAmTable = me?.isTable === true;
-  const overlay =
-    panel === 'profile' ? (
-      <div className="overlay">
-        <ProfileEditor initial={profile} onSave={saveProfile} onClose={() => setPanel(null)} />
-      </div>
-    ) : panel === 'room' ? (
-      <RoomPanel
+  const sheetEl =
+    sheet === 'profile' ? (
+      <ProfileSheet initial={profile} onSave={saveProfile} onClose={() => setSheet(null)} />
+    ) : sheet === 'invite' ? (
+      <InviteSheet
         session={session}
         meSeats={me?.seats ?? 1}
         meIsTable={iAmTable}
-        phones={snapshot.setup.phones}
         onSeats={(n) => act('/api/lobby/seats', { seats: n })}
         onTable={(on) => act('/api/lobby/table', { on })}
         onUpdate={update}
-        onClose={() => setPanel(null)}
+        onClose={() => setSheet(null)}
       />
     ) : null;
 
   // ---- a game is running
   if (snapshot.phase === 'playing' && snapshot.game) {
-    // the table drives the game controls; with no table screen, everyone gets them
     const showControls = iAmTable || !snapshot.setup.hasTable;
     return (
       <>
@@ -245,7 +254,7 @@ export function App({ host = false }: { host?: boolean }) {
         </div>
         {snapshot.game.over && iAmTable && <Celebration />}
         {!iAmTable && (
-          <button className="profile-chip" onClick={() => setPanel('profile')}>
+          <button className="profile-chip" onClick={() => setSheet('profile')}>
             {profile.avatar}
           </button>
         )}
@@ -261,83 +270,83 @@ export function App({ host = false }: { host?: boolean }) {
             </button>
           </div>
         )}
-        {overlay}
+        {sheetEl}
       </>
     );
   }
 
-  // ---- home / lobby
+  // ---- home
   const selected = snapshot.games.find((g) => g.manifest.id === snapshot.selectedGameId) ?? null;
   const { players, phones, hasTable } = snapshot.setup;
-  const suggestTable =
-    host && !iAmTable && !hasTable && phones >= 2 && typeof window !== 'undefined' && window.innerWidth >= 900;
+  const counts: Record<GameFilter, number> = {
+    ready: filterGames(snapshot.games, 'ready').length,
+    solo: filterGames(snapshot.games, 'solo').length,
+    party: filterGames(snapshot.games, 'party').length,
+    all: snapshot.games.length,
+  };
+  const shown = filterGames(snapshot.games, filter);
 
   return (
-    <div className="home">
-      <header className="home-bar">
-        <h1>UGE</h1>
-        <div className="home-actions">
+    <div className={selected ? 'app has-bar' : 'app'}>
+      <header className="appbar">
+        <span className="wordmark">UGE</span>
+        <div className="appbar-right">
           {session?.roomCode && (
-            <span className="chip room-chip">
-              room <strong>{session.roomCode}</strong>
-            </span>
-          )}
-          {!iAmTable && (
-            <button className="chip" onClick={() => setPanel('profile')}>
-              {profile.avatar} {profile.name}
+            <button className="pill room-chip" onClick={() => setSheet('invite')}>
+              <span className="dot" /> {session.roomCode}
             </button>
           )}
-          {iAmTable && <span className="chip table-chip">🖥️ table screen</span>}
-          <button className="chip primary" onClick={() => setPanel('room')}>
-            ＋ Add people
+          {iAmTable ? (
+            <span className="pill table-chip">🖥️ table</span>
+          ) : (
+            <button className="pill me-chip" onClick={() => setSheet('profile')}>
+              <span className="ava">{profile.avatar}</span>
+              {profile.name}
+            </button>
+          )}
+          <button className="pill icon" onClick={() => setSheet('invite')} aria-label="invite">
+            ＋
           </button>
         </div>
       </header>
 
       {offline && <p className="offline">connection lost — retrying…</p>}
 
-      <p className="setup-line">
-        {players} player{players === 1 ? '' : 's'} · {phones} device{phones === 1 ? '' : 's'}
-        {hasTable ? ' · table screen' : ''}{' '}
-        <a href="#" onClick={(e) => (e.preventDefault(), setPanel('room'))}>
-          change
-        </a>
-      </p>
+      <section className="card group-card">
+        <PeopleStrip devices={snapshot.devices} myId={deviceId} />
+        <div className="group-foot">
+          <div className="setup-line">
+            <span className="stat">
+              <b>{players}</b> player{players === 1 ? '' : 's'}
+            </span>
+            <span className="stat">
+              <b>{phones}</b> device{phones === 1 ? '' : 's'}
+            </span>
+            {hasTable && <span className="stat on">table screen</span>}
+          </div>
+          <div className="group-acts">
+            <button className="ghost" onClick={() => setSheet('invite')}>
+              ＋ Add people
+            </button>
+            {!iAmTable && phones >= 2 && !hasTable && (
+              <button className="ghost accent" onClick={() => act('/api/lobby/table', { on: true })}>
+                📺 Be the table
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
 
-      {suggestTable && (
-        <button className="table-suggest" onClick={() => act('/api/lobby/table', { on: true })}>
-          📺 use this big screen as the table?
-        </button>
-      )}
+      <div className="section-head">
+        <h2>Pick a game</h2>
+        <Segmented value={filter} onChange={setFilter} counts={counts} />
+      </div>
 
-      <h2>Who's here</h2>
-      <DeviceTiles devices={snapshot.devices} myId={deviceId} />
-
-      <h2>Pick a game</h2>
-      <GameList
-        games={snapshot.games}
+      <GameGrid
+        games={shown}
         selectedGameId={snapshot.selectedGameId}
         onSelect={(gameId) => act('/api/lobby/select', { gameId })}
-        fitChip
       />
-      {/* only genuine choices appear — the lobby auto-picks the mode that
-          best uses the devices that are actually here */}
-      {selected && selected.modes.filter((mo) => mo.offered).length > 1 && (
-        <div className="mode-row">
-          {selected.modes
-            .filter((mo) => mo.offered)
-            .map((mo) => (
-              <button
-                key={mo.id}
-                className={['mode', snapshot.selectedModeId === mo.id && 'on'].filter(Boolean).join(' ')}
-                onClick={() => act('/api/lobby/mode', { modeId: mo.id })}
-              >
-                <strong>{mo.name}</strong>
-                <span className="meta">{mo.tagline ?? ''}</span>
-              </button>
-            ))}
-        </div>
-      )}
 
       {/* your own seat: extra roles (spymasters…), or sitting this one out */}
       {selected && !iAmTable && me && (
@@ -345,38 +354,68 @@ export function App({ host = false }: { host?: boolean }) {
           {selected.manifest.roles.extras
             .filter((extra) => extra !== me.role)
             .map((extra) => (
-              <button key={extra} className="chip" onClick={() => act('/api/lobby/claim', { role: extra })}>
+              <button key={extra} className="ghost" onClick={() => act('/api/lobby/claim', { role: extra })}>
                 Become {extra.replace(/-/g, ' ')}
               </button>
             ))}
           {me.role === null ? (
-            <button className="chip" onClick={() => act('/api/lobby/claim', { role: 'hand' })}>
+            <button className="ghost" onClick={() => act('/api/lobby/claim', { role: 'hand' })}>
               Jump in
             </button>
           ) : (
-            <button className="chip" onClick={() => act('/api/lobby/claim', { role: null })}>
+            <button className="ghost" onClick={() => act('/api/lobby/claim', { role: null })}>
               {me.role === 'hand' ? 'Sit out' : `Stop being ${me.role.replace(/-/g, ' ')}`}
             </button>
           )}
         </div>
       )}
 
-      <div className="actions start-row">
-        {selected && (
-          <button
-            className="primary big-start"
-            disabled={!snapshot.canStart}
-            onClick={() => act('/api/lobby/start')}
-          >
-            ▶ Start {selected.manifest.name}
-          </button>
-        )}
-        {selected && snapshot.blockers.length > 0 && (
-          <p className="blockers">{snapshot.blockers.join(' · ')}</p>
-        )}
-        {!selected && <p className="muted">pick a game to start</p>}
-      </div>
-      {overlay}
+      {selected && (
+        <div className="startbar">
+          <div className="startbar-inner">
+            <span className="sb-icon">{selected.manifest.icon ?? '🎲'}</span>
+            <div className="sb-text">
+              <strong>{selected.manifest.name}</strong>
+              {snapshot.blockers.length > 0 ? (
+                <span className="blockers">{snapshot.blockers.join(' · ')}</span>
+              ) : (
+                <span className="meta">
+                  {/* the mode name only means something when there was a choice */}
+                  {selected.modes.filter((mo) => mo.offered).length > 1
+                    ? (selected.modes.find((mo) => mo.id === snapshot.selectedModeId)?.name ?? 'ready')
+                    : `${players} player${players === 1 ? '' : 's'} · ready`}
+                </span>
+              )}
+            </div>
+            <button
+              className="primary big-start"
+              disabled={!snapshot.canStart}
+              onClick={() => act('/api/lobby/start')}
+            >
+              ▶ Start {selected.manifest.name}
+            </button>
+          </div>
+          {/* only genuine choices appear — the lobby auto-picks the mode that
+              best uses the devices that are actually here */}
+          {selected.modes.filter((mo) => mo.offered).length > 1 && (
+            <div className="mode-row">
+              {selected.modes
+                .filter((mo) => mo.offered)
+                .map((mo) => (
+                  <button
+                    key={mo.id}
+                    className={['mode', snapshot.selectedModeId === mo.id && 'on'].filter(Boolean).join(' ')}
+                    onClick={() => act('/api/lobby/mode', { modeId: mo.id })}
+                  >
+                    <strong>{mo.name}</strong>
+                    <span className="meta">{mo.tagline ?? ''}</span>
+                  </button>
+                ))}
+            </div>
+          )}
+        </div>
+      )}
+      {sheetEl}
     </div>
   );
 }

@@ -13,8 +13,9 @@ const host = await openHome(browser, {
   viewport: { width: 1280, height: 860 },
   onError: (e) => fail(`host pageerror: ${e.message}`),
 });
-if (!(await host.textContent('.setup-line')).includes('1 player · 1 device')) {
-  fail('a lone device should be a 1-player group');
+const groupLine = await host.textContent('.setup-line');
+if (!groupLine.includes('1 player') || !groupLine.includes('1 device')) {
+  fail(`a lone device should be a 1-player group, got: ${groupLine}`);
 }
 await host.waitForSelector('button.game.ready:has-text("Lights Out")', { timeout: 8000 });
 if (await host.locator('button.game:has-text("Memory")').count()) fail('2-player game visible with 1 player');
@@ -37,23 +38,31 @@ const phone = await openHome(browser, {
 });
 await host.waitForSelector('.tile:has-text("Dana")', { timeout: 10000 });
 await host.waitForFunction(
-  () => document.querySelector('.setup-line')?.textContent?.includes('2 players · 2 devices'),
+  () => {
+    const t = document.querySelector('.setup-line')?.textContent ?? '';
+    return t.includes('2 players') && t.includes('2 devices');
+  },
   null, { timeout: 8000 },
 );
-// Lights Out is 1-player only, so it drops out of the fitting list
+// Lights Out is 1-player only, so it drops out of the Ready tab
 await host.waitForFunction(
-  () => !document.querySelector('button.game:not(.games-more)')?.textContent?.includes('Lights Out'),
+  () => ![...document.querySelectorAll('.game')].some((el) => el.textContent.includes('Lights Out')),
   null, { timeout: 8000 },
 );
-await host.click('.games-more');
-const reason = (await host.textContent('button.game:has-text("Lights Out")')).trim();
+await host.click('.seg:has-text("All")');
+await host.waitForSelector('.game.locked:has-text("Lights Out")', { timeout: 8000 });
+const reason = (await host.textContent('.game:has-text("Lights Out")')).trim();
 if (!reason.includes('up to 1 player')) fail(`expected a fit reason, got: ${reason}`);
+await host.click('.seg:has-text("Ready")');
 console.log('ok: a second device joins — group and game list follow automatically');
 
 // ---------- hand the big screen the table role ----------
 await beTable(host);
 await host.waitForFunction(
-  () => document.querySelector('.setup-line')?.textContent?.includes('1 player · 1 device · table screen'),
+  () => {
+    const t = document.querySelector('.setup-line')?.textContent ?? '';
+    return t.includes('1 player') && t.includes('1 device') && t.includes('table screen');
+  },
   null, { timeout: 8000 },
 );
 await startGame(host, 'Lights Out');
@@ -81,7 +90,10 @@ console.log('ok: end game returns everyone to the lobby, rename kept');
 // ---------- "3 of us on this phone" grows the group without more devices ----------
 await setSeats(phone, 3);
 await host.waitForFunction(
-  () => document.querySelector('.setup-line')?.textContent?.includes('3 players · 1 device'),
+  () => {
+    const t = document.querySelector('.setup-line')?.textContent ?? '';
+    return t.includes('3 players') && t.includes('1 device');
+  },
   null, { timeout: 8000 },
 );
 await host.waitForSelector('button.game.ready:has-text("Memory")', { timeout: 8000 });

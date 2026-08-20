@@ -1,85 +1,130 @@
-import { useMemo, useState } from 'react';
-import type { CSSProperties } from 'react';
+import { useMemo } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { hueOf } from '../../shared/avatar.js';
 import type { DeviceTile, GameEntry } from '../../shared/types.js';
 
-export function DeviceTiles(props: { devices: DeviceTile[]; myId: string | null }) {
+/** Everyone in the room, as a row of avatar bubbles. */
+export function PeopleStrip(props: { devices: DeviceTile[]; myId: string | null }) {
+  if (props.devices.length === 0) return <p className="muted">nobody here yet</p>;
   return (
-    <div className="tiles">
+    <div className="people">
       {props.devices.map((d) => (
         <div
           key={d.id}
-          className={['tile', d.id === props.myId && 'me', d.away && 'away'].filter(Boolean).join(' ')}
-          style={{ '--seat': `hsl(${hueOf(d.name)} 55% 52%)` } as CSSProperties}
+          className={['person', 'tile', d.id === props.myId && 'me', d.away && 'away'].filter(Boolean).join(' ')}
+          style={{ '--seat': `hsl(${hueOf(d.name)} 60% 55%)` } as CSSProperties}
         >
-          <span className="avatar">{d.avatar}</span>
-          <span className="who">
-            {d.name}
-            {d.away ? ' 💤' : ''}
+          <span className="bubble">
+            {d.avatar}
+            {d.isTable && <span className="mark table">🖥</span>}
+            {d.seats > 1 && !d.isTable && <span className="mark seats">{d.seats}</span>}
           </span>
-          {d.seats > 1 && !d.isTable && <span className="badge seats">{d.seats} here</span>}
-          {d.role && <span className={`badge ${d.role === 'table' ? 'table' : ''}`}>{d.role === 'hand' ? 'player' : d.role}</span>}
+          <span className="who">{d.name}</span>
         </div>
       ))}
-      {props.devices.length === 0 && <p className="muted">nobody yet</p>}
     </div>
   );
 }
 
-export function GameList(props: {
+export type GameFilter = 'ready' | 'solo' | 'party' | 'all';
+
+const MATCH: Record<GameFilter, (g: GameEntry) => boolean> = {
+  ready: (g) => g.feasible,
+  solo: (g) => g.manifest.players.min === 1,
+  party: (g) => g.manifest.players.max >= 6,
+  all: () => true,
+};
+
+export function filterGames(games: GameEntry[], f: GameFilter): GameEntry[] {
+  const shown = games.filter(MATCH[f]);
+  // fitting games first, then the rest — same order every render
+  return [...shown].sort((a, b) => Number(b.feasible) - Number(a.feasible));
+}
+
+export function Segmented(props: {
+  value: GameFilter;
+  onChange: (f: GameFilter) => void;
+  counts: Record<GameFilter, number>;
+}) {
+  const tabs: { id: GameFilter; label: string }[] = [
+    { id: 'ready', label: 'Ready' },
+    { id: 'solo', label: 'Solo' },
+    { id: 'party', label: 'Party' },
+    { id: 'all', label: 'All' },
+  ];
+  return (
+    <div className="segmented" role="tablist">
+      {tabs.map((t) => (
+        <button
+          key={t.id}
+          role="tab"
+          className={props.value === t.id ? 'seg on' : 'seg'}
+          onClick={() => props.onChange(t.id)}
+        >
+          {t.label}
+          <span className="seg-n">{props.counts[t.id]}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function GameGrid(props: {
   games: GameEntry[];
   selectedGameId: string | null;
-  onSelect?: (gameId: string | null) => void;
-  /** Feasibility is against the declared group ("fits") rather than joined devices ("ready"). */
-  fitChip?: boolean;
+  onSelect: (gameId: string | null) => void;
 }) {
-  const [showAll, setShowAll] = useState(false);
-  // with a declared group, non-fitting games hide behind an expander
-  const hidden = props.fitChip && !showAll ? props.games.filter((g) => !g.feasible) : [];
-  const shown = props.games.filter((g) => !hidden.includes(g));
+  if (props.games.length === 0) {
+    return <p className="empty-note">nothing here — try another tab, or add people</p>;
+  }
   return (
     <div className="games">
-      {shown.map(({ manifest, feasible, reason }) => {
+      {props.games.map(({ manifest, feasible, reason }) => {
         const selected = manifest.id === props.selectedGameId;
-        const classes = ['game', selected && 'selected', feasible ? 'ready' : 'infeasible'];
+        const hue = hueOf(manifest.id);
         return (
           <button
             key={manifest.id}
-            className={classes.filter(Boolean).join(' ')}
-            disabled={!props.onSelect}
-            onClick={() => props.onSelect?.(selected ? null : manifest.id)}
-            style={
-              {
-                '--hue': hueOf(manifest.id),
-                '--accent': `hsl(${hueOf(manifest.id)} 55% 55%)`,
-              } as CSSProperties
-            }
+            className={['game', selected && 'selected', feasible ? 'ready' : 'locked'].filter(Boolean).join(' ')}
+            style={{ '--hue': hue } as CSSProperties}
+            onClick={() => props.onSelect(selected ? null : manifest.id)}
           >
             <span className="game-icon">{manifest.icon ?? '🎲'}</span>
             <span className="game-name">{manifest.name}</span>
             <span className="game-tagline">{manifest.tagline ?? ''}</span>
-            <span className="meta">
-              {manifest.players.min === manifest.players.max
-                ? `${manifest.players.min} player${manifest.players.min === 1 ? '' : 's'}`
-                : `${manifest.players.min}–${manifest.players.max} players`}
+            <span className="game-foot">
+              {feasible ? (
+                <span className="meta">
+                  {manifest.players.min === manifest.players.max
+                    ? `${manifest.players.min}p`
+                    : `${manifest.players.min}–${manifest.players.max}p`}
+                </span>
+              ) : (
+                <span className="meta reason">🔒 {reason}</span>
+              )}
             </span>
-            {feasible ? (
-              <span className="ready-chip">
-                {selected ? 'selected' : props.fitChip ? 'fits your group' : 'ready'}
-              </span>
-            ) : (
-              <span className="meta reason">{reason}</span>
-            )}
+            {selected && <span className="game-check">✓</span>}
           </button>
         );
       })}
-      {hidden.length > 0 && (
-        <button className="games-more" onClick={() => setShowAll(true)}>
-          +{hidden.length} more game{hidden.length === 1 ? '' : 's'}
-          <span className="meta">add people to unlock</span>
-        </button>
-      )}
-      {props.games.length === 0 && <p className="muted">no games installed</p>}
+    </div>
+  );
+}
+
+/** Bottom sheet — the one modal shape used everywhere. */
+export function Sheet(props: { title: string; onClose: () => void; children: ReactNode }) {
+  return (
+    <div className="sheet-scrim" onClick={props.onClose}>
+      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+        <span className="grabber" />
+        <header className="sheet-head">
+          <h3>{props.title}</h3>
+          <button className="sheet-close room-close" onClick={props.onClose} aria-label="close">
+            ✕
+          </button>
+        </header>
+        <div className="sheet-body room-inner">{props.children}</div>
+      </div>
     </div>
   );
 }
