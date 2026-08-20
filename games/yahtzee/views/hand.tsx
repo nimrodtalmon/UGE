@@ -48,7 +48,7 @@ export default function HandView({ view, players, over, move }: GameViewProps<Ya
             current={false}
           />
         ) : (
-          <p className="yz-hint">Dice Poker in progress — you're watching.</p>
+          <p className="yz-hint">Yatze in progress — you're watching.</p>
         )}
       </div>
     );

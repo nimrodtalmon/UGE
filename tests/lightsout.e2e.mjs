@@ -72,6 +72,23 @@ await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 5000 });
 await table.waitForSelector('.tile:has-text("Zorro")', { timeout: 6000 });
 console.log('ok: end game returns everyone to the lobby, rename kept');
 
+// no table screen declared: games still fit and start (table is optional)
+await table.evaluate(() => fetch('/api/lobby/setup', {
+  method: 'POST', headers: { 'content-type': 'application/json' },
+  body: JSON.stringify({ players: 1, phones: 1, hasTable: false }),
+}));
+await table.waitForSelector('button.game.ready:has-text("Lights Out")', { timeout: 8000 });
+// selection survives "End game" — only click the box if it isn't selected yet
+if (!(await table.locator('button.game.selected:has-text("Lights Out")').count())) {
+  await table.click('button.game:has-text("Lights Out")');
+}
+await table.waitForSelector('button:has-text("Start Lights Out"):not([disabled])', { timeout: 8000 });
+await table.click('button:has-text("Start Lights Out")');
+await phone.waitForSelector('.lo-grid', { timeout: 8000 });
+console.log('ok: tableless group — game fits, starts, plays on the phone');
+await table.click('button:has-text("End game")');
+await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 5000 });
+
 if (process.env.SCRATCH) await table.screenshot({ path: process.env.SCRATCH + '/table.png' });
 await browser.close();
 console.log('ALL LIGHTSOUT TESTS PASSED');

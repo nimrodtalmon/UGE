@@ -2,7 +2,7 @@
   "id": "trivia",
   "name": "Trivia",
   "players": { "min": 1, "max": 8 },
-  "roles": { "table": "required", "hand": "per-player", "extras": [] },
+  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "❓",
   "tagline": "know it all?",

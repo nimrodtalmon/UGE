@@ -177,6 +177,13 @@ any hardware.
   Dice Poker (Yahtzee rules, renamed), Hearts. Each built as a pure plugin
   (no platform changes), audited for playerView leaks + hostile input, and
   covered by tests/more-games.e2e.mjs.
+- 2026-08: Feedback round: UNO cards can be flicked at the pile to play;
+  game screens are fixed viewport boxes (no page scroll/bounce during play);
+  Sketch runs 3 drawings per player (cap 15); ALL games mark the table
+  screen optional (phones are self-sufficient; lobby only auto-assigns the
+  table role to a real table screen when the game treats it as optional);
+  public tables get a "⇄ switch" room link; Dice Poker renamed **Yatze**.
+  Alias stays party 2+/teams 4+ with 1 shared phone (user reconfirmed).
 - 2026-08: Road mode: an optional gitignored `uge.config.json` can carry the
   WiFi credentials of whatever network the brain shares (phone hotspot /
   Internet Sharing); the table then shows a two-step QR (join WiFi → open

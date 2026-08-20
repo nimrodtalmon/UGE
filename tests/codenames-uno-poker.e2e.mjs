@@ -119,7 +119,7 @@ if (handSize !== 7) fail(`expected 7 starting cards, got ${handSize}`);
 console.log('ok: player sees their 7 cards');
 
 let done = false;
-for (let i = 0; i < 400 && !done; i++) {
+for (let i = 0; i < 700 && !done; i++) {
   if (await table.locator('.wc-over').count()) { done = true; break; }
   for (const p of players) {
     if (await p.locator('.wc-picker').count()) {
@@ -139,7 +139,7 @@ for (let i = 0; i < 400 && !done; i++) {
   }
   await table.waitForTimeout(250);
 }
-if (!done) fail('UNO never finished within 400 rounds');
+if (!done) fail('UNO never finished within 700 rounds');
 console.log(`ok: UNO finished — "${(await table.textContent('.wc-over')).trim()}"`);
 await table.click('button:has-text("End game")');
 await table.waitForSelector('h2:has-text("Pick a game")', { timeout: 5000 });

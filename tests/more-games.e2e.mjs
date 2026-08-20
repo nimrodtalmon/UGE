@@ -103,15 +103,15 @@ if (await phones[0].locator('button.st2-stop:not([disabled])').count()) {
 console.log('ok: stop! — letter up, 5 inputs, STOP gated on a full sheet');
 await endGame();
 
-// ---------- Dice Poker (yahtzee) ----------
-await start('Dice Poker');
+// ---------- Yatze (yahtzee) ----------
+await start('Yatze');
 const yzRoller = await phoneWith(phones, 'button.yz-roll:not([disabled])');
 await yzRoller.click('button.yz-roll');
 await table.waitForFunction(
   () => [...document.querySelectorAll('.yz-die')].filter((el) => !el.className.includes('blank')).length >= 5,
   null, { timeout: 8000 },
 );
-console.log('ok: dice poker — roll shows five dice on the table');
+console.log('ok: yatze — roll shows five dice on the table');
 await endGame();
 
 // ---------- Block B: 4 players / 4 phones ----------

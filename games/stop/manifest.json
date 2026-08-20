@@ -2,7 +2,7 @@
   "id": "stop",
   "name": "Stop!",
   "players": { "min": 2, "max": 8 },
-  "roles": { "table": "required", "hand": "per-player", "extras": [] },
+  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "🛑",
   "tagline": "categories against the clock"

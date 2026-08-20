@@ -74,7 +74,8 @@ const game: GameDef<SketchState, SketchView> = {
     const base: SketchState = {
       phase: 'draw',
       round: 0,
-      totalRounds: Math.max(players.length, 2),
+      // three drawings per player (capped) — one round each was over too fast
+      totalRounds: Math.max(4, Math.min(players.length * 3, 15)),
       word: '',
       usedWords: [],
       strokes: [],

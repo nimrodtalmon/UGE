@@ -1,5 +1,5 @@
 * { margin: 0; box-sizing: border-box; }
-html, body { height: 100%; }
+html, body { height: 100%; overscroll-behavior: none; }
 body {
   background:
     radial-gradient(120vh 120vh at 15% -20%, #1c2333 0%, transparent 55%) fixed,
@@ -236,6 +236,16 @@ h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; color:
 }
 .room-code { color: #c8ccd2; font-size: 1.1rem; }
 .room-code strong { color: #e4b83d; font-size: 1.5rem; letter-spacing: 0.2em; }
+.room-switch {
+  color: #8a8f98;
+  font-size: 0.85rem;
+  text-decoration: none;
+  border: 1px solid #3a4048;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
 .ok { color: #6fd08c; font-size: 3rem; }
 
 /* table layout — QR is the hero */
@@ -366,8 +376,16 @@ button.small { padding: 0.35rem 0.8rem; font-size: 0.85rem; }
   .big-start { font-size: 1.1rem; padding: 0.9rem 1rem; }
 }
 
-/* running game overlay */
-.game-shell { height: 100%; position: relative; }
+/* running game viewport — a fixed, exactly-screen-sized box so swipes never
+   scroll or bounce the page; content taller than the screen scrolls INSIDE */
+.game-shell,
+.game-viewport {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}
 .game-controls {
   position: fixed;
   top: 0.6rem;

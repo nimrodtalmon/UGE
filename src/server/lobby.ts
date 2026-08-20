@@ -295,7 +295,7 @@ export class Lobby {
         this.claims.set(d.id, 'hand');
       }
     }
-    if (m && m.roles.table === 'required' && ![...this.claims.values()].includes('table')) {
+    if (m && m.roles.table !== 'none' && ![...this.claims.values()].includes('table')) {
       const best = [...this.devices.values()]
         .filter((d) => !this.claims.has(d.id))
         .sort(
@@ -303,7 +303,10 @@ export class Lobby {
             Number(b.isTableScreen) - Number(a.isTableScreen) ||
             b.screen.w * b.screen.h - a.screen.w * a.screen.h,
         )[0];
-      if (best) this.claims.set(best.id, 'table');
+      // required: any free screen will do; optional: only a real table screen
+      if (best && (m.roles.table === 'required' || best.isTableScreen)) {
+        this.claims.set(best.id, 'table');
+      }
     }
   }
 

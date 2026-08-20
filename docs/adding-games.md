@@ -46,7 +46,10 @@ guessing phone → 2). `players` counts HUMANS, `phones` counts devices, and
 the table screen is its own question — keep the three separate when
 declaring requirements.
 
-Current audit of the built-in games (players × phones, + table always):
+Current audit of the built-in games (players × phones). Every built-in game
+declares the table screen **optional** — phones carry all the info needed to
+play, the table just makes it nicer — so groups without a spare screen can
+still play everything:
 
 | Game | Mode | Players | Phones |
 |---|---|---|---|
@@ -67,7 +70,7 @@ Current audit of the built-in games (players × phones, + table always):
 | Liar's Dice | — | 2–6 | one per player |
 | Dial | — | 4–12 | 1+ |
 | Battleship | — | 2 | one per player |
-| Dice Poker | phone each / pass | 1–8 | per player / 1 |
+| Yatze | phone each / pass | 1–8 | per player / 1 |
 | Hearts | — | 4 | one per player |
 
 ## Modes — several ways to play one game

@@ -2,7 +2,7 @@
   "id": "werewolf",
   "name": "Werewolf",
   "players": { "min": 4, "max": 12 },
-  "roles": { "table": "required", "hand": "per-player", "extras": [] },
+  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "🐺",
   "tagline": "who can you trust?"

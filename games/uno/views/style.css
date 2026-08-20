@@ -85,7 +85,8 @@
   justify-content: center;
   max-width: 96vw;
 }
-.wc-slot { padding: 0; background: none; border: none; opacity: 0.55; transition: transform 0.15s, opacity 0.2s; }
+.wc-slot { padding: 0; background: none; border: none; opacity: 0.55; transition: transform 0.15s, opacity 0.2s; touch-action: none; }
+.wc-drag-hint { color: #8a8f98; font-size: 0.8rem; }
 .wc-slot.playable { opacity: 1; transform: translateY(-6px); }
 .wc-slot.playable:active { transform: translateY(-10px) scale(1.05); }
 .wc-slot.drawn { animation: wc-pulse 1s infinite; }

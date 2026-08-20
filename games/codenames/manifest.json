@@ -6,7 +6,7 @@
     "max": 9
   },
   "roles": {
-    "table": "required",
+    "table": "optional",
     "hand": "per-player",
     "extras": [
       "spymasters"

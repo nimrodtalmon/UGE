@@ -90,7 +90,9 @@ function PhoneLobby(props: { profile: Profile; onChange: (p: Profile) => void })
   if (snapshot.phase === 'playing' && snapshot.game) {
     return (
       <>
-        <GameScreen game={snapshot.game} move={(name, ...args) => act('/api/game/move', { name, args })} />
+        <div className="game-viewport">
+          <GameScreen game={snapshot.game} move={(name, ...args) => act('/api/game/move', { name, args })} />
+        </div>
         <button className="profile-chip" onClick={() => setEditing(true)}>
           {profile.avatar}
         </button>

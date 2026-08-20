@@ -6,7 +6,7 @@
     "max": 6
   },
   "roles": {
-    "table": "required",
+    "table": "optional",
     "hand": "per-player",
     "extras": []
   },

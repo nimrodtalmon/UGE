@@ -157,7 +157,10 @@ function Table() {
         <h1>UGE</h1>
         {session?.roomCode && (
           <p className="room-code">
-            room <strong>{session.roomCode}</strong>
+            room <strong>{session.roomCode}</strong>{' '}
+            <a className="room-switch" href="/">
+              ⇄ switch
+            </a>
           </p>
         )}
         {session?.wifi && (
