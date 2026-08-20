@@ -34,6 +34,17 @@ export interface Manifest {
    * with AI opponents at one of these difficulties.
    */
   bots?: { levels: BotLevel[] };
+  /** Shown behind the "?" button, in the lobby and during the game. */
+  help?: GameHelp;
+}
+
+export interface GameHelp {
+  /** One or two sentences: what you are trying to do. */
+  goal: string;
+  /** How a turn works and what to tap, in order. */
+  steps: string[];
+  /** Scoring, variants, anything easy to miss. */
+  notes?: string[];
 }
 
 export interface BotLevel {

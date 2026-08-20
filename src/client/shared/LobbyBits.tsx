@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { hueOf } from '../../shared/avatar.js';
-import type { DeviceTile, GameEntry } from '../../shared/types.js';
+import type { DeviceTile, GameEntry, Manifest } from '../../shared/types.js';
 
 /** Everyone in the room, as a row of avatar bubbles. */
 export function PeopleStrip(props: { devices: DeviceTile[]; myId: string | null }) {
@@ -38,9 +38,13 @@ const MATCH: Record<GameFilter, (g: GameEntry) => boolean> = {
 };
 
 export function filterGames(games: GameEntry[], f: GameFilter): GameEntry[] {
-  const shown = games.filter(MATCH[f]);
-  // fitting games first, then the rest — same order every render
-  return [...shown].sort((a, b) => Number(b.feasible) - Number(a.feasible));
+  // Alphabetical, always. Sorting by feasibility looks tidier but reshuffles
+  // the grid whenever the group changes — including under the finger that is
+  // reaching for a card. A fixed order is worth more than a tidy one.
+  return games
+    .filter(MATCH[f])
+    .slice()
+    .sort((a, b) => a.manifest.name.localeCompare(b.manifest.name));
 }
 
 export function Segmented(props: {
@@ -130,6 +134,34 @@ export function Sheet(props: { title: string; onClose: () => void; children: Rea
         <div className="sheet-body room-inner">{props.children}</div>
       </div>
     </div>
+  );
+}
+
+/** How to play, from the manifest — the same copy in the lobby and in-game. */
+export function HelpSheet(props: { manifest: Manifest; onClose: () => void }) {
+  const help = props.manifest.help;
+  return (
+    <Sheet title={`How to play ${props.manifest.name}`} onClose={props.onClose}>
+      {help ? (
+        <div className="help">
+          <p className="help-goal">{help.goal}</p>
+          <ol className="help-steps">
+            {help.steps.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+          {help.notes && help.notes.length > 0 && (
+            <ul className="help-notes">
+              {help.notes.map((note, i) => (
+                <li key={i}>{note}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : (
+        <p className="muted">No instructions for this one yet.</p>
+      )}
+    </Sheet>
   );
 }
 

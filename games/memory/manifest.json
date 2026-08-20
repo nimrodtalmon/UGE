@@ -52,5 +52,19 @@
         "tagline": "forgets a card once in a while"
       }
     ]
+  },
+  "help": {
+    "goal": "Find matching pairs of cards. Whoever has taken the most pairs once the grid is clear wins.",
+    "steps": [
+      "Wait for the line at the top to say it is your turn.",
+      "Tap a face-down card to flip it, then tap a second one.",
+      "A matching pair stays up and scores you a point.",
+      "Two different cards flip back and the turn moves on."
+    ],
+    "notes": [
+      "Find a pair and you keep the turn, so a good run can be long.",
+      "In pass the phone mode, hand the phone to the player named at the top.",
+      "Empty seats can be filled with bots: Easy, Normal or Sharp."
+    ]
   }
 }

@@ -15,5 +15,17 @@
     "dynamic": 0
   },
   "icon": "💡",
-  "tagline": "turn them all off"
+  "tagline": "turn them all off",
+  "help": {
+    "goal": "Turn every light on the five by five grid off. Fewer moves is a better solve.",
+    "steps": [
+      "Tap any square on the grid.",
+      "That square flips, and so do the ones above, below, left and right.",
+      "Keep tapping until the whole grid is dark."
+    ],
+    "notes": [
+      "Your move count sits under the grid.",
+      "Every board is scrambled from a dark one, so a solution always exists."
+    ]
+  }
 }

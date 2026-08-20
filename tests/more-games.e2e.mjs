@@ -116,8 +116,11 @@ const psychic = await phoneWith(phones, 'button:has-text("psychic")');
 await psychic.click('button:has-text("psychic")');
 await psychic.waitForSelector('.dl-psychic', { timeout: 8000 });
 const guessers = phones.filter((p) => p !== psychic);
-await guessers[0].waitForSelector('.dl-screen', { timeout: 8000 });
-if (await guessers[0].locator('.dl-psychic').count()) fail('non-psychic sees the target card');
+// the real privacy check: only the psychic's dial carries the 🎯 target mark.
+// Wait for the guesser to actually reach the clue phase before asserting.
+await guessers[0].waitForSelector('.dl-big:has-text("thinking of a clue")', { timeout: 10000 });
+if (await guessers[0].locator('.dl-target-mark').count()) fail('non-psychic sees the target mark');
+if (!(await psychic.locator('.dl-target-mark').count())) fail('psychic cannot see the target');
 await psychic.click('.dl-go');
 const dialer = await phoneWith(guessers, '.dl-lock');
 await dialer.click('.dl-lock');

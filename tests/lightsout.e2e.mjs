@@ -22,6 +22,18 @@ await host.waitForSelector('button.game.ready:has-text("Lights Out")', { timeout
 if (await host.locator('button.game:has-text("Hearts")').count()) fail('4-player game visible with 1 player');
 console.log('ok: no wizard — one device lands as a 1-player group with fitting games');
 
+// the grid must not reshuffle under your finger when you pick a game
+const orderOf = () => host.$$eval('.game .game-name', (els) => els.map((e) => e.textContent));
+const orderBefore = await orderOf();
+await host.click('.game:has-text("Lights Out")');
+await host.waitForSelector('.game.selected:has-text("Lights Out")', { timeout: 5000 });
+await host.waitForTimeout(2500); // a couple of polls
+const orderAfter = await orderOf();
+if (JSON.stringify(orderBefore) !== JSON.stringify(orderAfter)) {
+  fail(`game list reordered on select:\n  ${orderBefore.join(', ')}\n  ${orderAfter.join(', ')}`);
+}
+console.log('ok: picking a game leaves the list order untouched');
+
 // solo play with no table screen at all
 await startGame(host, 'Lights Out');
 await host.waitForSelector('.lo-grid', { timeout: 10000 });

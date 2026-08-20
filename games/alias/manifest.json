@@ -23,5 +23,20 @@
       "players": { "min": 2, "max": 8 },
       "choice": true
     }
-  ]
+  ],
+  "help": {
+    "goal": "Make people say the word on your phone without saying it yourself. Most words explained wins.",
+    "steps": [
+      "Hand the phone to the explainer and tap Start the round.",
+      "Explain the word on screen without saying it or its parts.",
+      "Tap Got it ✓ the moment someone shouts the word.",
+      "Tap Skip ↷ to dump a word you cannot explain.",
+      "At zero, pass the phone on and start the next round."
+    ],
+    "notes": [
+      "Teams mode: 🔴 and 🔵 share one phone, and only the explainer's team may guess.",
+      "Party mode: everyone plays on their own phone for their own score.",
+      "Taps after the clock hits zero score nothing, so the buzzer is final."
+    ]
+  }
 }

@@ -19,7 +19,7 @@ const KEYS: Record<string, Direction> = {
 };
 
 export default function HandView({ view, over, move }: GameViewProps<Slide2048View>) {
-  const start = useRef<{ x: number; y: number } | null>(null);
+  const start = useRef<{ x: number; y: number; fired: boolean } | null>(null);
   const [confirming, setConfirming] = useState(false);
 
   // swiping must never scroll or rubber-band the page under the finger
@@ -55,15 +55,22 @@ export default function HandView({ view, over, move }: GameViewProps<Slide2048Vi
     return () => clearTimeout(t);
   }, [confirming]);
 
-  const finish = (x: number, y: number) => {
+  /**
+   * Fire the moment the gesture is unmistakable, not on lift — waiting for
+   * pointerup makes every swipe feel a beat late. One slide per gesture.
+   */
+  const track = (x: number, y: number) => {
     const from = start.current;
-    start.current = null;
-    if (!from || over) return;
+    if (!from || from.fired || over) return;
     const dx = x - from.x;
     const dy = y - from.y;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < THRESHOLD) return;
-    const dir: Direction =
-      Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+    if (Math.max(ax, ay) < THRESHOLD) return;
+    // an ambiguous diagonal waits until one axis clearly wins
+    if (Math.abs(ax - ay) < THRESHOLD / 3) return;
+    from.fired = true;
+    const dir: Direction = ax > ay ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
     move('slide', dir);
   };
 
@@ -85,9 +92,13 @@ export default function HandView({ view, over, move }: GameViewProps<Slide2048Vi
         className="sl-pad"
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId);
-          start.current = { x: e.clientX, y: e.clientY };
+          start.current = { x: e.clientX, y: e.clientY, fired: false };
         }}
-        onPointerUp={(e) => finish(e.clientX, e.clientY)}
+        onPointerMove={(e) => track(e.clientX, e.clientY)}
+        onPointerUp={(e) => {
+          track(e.clientX, e.clientY); // a fast flick can skip every move event
+          start.current = null;
+        }}
         onPointerCancel={() => {
           start.current = null;
         }}

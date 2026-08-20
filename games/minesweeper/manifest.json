@@ -50,5 +50,20 @@
         "mines": 50
       }
     }
-  ]
+  ],
+  "help": {
+    "goal": "Uncover every square that has no mine under it. Clear them all and you win.",
+    "steps": [
+      "Tap any square to start; the first tap is always safe.",
+      "In ⛏ dig mode, tap a square to uncover it.",
+      "Numbers say how many mines touch that square.",
+      "Tap 🚩 flag, then tap squares you think hide mines.",
+      "Tap 🔄 then tap again to wipe the run and restart."
+    ],
+    "notes": [
+      "Long-press a square to flag it without leaving dig mode.",
+      "Tapping a number that already has that many flags around it opens the rest.",
+      "💣 counts the mines you have not flagged; ⏱ starts on your first tap."
+    ]
+  }
 }

@@ -5,5 +5,20 @@
   "roles": { "table": "optional", "hand": "per-player", "extras": [] },
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "🎨",
-  "tagline": "draw it — they type it"
+  "tagline": "draw it — they type it",
+  "help": {
+    "goal": "Draw your secret word so the others can type it, and guess theirs. Most points wins.",
+    "steps": [
+      "On your turn, read the word shown at the top.",
+      "Drag your finger on the pad to draw it.",
+      "Tap one of the five dots to change pen, or clear to wipe.",
+      "When someone else draws, type your guess and tap Guess.",
+      "Guess as often as you like; wrong guesses cost nothing."
+    ],
+    "notes": [
+      "The first player to get it scores 3, everyone after that 2.",
+      "The drawer earns 1 point for every player who guesses the word.",
+      "Each drawing lasts 75 seconds; the dashes show how long the word is."
+    ]
+  }
 }

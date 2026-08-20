@@ -4,6 +4,7 @@ import { api, roomBase } from './room.js';
 import {
   Celebration,
   GameGrid,
+  HelpSheet,
   PeopleStrip,
   Segmented,
   Sheet,
@@ -170,7 +171,7 @@ function InviteSheet(props: {
 export function App({ host = false }: { host?: boolean }) {
   const [profile, setProfile] = useState<Profile>(() => loadProfile(host));
   const [session, setSession] = useState<Session | null>(null);
-  const [sheet, setSheet] = useState<null | 'invite' | 'profile'>(null);
+  const [sheet, setSheet] = useState<null | 'invite' | 'profile' | 'help'>(null);
   const [filter, setFilter] = useState<GameFilter>('ready');
   const [updating, setUpdating] = useState(false);
   const { snapshot, deviceId, offline, act } = useLobby({ ...profile, host });
@@ -228,9 +229,18 @@ export function App({ host = false }: { host?: boolean }) {
 
   const me = snapshot.me;
   const iAmTable = me?.isTable === true;
+  const playingManifest =
+    snapshot.game && snapshot.games.find((g) => g.manifest.id === snapshot.game!.id)?.manifest;
   const sheetEl =
     sheet === 'profile' ? (
       <ProfileSheet initial={profile} onSave={saveProfile} onClose={() => setSheet(null)} />
+    ) : sheet === 'help' ? (
+      (() => {
+        const m =
+          playingManifest ??
+          snapshot.games.find((g) => g.manifest.id === snapshot.selectedGameId)?.manifest;
+        return m ? <HelpSheet manifest={m} onClose={() => setSheet(null)} /> : null;
+      })()
     ) : sheet === 'invite' ? (
       <InviteSheet
         session={session}
@@ -258,6 +268,9 @@ export function App({ host = false }: { host?: boolean }) {
             {profile.avatar}
           </button>
         )}
+        <button className="help-chip" onClick={() => setSheet('help')} aria-label="how to play">
+          ?
+        </button>
         {showControls && (
           <div className="game-controls">
             {snapshot.game.over && (
@@ -289,7 +302,9 @@ export function App({ host = false }: { host?: boolean }) {
   return (
     <div className={selected ? 'app has-bar' : 'app'}>
       <header className="appbar">
-        <span className="wordmark">UGE</span>
+        <a className="wordmark" href={`${roomBase}/`} title="UGE home">
+          UGE
+        </a>
         <div className="appbar-right">
           {session?.roomCode && (
             <button className="pill room-chip" onClick={() => setSheet('invite')}>
@@ -387,6 +402,9 @@ export function App({ host = false }: { host?: boolean }) {
                 </span>
               )}
             </div>
+            <button className="help-btn" onClick={() => setSheet('help')} aria-label="how to play">
+              ?
+            </button>
             <button
               className="primary big-start"
               disabled={!snapshot.canStart}
@@ -399,24 +417,35 @@ export function App({ host = false }: { host?: boolean }) {
               there aren't enough humans to play at all */}
           {selected.manifest.bots && (
             <div className="bot-row">
-              <div className="bot-count">
-                <span className="bot-label">🤖 AI opponents</span>
-                <div className="stepper small">
-                  <button
-                    disabled={snapshot.bots === 0}
-                    onClick={() => act('/api/lobby/bots', { count: snapshot.bots - 1 })}
-                  >
-                    −
-                  </button>
-                  <strong>{snapshot.bots}</strong>
-                  <button
-                    disabled={players >= selected.manifest.players.max}
-                    onClick={() => act('/api/lobby/bots', { count: snapshot.bots + 1 })}
-                  >
-                    +
-                  </button>
+              {/* one free seat means one possible opponent — that is a yes/no */}
+              {selected.manifest.players.max - (players - snapshot.bots) <= 1 ? (
+                <button
+                  className={snapshot.bots > 0 ? 'tick on' : 'tick'}
+                  onClick={() => act('/api/lobby/bots', { count: snapshot.bots > 0 ? 0 : 1 })}
+                >
+                  <span className="box">{snapshot.bots > 0 ? '✓' : ''}</span>
+                  🤖 Play against the computer
+                </button>
+              ) : (
+                <div className="bot-count">
+                  <span className="bot-label">🤖 AI opponents</span>
+                  <div className="stepper small">
+                    <button
+                      disabled={snapshot.bots === 0}
+                      onClick={() => act('/api/lobby/bots', { count: snapshot.bots - 1 })}
+                    >
+                      −
+                    </button>
+                    <strong>{snapshot.bots}</strong>
+                    <button
+                      disabled={players >= selected.manifest.players.max}
+                      onClick={() => act('/api/lobby/bots', { count: snapshot.bots + 1 })}
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
               {snapshot.bots > 0 && (
                 <div className="bot-levels">
                   {selected.manifest.bots.levels.map((lv) => (

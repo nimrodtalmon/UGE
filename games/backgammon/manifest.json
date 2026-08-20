@@ -15,5 +15,28 @@
       "phones": { "min": 1 },
       "config": { "shared": true }
     }
-  ]
+  ],
+  "bots": {
+    "levels": [
+      { "id": "easy", "name": "Easy", "tagline": "moves at random" },
+      { "id": "normal", "name": "Normal", "tagline": "hits, makes points, hides its blots" },
+      { "id": "sharp", "name": "Sharp", "tagline": "weighs the position after every checker" }
+    ]
+  },
+  "help": {
+    "goal": "Race all 15 of your checkers around into your home board, then bear them all off before your opponent does.",
+    "steps": [
+      "Tap 🎲 Roll to throw your two dice.",
+      "Tap one of your points to pick up a checker.",
+      "Tap a highlighted point, or tap play 5, to use that die.",
+      "Play both dice, or all four when you roll a double.",
+      "Land on a lone enemy checker to knock it to the bar.",
+      "Once every checker is home, tap bear off or the tray."
+    ],
+    "notes": [
+      "Checkers on the bar come first: you cannot move anything else until they are all back in.",
+      "Bearing off only unlocks when all 15 of your checkers sit in your home board.",
+      "No doubling cube here. Every game is worth exactly one win."
+    ]
+  }
 }

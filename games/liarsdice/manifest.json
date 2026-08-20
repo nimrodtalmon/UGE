@@ -24,5 +24,20 @@
         "tagline": "calls your bluff early"
       }
     ]
+  },
+  "help": {
+    "goal": "Be the last player still holding dice, by bidding on what is under everyone's cups and calling the bluffs.",
+    "steps": [
+      "Only you see your own dice; bids cover every die on the table.",
+      "Tap − and + to set the quantity, then tap a face.",
+      "Tap Bid 3 ⚅ to claim that many dice are showing.",
+      "Do not believe the bid? Tap Liar! (dudo).",
+      "Whoever was wrong loses a die; at zero dice you are out."
+    ],
+    "notes": [
+      "Ones are wild and count towards every face, which is why you can never bid on ones.",
+      "Each bid must beat the one before it: a higher quantity, or the same quantity on a higher face.",
+      "Calling Liar ends the round immediately and reveals every cup, so there is no bidding after it."
+    ]
   }
 }

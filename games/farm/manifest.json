@@ -36,5 +36,20 @@
         "days": 40
       }
     }
-  ]
+  ],
+  "help": {
+    "goal": "Plant, water, harvest and sell. One season mode asks for $3000 in 40 days; Chill farms forever.",
+    "steps": [
+      "Pick a tool chip, then tap a plot to use it.",
+      "🪓 till bare dirt, then tap a seed chip to sow.",
+      "Water every dry crop with 💧 before the day ends.",
+      "Gather ripe crops and full pens with ✋, then 💰 Sell barn.",
+      "Tap 🌙 End day once your energy runs out."
+    ],
+    "notes": [
+      "Every chore costs one energy; 🥾 boots give you more each day.",
+      "A crop only grows on a day it was watered, and dies after three dry days.",
+      "Market prices move every day, so hold the barn until yours is high."
+    ]
+  }
 }

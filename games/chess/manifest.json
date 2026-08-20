@@ -52,5 +52,20 @@
         "tagline": "searches deeper"
       }
     ]
+  },
+  "help": {
+    "goal": "Trap the other king so it has no way out of check. Checkmate wins the game.",
+    "steps": [
+      "Wait until the top line says your move.",
+      "Tap one of your pieces to light up its squares.",
+      "Tap a highlighted square to move there.",
+      "On one shared phone, pass it after every move.",
+      "Tap Resign 🏳️ to hand the game to your opponent."
+    ],
+    "notes": [
+      "A pawn reaching the far row always becomes a queen. There is no choice of piece.",
+      "Play alone and a bot takes the empty seat: Easy plays loose, Normal looks ahead, Hard searches deeper.",
+      "Draws happen on stalemate, threefold repetition, the fifty move rule, or too few pieces."
+    ]
   }
 }

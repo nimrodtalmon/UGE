@@ -1,4 +1,5 @@
 import type { GameDef, MoveCtx } from '../../src/shared/plugin.js';
+import { pickStep } from './bot.js';
 
 export type Seat = 0 | 1;
 
@@ -225,6 +226,17 @@ const game: GameDef<BgState, BgView> = {
 
   isOver(state) {
     return state.overText ? { text: state.overText } : null;
+  },
+
+  /**
+   * AI opponent. A turn takes several actions, so each call answers only the
+   * next one: roll the dice, then play one die. The platform asks again.
+   */
+  bot(state, { seat, level, random }) {
+    if (state.overText || state.turn !== seat) return null;
+    if (state.phase === 'roll') return { name: 'roll' };
+    const step = pickStep(board(state), state.turn, state.dice, level, random);
+    return step ? { name: 'step', args: [step.from, step.die] } : null;
   },
 };
 

@@ -9,5 +9,19 @@
   "modes": [
     { "id": "classic", "name": "Classic", "tagline": "10 questions", "config": { "questions": 10 } },
     { "id": "quick", "name": "Quick", "tagline": "5 questions", "config": { "questions": 5 } }
-  ]
+  ],
+  "help": {
+    "goal": "Answer more questions right than anyone else. One point per correct answer, best score wins.",
+    "steps": [
+      "Read the question at the top of your phone.",
+      "Tap one of the four answer tiles before the countdown ends.",
+      "Wait while the right answer is revealed to everyone.",
+      "The next question starts on its own."
+    ],
+    "notes": [
+      "You get 15 seconds per question and only one tap, so no changing your mind.",
+      "Classic runs 10 questions, Quick runs 5.",
+      "Answering late scores nothing, so guess rather than run out of time."
+    ]
+  }
 }

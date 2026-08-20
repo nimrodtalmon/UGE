@@ -5,5 +5,20 @@
   "roles": { "table": "optional", "hand": "per-player", "extras": [] },
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "♠️",
-  "tagline": "hold'em — chips only"
+  "tagline": "hold'em — chips only",
+  "help": {
+    "goal": "Win all the chips. Make the best five card hand at showdown, or bet until everyone else folds.",
+    "steps": [
+      "Blinds are posted for you and two hole cards arrive.",
+      "On your turn tap Fold, or tap Check or Call 20.",
+      "Tap − and + to size a raise, then tap Raise to 120.",
+      "Push everything with the same button when it reads All-in.",
+      "Cards run out to the river, the pot is paid, the next hand starts."
+    ],
+    "notes": [
+      "Everyone starts on 1000 chips, blinds are 10 and 20, and busting out is permanent.",
+      "An all-in raise smaller than a full raise does not reopen the betting: players behind it may only call or fold.",
+      "Chips only. No money, no rebuys, no side games."
+    ]
+  }
 }

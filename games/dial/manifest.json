@@ -6,5 +6,20 @@
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "🎯",
   "tagline": "read your team's mind",
-  "phones": { "min": 1 }
+  "phones": { "min": 1 },
+  "help": {
+    "goal": "Your team guesses where a secret point sits on a spectrum. The closer to the target, the more points.",
+    "steps": [
+      "One player taps I'm the psychic 🔮 and sees the 🎯 target.",
+      "The psychic says one clue word out loud, nothing more.",
+      "The psychic taps Clue given ✓ and then stays silent.",
+      "The team talks it over and drags the dial slider.",
+      "Tap Lock it in 🔒 to score and reveal the target."
+    ],
+    "notes": [
+      "The two ends of the spectrum are printed under the dial.",
+      "Closer is better: 4 points for a bullseye, then 3, then 2, then nothing.",
+      "Rounds alternate 🔴 and 🔵, so a new player takes the psychic seat."
+    ]
+  }
 }

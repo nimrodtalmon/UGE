@@ -15,5 +15,19 @@
       "players": { "min": 2, "max": 6 },
       "choice": true
     }
-  ]
+  ],
+  "help": {
+    "goal": "Guess the hidden five letter word in six tries. In Race everyone hunts the same word and fewest guesses wins.",
+    "steps": [
+      "Tap letters on the on-screen keyboard to fill five boxes.",
+      "Tap ENTER to send the guess, or ⌫ to fix a letter.",
+      "Check the green, yellow and grey tiles before your next guess.",
+      "Keep going until you solve it or spend all six tries."
+    ],
+    "notes": [
+      "Green means right letter in the right spot. Yellow means the letter is in the word somewhere else.",
+      "Grey means that letter is not in the word at all. The keyboard keys tint the same way.",
+      "A guess that is not a real word shakes and costs you nothing."
+    ]
+  }
 }

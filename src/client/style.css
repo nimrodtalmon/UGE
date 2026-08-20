@@ -392,6 +392,69 @@ h3 { font-size: 1.05rem; }
 }
 .chip.on { border-color: var(--accent); background: #1d2a22; color: var(--text); }
 .meta.bot-hint { color: #7fa6d8; }
+
+/* AI as a yes/no, when only one opponent is possible */
+.tick {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.88rem;
+  color: var(--dim);
+}
+.tick .box {
+  width: 1.15rem;
+  height: 1.15rem;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: 1.5px solid var(--line);
+  background: var(--bg);
+  font-size: 0.8rem;
+  color: var(--bg);
+}
+.tick.on { color: var(--text); border-color: var(--accent); background: #1d2a22; }
+.tick.on .box { background: var(--accent); border-color: var(--accent); color: #0e1014; font-weight: 800; }
+
+/* how to play */
+.help-btn, .help-chip {
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  border-radius: 50%;
+  font-weight: 800;
+  color: var(--dim);
+}
+.help-chip {
+  position: fixed;
+  top: 0.6rem;
+  left: 3.4rem;
+  z-index: 30;
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.78;
+}
+.help { display: flex; flex-direction: column; gap: 0.9rem; text-align: left; width: 100%; }
+.help-goal { font-size: 1rem; color: var(--text); }
+.help-steps { display: flex; flex-direction: column; gap: 0.5rem; padding-left: 1.2rem; color: var(--dim); }
+.help-steps li { padding-left: 0.2rem; }
+.help-steps li::marker { color: var(--accent); font-weight: 700; }
+.help-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  list-style: none;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--dim);
+  font-size: 0.88rem;
+}
+.help-notes li::before { content: '· '; color: var(--warn); }
+a.wordmark { text-decoration: none; }
 .person.is-bot .bubble { border-style: dashed; }
 
 /* ---------- bottom sheet ---------- */

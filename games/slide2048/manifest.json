@@ -15,5 +15,19 @@
     "dynamic": 0
   },
   "icon": "🔢",
-  "tagline": "slide, merge, repeat"
+  "tagline": "slide, merge, repeat",
+  "help": {
+    "goal": "Slide numbered tiles together to build bigger ones. Reach the 2048 tile before the board fills up.",
+    "steps": [
+      "Swipe the board up, down, left or right.",
+      "Every tile slides that way and equal neighbours merge into one.",
+      "A new 2 or 4 appears after each swipe that moved something.",
+      "Tap New game to start over, then tap again to confirm."
+    ],
+    "notes": [
+      "A tile born from a merge cannot merge again in the same swipe.",
+      "A swipe that changes nothing is ignored and gives you no new tile.",
+      "Reaching 2048 shows a banner but you may keep playing for a higher score."
+    ]
+  }
 }

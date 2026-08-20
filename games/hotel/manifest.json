@@ -36,5 +36,20 @@
         "weeks": 24
       }
     }
-  ]
+  ],
+  "help": {
+    "goal": "Build a hotel guests want to stay in. Tycoon mode asks for $50k in 24 weeks; Relaxed cannot go bust.",
+    "steps": [
+      "Tap an empty ＋ slot to build a room or a facility.",
+      "Set each room's nightly rate with the − and + buttons.",
+      "Add staff with + until the understaffed warning clears.",
+      "Tap ▶ Play week to run the week and read the report.",
+      "Spend spare cash on 🏗️ Add floor, ⭐ Reception or 📣 Advertise."
+    ],
+    "notes": [
+      "Guests judge your rate against the fair price shown beside it.",
+      "Understaffed weeks sink your reputation, and reputation drives next week's demand.",
+      "Seasons swing demand: ☀️ high season fills the hotel, ❄️ off season empties it."
+    ]
+  }
 }

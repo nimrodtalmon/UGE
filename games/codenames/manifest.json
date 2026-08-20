@@ -38,5 +38,20 @@
         "solo": true
       }
     }
-  ]
+  ],
+  "help": {
+    "goal": "Two teams race to find their own secret words from one word clues. Touch the assassin and you lose at once.",
+    "steps": [
+      "One phone taps Become spymasters and holds the secret key.",
+      "That spymaster says one clue word plus a number out loud.",
+      "Guessers tap the grid words they think match the clue.",
+      "Tap the End turn button to stop guessing while ahead.",
+      "First team to reveal all of its own words wins."
+    ],
+    "notes": [
+      "A neutral or enemy word ends your turn immediately.",
+      "Tapping the assassin loses the game on the spot, so guess carefully.",
+      "One shared phone: the map device taps the shouted guesses. A phone per team: each taps on its own turn."
+    ]
+  }
 }

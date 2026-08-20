@@ -5,5 +5,20 @@
   "roles": { "table": "optional", "hand": "per-player", "extras": [] },
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "🁢",
-  "tagline": "runs & groups, open with 30"
+  "tagline": "runs & groups, open with 30",
+  "help": {
+    "goal": "Be the first to empty your rack by laying your tiles into valid runs and groups.",
+    "steps": [
+      "Tap 3 or more rack tiles, then tap Lay as set.",
+      "Tap a single tile, then add to set 2 to extend a table set.",
+      "Tap sort: colors to flip your rack between colour and 1→13 order.",
+      "Tap Undo to pull staged tiles back to your rack.",
+      "Tap End turn to commit, or Draw to take a tile and pass."
+    ],
+    "notes": [
+      "Your first play must be new sets of your own worth 30 points or more, with nothing added to the table.",
+      "Jokers stand in for any tile. One left on your rack at the end counts 30 against you.",
+      "Tap Rearrange table to rebuild the whole table: every set must end up valid, and at least one tile must come from your rack."
+    ]
+  }
 }

@@ -5,5 +5,20 @@
   "roles": { "table": "optional", "hand": "per-player", "extras": [] },
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "🛑",
-  "tagline": "categories against the clock"
+  "tagline": "categories against the clock",
+  "help": {
+    "goal": "Fill a sheet of categories with words starting with the round's letter. Most points after three rounds wins.",
+    "steps": [
+      "Look at the big letter, then fill every category field.",
+      "Everyone writes at the same time, so type fast.",
+      "Tap 🛑 STOP! the second all five fields are full.",
+      "Everyone else's sheet is handed in a few seconds later.",
+      "Read the reveal to see what each answer scored."
+    ],
+    "notes": [
+      "An answer nobody else wrote scores 10, a shared one scores 5.",
+      "Answers that do not start with the round's letter score nothing.",
+      "STOP! only unlocks on a full sheet, and an all valid sheet adds 5 bonus points."
+    ]
+  }
 }

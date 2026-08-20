@@ -32,5 +32,20 @@
         "pass": true
       }
     }
-  ]
+  ],
+  "help": {
+    "goal": "Fill all thirteen boxes on your scorecard with dice combinations. Highest total at the end wins.",
+    "steps": [
+      "Tap Roll to throw the five dice.",
+      "Tap any dice you want to keep; they are held for the next roll.",
+      "Roll up to three times in a turn, holding more each time.",
+      "Tap a box below to see what your dice would score there.",
+      "Tap the same box again to write that score down."
+    ],
+    "notes": [
+      "Each box is used once. A box that does not fit your dice scores zero.",
+      "Score 63 or more across Ones to Sixes for a 35 point bonus.",
+      "You must roll at least once before a box can be scored."
+    ]
+  }
 }

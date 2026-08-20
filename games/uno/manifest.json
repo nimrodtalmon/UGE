@@ -47,5 +47,20 @@
         "tagline": "saves its wilds and picks its colours"
       }
     ]
+  },
+  "help": {
+    "goal": "Be the first to get rid of every card in your hand.",
+    "steps": [
+      "Match the top card of the pile by colour or by symbol.",
+      "Tap a card to play it, or flick it up at the pile.",
+      "Play a wild and the pick a color box asks for a colour.",
+      "Nothing playable? Tap Draw a card.",
+      "If what you drew fits, play it or tap Keep it to pass."
+    ],
+    "notes": [
+      "Wild lets you name the next colour. +4 does the same and makes the next player draw four.",
+      "+2 and +4 make the next player draw and lose their turn. There is no stacking.",
+      "Skip loses the next player a turn. Reverse flips the direction, or acts as a skip with two players."
+    ]
   }
 }

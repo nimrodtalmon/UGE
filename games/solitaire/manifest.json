@@ -5,5 +5,20 @@
   "roles": { "table": "optional", "hand": "per-player", "extras": [] },
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "🃏",
-  "tagline": "the classic patience"
+  "tagline": "the classic patience",
+  "help": {
+    "goal": "Move all 52 cards to the four foundations, each built up by suit from ace to king.",
+    "steps": [
+      "Tap a card to pick it up, then tap where it should go.",
+      "On the piles, stack down in alternating red and black.",
+      "Double-tap a card to send it straight to its foundation.",
+      "Tap the face-down stock to turn the next card over.",
+      "Tap ⤒ Auto-finish or Deal again when those buttons appear."
+    ],
+    "notes": [
+      "Only a king, or a run headed by one, may move onto an empty pile.",
+      "The stock can be turned over again and again; passes are unlimited.",
+      "A card already on a foundation can be pulled back onto a pile."
+    ]
+  }
 }

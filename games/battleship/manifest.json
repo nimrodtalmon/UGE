@@ -24,5 +24,20 @@
         "tagline": "searches in a checkerboard, follows the hull"
       }
     ]
+  },
+  "help": {
+    "goal": "Sink all five of the other player's ships before they sink yours.",
+    "steps": [
+      "Your fleet is placed for you; tap 🔀 Shuffle for a new layout.",
+      "Tap ⚓ Ready once you are happy with it.",
+      "On your turn tap any square in Target to fire there.",
+      "💥 is a hit, • is a miss, 🚢 is a sunk ship.",
+      "Watch My sea to see where your opponent is shooting."
+    ],
+    "notes": [
+      "Ships are always placed at random. You can shuffle before you are ready, but never drag them yourself.",
+      "A hit does not earn you another shot. Turns alternate after every single shot.",
+      "House rule: ships are allowed to touch, so there is no gap between hulls."
+    ]
   }
 }

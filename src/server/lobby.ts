@@ -464,8 +464,10 @@ export class Lobby {
     if (!p.def) {
       return { manifest: m, feasible: false, reason: 'not playable yet', modes: this.modesOf(m).map(bare) };
     }
-    // a game fits if ANY of its modes fits who is actually here
-    const group = this.group();
+    // a game fits if ANY of its modes fits who is actually here. Bots hired for
+    // the SELECTED game must not make every other game look playable, so this
+    // asks about humans only; the viaBots path below covers AI-capable games.
+    const group = this.group(0);
     const modes = this.modesOf(m).map((mo) => ({
       id: mo.id,
       name: mo.name,

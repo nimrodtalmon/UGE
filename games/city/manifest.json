@@ -36,5 +36,20 @@
         "years": 20
       }
     }
-  ]
+  ],
+  "help": {
+    "goal": "Grow a town on a small plot. Mayor mode asks for 2000 people within 20 years; Sandbox just builds.",
+    "steps": [
+      "Pick a build chip, then tap a tile to place it.",
+      "Lay roads first, because every building must touch one.",
+      "Add a ⚡ plant so your buildings have power.",
+      "Tap ▶ Next year to collect taxes and let people move in.",
+      "Pick 🚜 to bulldoze, or tap ↻ twice for a new city."
+    ],
+    "notes": [
+      "A ⚠ on a tile means it has no road or no power.",
+      "Blocks packed side by side grow taller and hold far more people.",
+      "Sandbox never ends and cannot be lost; Mayor runs out of years."
+    ]
+  }
 }

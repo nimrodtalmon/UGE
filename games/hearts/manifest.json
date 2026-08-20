@@ -5,5 +5,20 @@
   "roles": { "table": "optional", "hand": "per-player", "extras": [] },
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "🖤",
-  "tagline": "avoid the queen"
+  "tagline": "avoid the queen",
+  "help": {
+    "goal": "Collect as few points as you can. When somebody hits 100 the lowest score wins.",
+    "steps": [
+      "Tap 3 cards, then tap Pass to send them on.",
+      "The 2♣ opens the hand; tap a card to play it.",
+      "Follow the suit that was led; only legal cards stay tappable.",
+      "The highest card of the led suit takes the trick and its points.",
+      "Play 13 tricks, read the summary, and the next hand deals itself."
+    ],
+    "notes": [
+      "Passing rotates each hand: left, right, across, then a hand with no passing at all.",
+      "Every heart costs 1 point and the queen of spades costs 13. Nobody may lead a heart until hearts are broken.",
+      "Shoot the moon: take all 26 points yourself and you score 0 while everyone else takes 26."
+    ]
+  }
 }

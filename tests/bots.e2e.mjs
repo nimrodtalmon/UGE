@@ -22,8 +22,9 @@ console.log('ok: chess offered to a lone player, marked vs AI');
 // selecting it pre-fills one AI opponent and offers difficulties
 await me.click('.game:has-text("Chess")');
 await me.waitForSelector('.bot-row', { timeout: 8000 });
-const count = (await me.textContent('.bot-count .stepper strong')).trim();
-if (count !== '1') fail(`expected 1 AI opponent pre-filled, got ${count}`);
+// a 2-player game has exactly one free seat, so the AI is a yes/no, ticked
+if (!(await me.locator('.tick.on').count())) fail('AI should be pre-ticked for a lone player');
+if (await me.locator('.bot-count').count()) fail('a single opponent should not need a stepper');
 if (!(await me.locator('.bot-levels .chip:has-text("Hard")').count())) fail('no difficulty choice');
 await me.click('.bot-levels .chip:has-text("Easy")');
 await me.waitForSelector('.bot-levels .chip.on:has-text("Easy")', { timeout: 5000 });
