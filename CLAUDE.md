@@ -208,3 +208,33 @@ any hardware.
   Internet Sharing); the table then shows a two-step QR (join WiFi → open
   UGE). This is a static join-network QR only — auto-hotspot and captive
   portal remain v2 hardware-brain features.
+- 2026-08: **AI opponents** are a first-class plugin feature: a manifest
+  `bots.levels` plus `bot(state, ctx)` in `game.ts` lets the lobby offer
+  "play against the computer", pre-ticked when a game needs more players
+  than are in the room. Bots hold a seat but no phone, so one person alone
+  can play Chess; shared "pass the phone" modes (`GameMode.shared`) are
+  hidden whenever a bot is in the game. Manifest `help` ({goal, steps,
+  notes}) is likewise expected of every game and shows in the game sheet and
+  the mid-game `?`. `tests/bot-drive.test.ts` drives every bot game at every
+  level through the real move functions.
+- 2026-08: Library reaches **37 games**. Added Connect Four, Reversi,
+  Checkers, Mancala, Dominoes, Blackjack, Sudoku, Dots & Boxes, Set, Boggle,
+  Ludo, Go Fish. Battleship reworked: empty sea, drag your own fleet, one
+  board at a time. All 37 declare the table optional and ship help; 21 have
+  AI.
+- 2026-08: Platform hardening, all found by verification rather than
+  reported: (a) one plugin that fails to load OR to bundle is listed as "not
+  playable" instead of taking the brain down with it; (b) a malformed
+  `/api/lobby/sync` used to store a nameless device and then 500 every
+  snapshot in that room forever — one curl could end a public game night, so
+  the lobby now validates what it takes off the network; (c) `setBots` no
+  longer discards a mode the player chose on purpose; (d) the role-claim
+  buttons went back on the home screen, without which Codenames could not be
+  started at all.
+- 2026-08: Two recurring UI traps, documented in `docs/adding-games.md`
+  because they cost real time: a bare utility class name on a `<button>`
+  (e.g. `ghost`) matches the platform's own `button.ghost` and silently
+  restores its padding — that resized every cell on the Battleship board;
+  and a scroll container that centres its content clips the first row above
+  the scroll origin where nothing can reach it (align to start, or
+  `justify-content: safe center`).

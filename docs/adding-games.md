@@ -9,6 +9,7 @@ startup by scanning for `manifest.json`. No registration, no platform edits.
 games/<id>/
 ├── manifest.json     # metadata (below)
 ├── game.ts           # rules: pure functions over plain state
+├── bot.ts            # optional: an AI opponent (below)
 ├── views/            # one React component per role: table.tsx, hand.tsx, ...
 │   └── style.css     # optional, imported by the views
 └── assets/           # optional data: word lists, questions, images
@@ -25,6 +26,8 @@ games/<id>/
   "players": { "min": 2, "max": 6 },   // humans, not devices
   "phones": { "min": 2 },              // optional: min client devices, when fewer
                                        // than one per player works (see below)
+  "help": { "goal": "...", "steps": ["..."] },  // required in practice — see below
+  "bots": { "levels": [] },            // optional: AI opponents — see below
   "roles": {
     "table": "required",                // required | optional | none
     "hand": "per-player",               // per-player | per-team | none
@@ -52,33 +55,48 @@ apart when declaring requirements.
 Current audit of the built-in games (players × phones). Every built-in game
 declares the table screen **optional** — phones carry all the info needed to
 play, the table just makes it nicer — so groups without a spare screen can
-still play everything:
+still play everything. A ✓ in the AI column means the game ships a `bot.ts`,
+so it can fill empty seats and be played alone (21 of 37 do):
 
-| Game | Mode | Players | Phones |
-|---|---|---|---|
-| Lights Out | — | 1 | 1 |
-| Trivia | classic / quick | 1–8 | one per player |
-| Memory | phone each / pass | 2–6 | per player / 1 |
-| Alias | teams (pass) | 4–12 | 1 |
-| Alias | party | 2–8 | one per player |
-| UNO | phone each / hotseat | 2–8 | per player / 1 |
-| Codenames | map+phones / one phone | 4–9 | 2 / 1 |
-| Poker | — | 2–8 | one per player |
-| Chess | phone each / shared | 2 | 2 / 1 |
-| Sketch | — | 2–8 | one per player |
-| Rummikub | — | 2–4 | one per player |
-| Werewolf | — | 4–12 | one per player |
-| Shesh-Besh | phone each / shared | 2 | 2 / 1 |
-| Stop! | — | 2–8 | one per player |
-| Liar's Dice | — | 2–6 | one per player |
-| Dial | — | 4–12 | 1+ |
-| Battleship | — | 2 | one per player |
-| Yatze | phone each / pass | 1–8 | per player / 1 |
-| Hearts | — | 4 | one per player |
-| Solitaire | — | 1 | 1 |
-| 2048 | — | 1 | 1 |
-| Minesweeper | easy / medium / hard | 1 | 1 |
-| Word Hunt | solo / race | 1–6 | one per player |
+| Game | Mode | Players | Phones | AI |
+|---|---|---|---|---|
+| 2048 | — | 1 | per player |  |
+| Alias | teams — pass the phone / party — phone each | 2–12 | 1 / per player |  |
+| Battleship | — | 2 | per player | ✓ |
+| Blackjack | short game / endless | 1–6 | per player | ✓ |
+| Boggle | classic / quick / long / big | 1–8 | per player |  |
+| Checkers | — | 2 | per player | ✓ |
+| Chess | phone each / one shared phone | 2 | per player / 1 | ✓ |
+| Codenames | map + phones / one shared phone | 4–9 | 2 / 1 |  |
+| Connect Four | — | 2 | per player | ✓ |
+| Dial | — | 4–12 | 1 |  |
+| Dominoes | — | 2–4 | per player | ✓ |
+| Dots & Boxes | classic / small / big | 2 | per player | ✓ |
+| Go Fish | — | 2–6 | per player | ✓ |
+| Hearts | — | 4 | per player | ✓ |
+| Hotel Empire | relaxed / tycoon | 1 | per player |  |
+| Liar's Dice | — | 2–6 | per player | ✓ |
+| Lights Out | — | 1 | per player |  |
+| Little Farm | chill / one season | 1 | per player |  |
+| Ludo | quick / classic | 2–4 | per player | ✓ |
+| Mancala | — | 2 | per player | ✓ |
+| Memory | phone each / pass the phone | 2–6 | per player / 1 | ✓ |
+| Minesweeper | easy / medium / hard | 1 | per player |  |
+| Poker | — | 2–8 | per player | ✓ |
+| Reversi | — | 2 | per player | ✓ |
+| Rummikub | — | 2–4 | per player |  |
+| Set | classic / sprint | 1–8 | per player | ✓ |
+| Shesh-Besh | phone each / one phone | 2 | per player / 1 | ✓ |
+| Sketch | — | 2–8 | per player |  |
+| Solitaire | — | 1 | per player |  |
+| Stop! | — | 2–8 | per player |  |
+| Sudoku | easy / medium / hard | 1 | per player |  |
+| Tiny City | sandbox / mayor | 1 | per player |  |
+| Trivia | classic / quick | 1–8 | per player | ✓ |
+| UNO | phone each / one shared phone | 2–8 | per player / 1 | ✓ |
+| Werewolf | — | 4–12 | per player |  |
+| Word Hunt | solo / race | 1–6 | per player | ✓ |
+| Yatze | phone each / pass the phone | 1–8 | per player / 1 | ✓ |
 
 ## Modes — several ways to play one game
 
@@ -101,6 +119,63 @@ by the built-in games: virtual seats named "Player N" sized from
 `ctx.group.players` (Memory/UNO pass modes), a lock-between-turns flag for
 hidden-hand hotseat (UNO's `takePhone` move), and letting an extra role act
 (Codenames one-phone mode: the map device may `guess`).
+
+## help — how to play, in the game's own words
+
+Every game declares a `help` block. The lobby shows it inside the game sheet
+and the `?` chip shows it mid-game, so a player who has never seen your game
+can start it without asking anyone.
+
+```json
+"help": {
+  "goal": "One sentence: what winning looks like.",
+  "steps": ["Tap a square.", "It flips, and so do its neighbours.", "..."],
+  "notes": ["House rules, simplifications, anything surprising."]
+}
+```
+
+Write `steps` as things to *do*, in the order a player meets them, naming the
+buttons as they are actually labelled. Put every rule you simplified in
+`notes` — Blackjack lists "no insurance, no surrender" there. Help is not
+optional: all 37 built-in games have it.
+
+## bot.ts — an AI that fills empty seats
+
+Declare difficulty levels in the manifest and the lobby offers "play against
+the computer", pre-ticked when a game needs more players than are in the
+room. Bots hold a seat but no phone, so one person alone can play Chess.
+
+```json
+"bots": { "levels": [
+  { "id": "easy",   "name": "Easy",   "tagline": "plays the first legal move" },
+  { "id": "normal", "name": "Normal", "tagline": "looks one move ahead" },
+  { "id": "sharp",  "name": "Sharp",  "tagline": "searches deeper" }
+] }
+```
+
+Then add `bot` to your `GameDef`:
+
+```ts
+bot(state, { seat, playerId, level, players, random, now }) {
+  // return { name: 'myMove', args: [...] }, or null when it is not your turn
+}
+```
+
+- It must return a **legal** move, and must never return `null` while the
+  game is unfinished and it is the bot's turn — that deadlocks the room.
+- Same purity rules: `random` and `now` come from the context, never the
+  globals.
+- Give it only what a player would know. If the engine hands you full state,
+  derive the bot's decision from the public parts yourself — Go Fish plays
+  off the public ask log, and its test scrambles the hidden hands to prove it.
+- Keep it fast; it runs inside a poll. Dots & Boxes searches a 9×9 board in
+  ~10 ms.
+- The platform delays the reply by ~0.9 s so it reads as a person thinking.
+- Levels must actually differ. Measure it: play the levels against each other
+  a few hundred times and check the stronger one wins more.
+
+Shared "pass the phone" modes are hidden whenever a bot is in the game — no
+one wants to hand a phone to the computer.
 
 ## game.ts — the rules
 
@@ -158,3 +233,16 @@ class names with the game id to avoid collisions.
 - `playerView` hides everything a player shouldn't see.
 - Play a full game via phones; consider a bot test in `tests/` (see
   `tests/memory.e2e.mjs` for the pattern).
+- Nothing scrolls. Views sit in a fixed viewport box: never `min-height:
+  100vh` inside a view, and reserve a fixed height for any line whose text
+  changes, so nothing shifts under a thumb already reaching for a button.
+- Class names are prefixed with the game id — and never a bare utility name.
+  On a `<button>`, `ghost` matches the platform's own `button.ghost`
+  (specificity 0-1-1, beating your single class) and silently puts its
+  padding back; that once resized every cell on the Battleship board.
+  `button:not(:disabled):hover` (0-2-1) will likewise repaint your board.
+- A scroll container that centres its content clips the first row above the
+  scroll origin, where nothing can bring it back — align to the start, or use
+  `justify-content: safe center`.
+- If it ships a bot: `ONLY=<id> npx tsx tests/bot-drive.test.ts` reaches a
+  real ending at every level with zero rejected moves.
