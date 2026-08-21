@@ -227,7 +227,9 @@ app.use('/r/:code/api', api);
 app.use('/api', api);
 
 // everything anyone sent, newest first — open it in any browser
-app.get('/feedback', (_req, res) => res.type('html').send(feedbackPage(feedback.list())));
+app.get('/feedback', (_req, res) =>
+  res.type('html').send(feedbackPage(feedback.list(), feedback.durability())),
+);
 app.get('/api/feedback', (_req, res) => res.json(feedback.list()));
 
 // room creation (used by the public landing page)
@@ -254,6 +256,12 @@ app.use('/static', express.static(clientDir));
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`UGE brain running${publicMode ? ' (public mode)' : ''}.`);
+  if (publicMode && feedback.durability().volatile) {
+    console.warn(
+      '  feedback: kept in memory only — a deploy or restart loses it.\n' +
+        '  set UGE_FEEDBACK_REPO and UGE_FEEDBACK_TOKEN to file it as GitHub issues.',
+    );
+  }
   console.log(`  table: http://localhost:${PORT}`);
   console.log(`  join:  ${joinUrlFor(DEFAULT_ROOM)}`);
   if (!publicMode) openBrowser(`http://localhost:${PORT}`);

@@ -21,6 +21,8 @@ const MAX_LEN = 2000;
 
 export class FeedbackBook {
   private items: Feedback[] = [];
+  /** True once an append to the file has actually worked. */
+  private onDisk = false;
 
   constructor(private readonly file: string) {
     try {
@@ -50,6 +52,7 @@ export class FeedbackBook {
     try {
       fs.mkdirSync(path.dirname(this.file), { recursive: true });
       fs.appendFileSync(this.file, `${JSON.stringify(item)}\n`);
+      this.onDisk = true;
     } catch {
       /* read-only disk (hosted) — memory and GitHub carry it instead */
     }
@@ -59,6 +62,17 @@ export class FeedbackBook {
 
   list(): Feedback[] {
     return [...this.items].reverse(); // newest first
+  }
+
+  /**
+   * Where a new entry would actually survive to. On a hosted brain the disk is
+   * wiped by every deploy and the process restarts on its own, so without the
+   * GitHub env vars feedback lives only until the next push — which is exactly
+   * how a real report got lost. Say so instead of pretending it is filed.
+   */
+  durability(): { github: boolean; disk: boolean; volatile: boolean } {
+    const github = Boolean(process.env.UGE_FEEDBACK_REPO && process.env.UGE_FEEDBACK_TOKEN);
+    return { github, disk: this.onDisk, volatile: !github };
   }
 }
 
@@ -93,7 +107,12 @@ const esc = (s: string): string =>
   s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
 
 /** A plain page so the feedback can be read from any browser. */
-export function feedbackPage(items: Feedback[]): string {
+export function feedbackPage(
+  items: Feedback[],
+  durability: { github: boolean; disk: boolean; volatile: boolean } = {
+    github: false, disk: false, volatile: false,
+  },
+): string {
   const rows = items
     .map(
       (f) => `<article>
@@ -115,8 +134,33 @@ export function feedbackPage(items: Feedback[]): string {
   header span { font-weight:400; color:#8b93a3; font-size:0.82rem; text-align:right; }
   p { margin:0; white-space:pre-wrap; line-height:1.45; }
   .empty { color:#8b93a3; }
+  .warn { background:#3a2c15; border:1px solid #7a5a20; color:#f0d9a8; border-radius:12px;
+          padding:0.7rem 0.9rem; margin:0; line-height:1.45; }
+  .ok { color:#8fd6a6; margin:0; }
+  code { background:#0b0d11; padding:0.05rem 0.3rem; border-radius:5px; }
+  button { align-self:flex-start; background:#2f6f47; color:#fff; border:1px solid #4b8f63;
+           border-radius:999px; padding:0.45rem 1rem; font:inherit; font-weight:700; cursor:pointer; }
 </style></head><body><main>
 <h1>UGE feedback</h1>
+${
+  durability.volatile
+    ? `<p class="warn">⚠ This brain keeps feedback in memory${durability.disk ? ' and on a disk that a deploy wipes' : ' only'} —
+       it is lost on the next deploy or restart. Set <code>UGE_FEEDBACK_REPO</code> and
+       <code>UGE_FEEDBACK_TOKEN</code> to file each entry as a GitHub issue. Until then, copy it out.</p>`
+    : '<p class="ok">✓ Each entry is also filed as a GitHub issue.</p>'
+}
+${items.length > 0 ? '<button id="copy">Copy all</button>' : ''}
 ${rows || '<p class="empty">Nothing yet.</p>'}
-</main></body></html>`;
+</main>
+<script>
+  const btn = document.getElementById('copy');
+  if (btn) btn.addEventListener('click', async () => {
+    const text = [...document.querySelectorAll('article')]
+      .map((a) => a.querySelector('header').innerText + '\n' + a.querySelector('p').innerText)
+      .join('\n\n---\n\n');
+    try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied ✓'; }
+    catch { btn.textContent = 'Select the text below and copy it'; }
+  });
+</script>
+</body></html>`;
 }
