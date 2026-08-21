@@ -569,3 +569,18 @@ button.ho-slot.ho-empty:active {
     grid-template-columns: 1fr;
   }
 }
+
+/* Short phones: the reserved report card and the stat tiles are the two
+   luxuries here. Trim them so the whole hotel fits without scrolling. */
+@media (max-height: 780px) {
+  .ho-screen { gap: 0.4rem; padding: 0.5rem 0.5rem 0.6rem; }
+  .ho-stat { min-height: 3.4rem; padding: 0.35rem 0.2rem; }
+  .ho-stat-value { font-size: 1.05rem; }
+  .ho-stat-sub { font-size: 0.68rem; }
+  .ho-report { min-height: 5.4rem; padding: 0.45rem 0.55rem; gap: 0.25rem; }
+  .ho-report-grid > div { padding: 0.2rem 0.1rem; }
+  .ho-report-grid strong { font-size: 0.85rem; }
+  .ho-report-note { display: none; }
+  .ho-panel { padding: 0.45rem 0.55rem; }
+  .ho-floor { margin-bottom: 0.2rem; }
+}

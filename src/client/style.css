@@ -483,6 +483,36 @@ a.wordmark { text-decoration: none; }
   animation: slide-up 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes slide-up { from { transform: translateY(14%); opacity: 0.6; } }
+/* full-screen modal: how-to-play is read, not glanced at */
+.sheet-scrim.full { align-items: stretch; }
+.sheet.full {
+  width: 100%;
+  max-width: 40rem;
+  max-height: 100%;
+  height: 100%;
+  border-radius: 0;
+  border: none;
+  margin: 0 auto;
+  animation: fade 0.2s ease-out;
+}
+.sheet.full .sheet-head {
+  padding: calc(0.9rem + env(safe-area-inset-top)) 1rem 0.6rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+.sheet.full .sheet-head h3 { font-size: 1.25rem; }
+.sheet.full .sheet-close {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 1rem;
+}
+.sheet.full .sheet-body { padding: 1.1rem 1.2rem 2rem; gap: 1rem; }
+.sheet.full .help-goal { font-size: 1.1rem; line-height: 1.45; }
+.sheet.full .help-steps { gap: 0.75rem; font-size: 1rem; }
+.sheet.full .help-notes { font-size: 0.95rem; }
+
 .grabber {
   width: 2.4rem;
   height: 0.28rem;
@@ -664,6 +694,21 @@ a.wordmark { text-decoration: none; }
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: none;
+  touch-action: manipulation; /* no double-tap zoom on a board */
+  user-select: none;
+  -webkit-user-select: none;
+}
+/*
+ * Games size their screen with min-height: 100vh. Inside this fixed box that
+ * is WRONG on a phone: 100vh counts the space behind the browser chrome, so
+ * every screen came out taller than the visible area and had to be scrolled.
+ * The box is already exactly the viewport, so a screen is exactly 100% of it.
+ * (:first-child buys the specificity to beat the game's own rule, which is
+ * loaded after this file.)
+ */
+.game-shell > *:first-child,
+.game-viewport > *:first-child {
+  min-height: 100%;
 }
 .game-controls {
   position: fixed;

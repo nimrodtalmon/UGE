@@ -119,12 +119,20 @@ export function GameGrid(props: {
   );
 }
 
-/** Bottom sheet — the one modal shape used everywhere. */
-export function Sheet(props: { title: string; onClose: () => void; children: ReactNode }) {
+/**
+ * Bottom sheet — the one modal shape used everywhere. `full` fills the screen
+ * instead, for content you sit and read (how to play).
+ */
+export function Sheet(props: {
+  title: string;
+  onClose: () => void;
+  full?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <div className="sheet-scrim" onClick={props.onClose}>
-      <div className="sheet" onClick={(e) => e.stopPropagation()}>
-        <span className="grabber" />
+    <div className={props.full ? 'sheet-scrim full' : 'sheet-scrim'} onClick={props.onClose}>
+      <div className={props.full ? 'sheet full' : 'sheet'} onClick={(e) => e.stopPropagation()}>
+        {!props.full && <span className="grabber" />}
         <header className="sheet-head">
           <h3>{props.title}</h3>
           <button className="sheet-close room-close" onClick={props.onClose} aria-label="close">
@@ -141,7 +149,7 @@ export function Sheet(props: { title: string; onClose: () => void; children: Rea
 export function HelpSheet(props: { manifest: Manifest; onClose: () => void }) {
   const help = props.manifest.help;
   return (
-    <Sheet title={`How to play ${props.manifest.name}`} onClose={props.onClose}>
+    <Sheet title={`How to play ${props.manifest.name}`} onClose={props.onClose} full>
       {help ? (
         <div className="help">
           <p className="help-goal">{help.goal}</p>

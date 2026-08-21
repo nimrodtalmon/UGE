@@ -333,3 +333,11 @@
 
 .fa-screen:not(.fa-phone) .fa-log-row { font-size: 1rem; height: 1.5rem; }
 .fa-screen:not(.fa-phone) .fa-log { height: calc(var(--fa-lines) * 1.5rem); }
+
+/* Short phones: shave the log and paddings so the field never scrolls. */
+@media (max-height: 780px) {
+  .fa-screen { gap: 0.35rem; padding: 0.5rem 0.4rem; }
+  .fa-log { max-height: 2.4rem; overflow: hidden; }
+  .fa-shelf { gap: 0.35rem; }
+  .fa-chip { padding: 0.3rem 0.4rem; }
+}
