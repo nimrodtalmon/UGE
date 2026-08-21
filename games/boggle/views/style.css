@@ -1,0 +1,327 @@
+/* Boggle — every class prefixed bg-. Two rules run through all of it: the grid
+   is a fixed box that never moves while a word is being traced (a tile sliding
+   under a finger mid-word is a wrong word), and a screen is a fixed box, never
+   a scrolling page — only the word lists scroll, inside themselves. */
+
+/* the platform's game viewport is a fixed box; a screen is exactly 100% of it
+   (see .game-viewport in src/client/style.css) — never 100vh */
+.bg-screen {
+  min-height: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 2.8rem 0.5rem 0.5rem;
+  text-align: center;
+  overflow: hidden;
+  overscroll-behavior: none;
+  color: #e8ecf3;
+}
+.bg-table { gap: 0.7rem; padding: 2.8rem 1rem 0.8rem; }
+
+/* ---- reserved lines ---------------------------------------------------- */
+/* every line that changes text holds its own height, so the grid below never
+   shifts: the clock row, the verdict, and the word being traced */
+
+.bg-hud {
+  flex: 0 0 auto;
+  width: 100%;
+  height: 2.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.bg-hud::-webkit-scrollbar { display: none; }
+
+.bg-clock {
+  flex: none;
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #cbd2de;
+  min-width: 3.2rem;
+}
+.bg-bigclock {
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: clamp(2rem, 6vh, 3.4rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: #cbd2de;
+}
+.bg-clock.bg-hot,
+.bg-bigclock.bg-hot { color: #e4573d; }
+
+.bg-counts {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 0 1 auto;
+}
+.bg-counts.bg-wide { flex-wrap: wrap; justify-content: center; gap: 0.4rem 0.6rem; }
+.bg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: #1b1f28;
+  border: 1px solid #272c36;
+  font-size: 0.85rem;
+  color: #8b93a3;
+  white-space: nowrap;
+}
+.bg-chip.bg-me { color: #f1f3f7; border-color: var(--seat, #6fd08c); background: #212734; }
+.bg-counts.bg-wide .bg-chip { font-size: 1.1rem; padding: 0.3rem 0.8rem; }
+.bg-av { font-size: 1em; }
+.bg-who { max-width: 8rem; overflow: hidden; text-overflow: ellipsis; }
+.bg-chip strong { color: var(--seat, #f1f3f7); font-variant-numeric: tabular-nums; }
+
+/* one line, always: "worth 3", a rejection, or nothing at all */
+.bg-verdict {
+  flex: 0 0 auto;
+  margin: 0;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.92rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.bg-verdict.bg-good { color: #6fd08c; }
+.bg-verdict.bg-bad { color: #ff8b7a; }
+.bg-verdict.bg-dim { color: #7e8695; }
+
+/* the word being traced, as tiles — same height whether it is empty or long */
+.bg-wordline {
+  flex: 0 0 auto;
+  margin: 0;
+  height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.16rem;
+  overflow: hidden;
+  max-width: 100%;
+}
+.bg-word-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.9rem;
+  padding: 0 0.15rem;
+  border-radius: 5px;
+  background: #2e7d52;
+  color: #f2f6f2;
+  font-weight: 800;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+.bg-hint { color: #6b7280; font-size: 0.9rem; }
+
+/* ---- the grid ---------------------------------------------------------- */
+.bg-gridwrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bg-grid {
+  --bg-w: min(84vw, 40vh, 20rem);
+  position: relative;
+  width: var(--bg-w);
+  height: var(--bg-w);
+  max-height: 100%;
+  display: grid;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+.bg-table .bg-grid { --bg-w: min(58vw, 52vh, 30rem); gap: 0.6rem; }
+
+.bg-tile {
+  /* the platform paints a surface on every button; a tile is its own surface,
+     so restate all of it here (this file loads after style.css, so equal
+     specificity wins) */
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12%;
+  border: 2px solid #3a4048;
+  background: #262b34;
+  color: #eef1f6;
+  font-weight: 800;
+  font-size: calc(var(--bg-w) / var(--bg-n) * 0.42);
+  line-height: 1;
+  text-transform: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  transition: background-color 0.1s, border-color 0.1s, transform 0.08s;
+  -webkit-tap-highlight-color: transparent;
+}
+.bg-grid .bg-tile:not(:disabled):hover { border-color: #59616d; background: #2d333d; }
+.bg-tile:disabled { opacity: 1; cursor: default; }
+.bg-tile.bg-far { opacity: 0.34; }
+.bg-tile.bg-on {
+  background: #2e7d52;
+  border-color: #48a771;
+  color: #f4f8f4;
+}
+.bg-grid .bg-tile.bg-on:not(:disabled):hover { background: #2e7d52; border-color: #48a771; }
+.bg-tile.bg-head {
+  border-color: #8ee0ad;
+  box-shadow: 0 0 0 3px rgba(142, 224, 173, 0.5);
+  transform: scale(1.04);
+}
+.bg-grid .bg-tile.bg-head:not(:disabled):hover { border-color: #8ee0ad; background: #2e7d52; }
+
+/* the trace, over the tiles and deaf to taps */
+.bg-trace {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.bg-trace polyline {
+  stroke: rgba(142, 224, 173, 0.75);
+  /* non-scaling-stroke keeps the line the same weight on a 4x4 and a 5x5 */
+  vector-effect: non-scaling-stroke;
+  stroke-width: 6px;
+}
+
+/* ---- the two keys ------------------------------------------------------ */
+.bg-keys {
+  flex: 0 0 auto;
+  width: min(84vw, 20rem);
+  display: flex;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+.bg-key {
+  height: 2.7rem;
+  padding: 0 0.7rem;
+  border-radius: 10px;
+  border: 1px solid #333944;
+  background: #22262e;
+  color: #cbd2de;
+  font-size: 1rem;
+  font-weight: 700;
+  flex: 0 0 3.6rem;
+  -webkit-tap-highlight-color: transparent;
+}
+.bg-key.bg-go {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: #2e7d52;
+  border-color: #3a9666;
+  color: #f2f6f2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.bg-keys .bg-key:not(:disabled):hover { border-color: #4a525f; }
+.bg-keys .bg-key.bg-go:not(:disabled):hover { background: #369160; border-color: #3a9666; }
+.bg-key:disabled { opacity: 0.4; cursor: default; }
+
+/* ---- my words (the only scrolling box on the screen) -------------------
+   a FIXED height, not a flexible one: the list grows all round long and a
+   growing box would push the grid up under the finger tracing on it */
+.bg-found {
+  flex: 0 0 auto;
+  height: 4.4rem;
+  width: 100%;
+  max-width: 30rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  justify-content: center;
+  gap: 0.25rem 0.35rem;
+  padding: 0.2rem 0.1rem;
+  font-size: 0.8rem;
+}
+.bg-dim { color: #6b7280; }
+.bg-word-chip {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: #1e232b;
+  border: 1px solid #2b313b;
+  color: #b9c1cd;
+  font-size: 0.8rem;
+}
+.bg-word-chip sup { color: #6fd08c; font-size: 0.72em; margin-left: 0.15rem; }
+
+/* ---- results ----------------------------------------------------------- */
+.bg-over {
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #6fd08c;
+}
+.bg-table .bg-over { font-size: 2rem; }
+.bg-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.bg-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.2rem 0.1rem 0.6rem;
+  max-width: 34rem;
+  margin: 0 auto;
+}
+.bg-results.bg-wide { max-width: 62rem; }
+.bg-tally { margin: 0; font-size: 1.05rem; color: #cbd2de; }
+.bg-tally strong { color: #6fd08c; }
+.bg-card {
+  border: 1px solid #272c36;
+  border-radius: 10px;
+  background: #191d24;
+  padding: 0.4rem 0.55rem;
+  text-align: left;
+}
+.bg-card.bg-me { background: #1d232c; border-color: #3a4552; }
+.bg-cardhead {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  color: #dbe1ea;
+  margin-bottom: 0.2rem;
+}
+.bg-cardhead strong { margin-left: auto; color: var(--seat, #6fd08c); font-variant-numeric: tabular-nums; }
+.bg-words {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.3rem;
+  align-items: center;
+  font-size: 0.85rem;
+}
+.bg-words.bg-faded { opacity: 0.65; }
+.bg-dupes { margin: 0.25rem 0 0; font-size: 0.85rem; color: #8b93a3; display: flex; flex-wrap: wrap; gap: 0.2rem 0.35rem; }
+.bg-dupes s { color: #6b7280; }

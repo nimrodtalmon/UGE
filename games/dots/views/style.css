@@ -1,0 +1,159 @@
+/* Dots & Boxes — every class prefixed db-. Two rules run through all of it:
+   the lattice is a fixed frame whose tracks never move (a line appearing must
+   not shift the gap under the finger), and the phone is a fixed box, never a
+   scrolling page. */
+
+/* the platform's game viewport is a fixed box; a screen is exactly 100% of it
+   (see .game-viewport in src/client/style.css) — never 100vh */
+.db-screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2.7rem 0.5rem 0.6rem;
+  text-align: center;
+}
+.db-phone {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* the status swaps between one line ("your turn — tap a gap") and two (the
+   game-over sentence), so hold the taller state or the board slides up into
+   the finger mid-tap */
+.db-status {
+  font-size: 1.05rem;
+  font-weight: 600;
+  min-height: 2.9rem;
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+.db-status.db-mine { color: #6fd08c; }
+/* reserved whether or not there is anything to say */
+.db-note {
+  font-size: 0.85rem;
+  color: #8b93a3;
+  min-height: 1.2rem;
+  white-space: pre;
+  flex: 0 0 auto;
+}
+
+/* ---- the lattice ---- */
+.db-board {
+  --db-w: min(94vw, 50vh, 26rem);
+  --db-dot: calc(var(--db-w) / (var(--db-n) * 5));
+  width: var(--db-w);
+  padding: calc(var(--db-dot) * 1.3);
+  background: linear-gradient(#161b24, #11151c);
+  border: 1px solid #272e3a;
+  border-radius: 16px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+  flex: 0 0 auto;
+}
+.db-board.big { --db-w: min(72vw, 60vh, 38rem); }
+
+.db-grid { width: 100%; aspect-ratio: 1; display: grid; }
+
+.db-dot {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #7d8798;
+  z-index: 3;
+  pointer-events: none; /* taps belong to the lines, not the dots */
+}
+
+/* ---- boxes ---- */
+.db-box {
+  display: grid;
+  place-items: center;
+  margin: 4%;
+  border-radius: 4px;
+  font-weight: 800;
+  font-size: calc(var(--db-w) / var(--db-n) * 0.34);
+  line-height: 1;
+  color: transparent;
+  z-index: 0;
+  transition: background 0.25s;
+}
+.db-box.db-s0 { background: rgba(239, 106, 82, 0.3); color: #ffd4c8; }
+.db-box.db-s1 { background: rgba(74, 166, 239, 0.3); color: #cfe6ff; }
+.db-box.db-fresh { animation: db-pop 0.55s ease-out; }
+@keyframes db-pop {
+  0% { transform: scale(0.55); }
+  60% { transform: scale(1.08); }
+}
+
+/* ---- lines ---- */
+.db-edge {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  cursor: default;
+  z-index: 2;
+  -webkit-tap-highlight-color: transparent;
+}
+/* the finger target is far bigger than the line: it reaches into the boxes on
+   either side, while leaving their middles free of any button */
+.db-edge::after { content: ''; position: absolute; }
+.db-h::after { inset: calc(var(--db-dot) * -0.95) calc(var(--db-dot) * 0.25); }
+.db-v::after { inset: calc(var(--db-dot) * 0.25) calc(var(--db-dot) * -0.95); }
+
+.db-bar { display: block; border-radius: 999px; background: #232a36; transition: background 0.15s; }
+.db-h .db-bar { width: 100%; height: calc(var(--db-dot) * 0.34); }
+.db-v .db-bar { height: 100%; width: calc(var(--db-dot) * 0.34); }
+
+/* a gap you may tap glows faintly, so the board reads as a set of choices */
+.db-edge.db-live .db-bar { background: #39445a; }
+.db-edge.db-live { cursor: pointer; }
+.db-edge.db-on.db-s0 .db-bar { background: #ef6a52; }
+.db-edge.db-on.db-s1 .db-bar { background: #4aa6ef; }
+.db-edge.db-latest .db-bar { box-shadow: 0 0 10px rgba(255, 255, 255, 0.55); }
+
+/* the platform's generic button styles must not paint a box over the lattice
+   or wobble it on tap: they are loaded before this file, so equal specificity
+   here still wins */
+.db-edge:disabled { opacity: 1; cursor: default; }
+.db-edge:not(:disabled):active { transform: none; }
+.db-grid .db-edge:not(:disabled):hover { border: none; background: transparent; }
+.db-grid .db-edge.db-live:not(:disabled):hover .db-bar { background: #5c6c8c; }
+.db-edge.db-live:active .db-bar { background: #7d90b4; }
+
+/* ---- score ---- */
+.db-score {
+  display: flex;
+  gap: 0.9rem;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #8b93a3;
+  min-height: 1.9rem;
+  flex: 0 0 auto;
+}
+.db-side { display: inline-flex; align-items: center; gap: 0.35rem; opacity: 0.62; }
+.db-side.db-on { opacity: 1; color: #e8ecf3; }
+.db-side strong { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.db-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.db-s0 > .db-mark { background: rgba(239, 106, 82, 0.35); color: #ffd4c8; }
+.db-s1 > .db-mark { background: rgba(74, 166, 239, 0.35); color: #cfe6ff; }
+.db-who { max-width: 5.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.db-left { font-size: 0.8rem; color: #6b7280; }

@@ -1,0 +1,83 @@
+{
+  "id": "dots",
+  "name": "Dots & Boxes",
+  "players": {
+    "min": 2,
+    "max": 2
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
+  "icon": "▦",
+  "tagline": "close the box, go again",
+  "modes": [
+    {
+      "id": "classic",
+      "name": "Classic",
+      "tagline": "5×5 dots · 16 boxes",
+      "choice": true,
+      "config": {
+        "dots": 5
+      }
+    },
+    {
+      "id": "small",
+      "name": "Small",
+      "tagline": "4×4 dots · 9 boxes",
+      "choice": true,
+      "config": {
+        "dots": 4
+      }
+    },
+    {
+      "id": "big",
+      "name": "Big",
+      "tagline": "7×7 dots · 36 boxes",
+      "choice": true,
+      "config": {
+        "dots": 7
+      }
+    }
+  ],
+  "help": {
+    "goal": "Own more boxes than the other player once every line between the dots has been drawn.",
+    "steps": [
+      "Wait until the top line says your turn.",
+      "Tap any gap between two neighbouring dots to draw the line.",
+      "Draw the fourth side of a box and it becomes yours — your colour and your initial go in it.",
+      "Closing a box also gives you another turn, so keep going while boxes keep falling.",
+      "If your line closes nothing, the turn passes."
+    ],
+    "notes": [
+      "Drawing the third side of a box hands it to your opponent — most of the game is about not being the one who has to.",
+      "Late on the board splits into chains: whoever runs out of safe lines first has to open one, and the other player eats it.",
+      "The player eating a chain can leave the last two boxes behind to force you to open the next one — worth doing, and worth watching for.",
+      "Play alone and a bot takes the other seat: Easy draws anywhere, Normal never gives a box away for free, Sharp counts the chains and plays the endgame properly."
+    ]
+  },
+  "bots": {
+    "levels": [
+      {
+        "id": "easy",
+        "name": "Easy",
+        "tagline": "draws anywhere"
+      },
+      {
+        "id": "normal",
+        "name": "Normal",
+        "tagline": "takes what is free, gives nothing"
+      },
+      {
+        "id": "sharp",
+        "name": "Sharp",
+        "tagline": "counts the chains"
+      }
+    ]
+  }
+}

@@ -1,0 +1,230 @@
+/* Go Fish — every class prefixed gf-. Two rules run through all of it: the
+   page itself is a fixed box that never scrolls (only the ask log scrolls,
+   inside its own frame), and every line whose text comes and goes keeps its
+   height reserved so the cards never move under a finger. */
+
+/* the platform's game viewport is a fixed box; a screen is exactly 100% of it
+   (see .game-viewport in src/client/style.css) — never 100vh */
+.gf-screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 2.7rem 0.5rem 0.5rem;
+  text-align: center;
+}
+.gf-phone,
+.gf-table {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* ---- status lines, both with reserved height ---- */
+.gf-status {
+  font-size: 1rem;
+  font-weight: 650;
+  min-height: 1.6rem;
+  line-height: 1.6rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.gf-status.big { font-size: 1.4rem; min-height: 2.1rem; line-height: 2.1rem; }
+.gf-status.mine { color: #6fd08c; animation: gf-pulse 1.3s infinite; }
+@keyframes gf-pulse { 50% { opacity: 0.55; } }
+.gf-beat {
+  font-size: 0.8rem;
+  color: #d8a657;
+  min-height: 1.15rem;
+  line-height: 1.15rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.gf-beat.big { font-size: 1.05rem; min-height: 1.6rem; line-height: 1.6rem; }
+
+/* ---- seats ---- */
+.gf-seats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: center;
+  min-height: 1.95rem;
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+.gf-seat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  background: #1d2026;
+  border: 2px solid #343a44;
+  font-size: 0.78rem;
+  line-height: 1.2;
+  color: #e8ecf3;
+}
+.gf-seat.current { border-color: #e4b83d; box-shadow: 0 0 10px #e4b83d44; }
+.gf-seat.me { background: #232a33; }
+.gf-seat.askable {
+  border-color: #4fbf82;
+  background: #1e2f26;
+  cursor: pointer;
+  animation: gf-pulse 1.3s infinite;
+}
+/* the platform's generic button rules must not repaint these pills: this file
+   is loaded after src/client/style.css, and these selectors out-specify it */
+.gf-seats .gf-seat:not(:disabled):hover { border-color: #6fd08c; background: #24382c; }
+.gf-seats .gf-seat:disabled { opacity: 1; }
+.gf-avatar { font-size: 1rem; }
+.gf-name { max-width: 5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gf-count { color: #9aa1ab; }
+.gf-bookcount { color: #e4b83d; font-weight: 700; }
+
+/* ---- counters ---- */
+.gf-tally {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: #8a8f98;
+  min-height: 1.2rem;
+  flex: 0 0 auto;
+}
+.gf-tally.big { font-size: 1rem; min-height: 1.5rem; }
+
+/* ---- cards ---- */
+.gf-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.9rem;
+  border-radius: 6px;
+  background: linear-gradient(160deg, #fdfcf8, #ebe8df);
+  color: #22242a;
+  font-weight: 800;
+  line-height: 1.05;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.gf-card.small { width: 1.75rem; height: 2.45rem; font-size: 0.85rem; }
+.gf-card.red { color: #c0392b; }
+.gf-rank { font-size: 1.05em; }
+.gf-suit { font-size: 0.95em; }
+
+/* ---- my hand: one tappable group per rank ---- */
+.gf-handwrap {
+  flex: 0 1 auto;
+  min-height: 3.4rem;
+  max-height: 42%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gf-hand { display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: center; padding: 0.15rem; }
+.gf-group {
+  display: inline-flex;
+  gap: 1px;
+  padding: 0.2rem;
+  margin: 0;
+  border-radius: 9px;
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+.gf-group.picked { border-color: #6fd08c; background: #1e2f26; }
+.gf-handwrap .gf-group:disabled { opacity: 0.75; cursor: default; }
+.gf-handwrap .gf-group:not(:disabled):hover { border-color: #4a525f; background: #21262e; }
+.gf-handwrap .gf-group.picked:not(:disabled):hover { border-color: #6fd08c; background: #1e2f26; }
+.gf-watching { color: #8a8f98; font-size: 0.9rem; }
+
+/* reserved: the prompt appears and disappears without moving the log */
+.gf-ask { min-height: 1.4rem; line-height: 1.4rem; flex: 0 0 auto; }
+.gf-asktext { font-size: 0.85rem; color: #6fd08c; font-weight: 600; }
+.gf-asktext.dim { color: #6b7280; font-weight: 400; }
+
+/* ---- books on the table ---- */
+.gf-books {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: center;
+  min-height: 1.9rem;
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+.gf-nobooks { color: #6b7280; font-size: 0.85rem; }
+.gf-book {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 7px;
+  background: #f3f0e6;
+  color: #22242a;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+.gf-book.mine { box-shadow: 0 0 0 2px #6fd08c; }
+.gf-bookwho { font-size: 0.8rem; }
+
+/* ---- the public ask log: the only thing on the page that scrolls ---- */
+.gf-log {
+  flex: 1 1 auto;
+  min-height: 3.2rem;
+  width: 100%;
+  max-width: 32rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  border: 1px solid #2b313b;
+  background: #16191f;
+}
+.gf-table .gf-log { max-width: 44rem; }
+.gf-logtitle {
+  flex: 0 0 auto;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6b7280;
+  padding: 0.3rem 0.5rem 0.15rem;
+}
+.gf-loglist {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+  margin: 0;
+  padding: 0 0.5rem 0.35rem;
+  text-align: left;
+}
+.gf-logrow {
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: #98a0ab;
+  padding: 0.12rem 0;
+  border-bottom: 1px solid #20242c;
+}
+.gf-table .gf-logrow { font-size: 0.95rem; }
+.gf-logrow.hit { color: #e8ecf3; }
+.gf-logtext { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gf-logbook { color: #e4b83d; font-weight: 700; flex: 0 0 auto; }
+.gf-logempty { color: #6b7280; font-size: 0.8rem; list-style: none; padding: 0.2rem 0; }

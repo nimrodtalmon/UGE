@@ -1,0 +1,175 @@
+/* Sudoku — every class prefixed sd-. Two rules run through all of it: the
+   grid is a fixed block whose contents never change its size (a digit
+   appearing must not move the square under the thumb), and the phone is a
+   fixed box, never a scrolling page. */
+
+/* the platform's game viewport is a fixed box; a screen is exactly 100% of it
+   (see .game-viewport in src/client/style.css) — never 100vh */
+.sd-screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2.7rem 0.5rem 0.6rem;
+  text-align: center;
+}
+.sd-phone {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+.sd-title { letter-spacing: 0.16em; font-size: 1.5rem; margin: 0; }
+
+/* ---- readouts: clock · mistakes · blanks left ---- */
+.sd-hud {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+.sd-readout {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 10px;
+  background: #1a1e26;
+  border: 1px solid #333a45;
+  min-width: 4.2rem;
+}
+.sd-readout.bad { color: #e4573d; border-color: #6b3a33; }
+
+/* ---- the grid ---- */
+.sd-grid {
+  --sd-w: min(94vw, 44vh, 25rem);
+  --sd-cell: calc(var(--sd-w) / 9);
+  width: var(--sd-w);
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  border: 3px solid #39414f;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f6f7fa;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+  flex: 0 0 auto;
+}
+.sd-grid.big { --sd-w: min(74vw, 62vh, 38rem); }
+
+.sd-cell {
+  padding: 0;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-width: 0;
+  border: 1px solid #ccd2dd;
+  border-radius: 0;
+  background: #f6f7fa;
+  color: #1b1f27;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s;
+}
+/* the thick 3×3 block rules, drawn as cell borders so the grid stays one grid */
+.sd-cell.sd-bl { border-left: 2px solid #39414f; }
+.sd-cell.sd-bt { border-top: 2px solid #39414f; }
+
+/* the platform's generic button styles must not repaint or wobble a square:
+   they are loaded before this file, so equal specificity here still wins */
+.sd-cell:disabled { opacity: 1; cursor: default; }
+.sd-cell:not(:disabled):active { transform: none; }
+.sd-grid .sd-cell:not(:disabled):hover { border-color: #ccd2dd; background: #e6ecf7; }
+.sd-grid .sd-cell.sd-bl:not(:disabled):hover,
+.sd-grid .sd-cell.sd-bt:not(:disabled):hover { border-color: #39414f; }
+
+/* highlight, weakest first — later rules win where a cell is several things */
+.sd-cell.sd-peer { background: #e4eaf4; }
+.sd-cell.sd-same { background: #cfe0f7; }
+.sd-cell.sd-sel { background: #b7d4f7; }
+.sd-grid .sd-cell.sd-peer:not(:disabled):hover { background: #dde5f2; }
+.sd-grid .sd-cell.sd-sel:not(:disabled):hover { background: #b7d4f7; }
+
+.sd-digit { font-size: calc(var(--sd-cell) * 0.62); font-weight: 500; }
+/* the clues you were dealt: heavier, on a faintly greyed square */
+.sd-given { background: #e2e6ee; }
+.sd-given .sd-digit { font-weight: 800; }
+.sd-given.sd-peer { background: #d6dded; }
+.sd-given.sd-same { background: #c3d6f2; }
+.sd-cell.sd-bad { background: #f7d2cd; }
+.sd-cell.sd-bad .sd-digit { color: #b32a1c; font-weight: 800; }
+
+.sd-marks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+  padding: 6%;
+}
+.sd-mark {
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  font-size: calc(var(--sd-cell) * 0.26);
+  font-weight: 700;
+  color: #6b7788;
+  line-height: 1;
+}
+
+/* ---- the reserved message line ---- */
+.sd-note {
+  min-height: 2.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b93a3;
+  font-size: 0.9rem;
+  margin: 0;
+  padding: 0 0.4rem;
+  flex: 0 0 auto;
+}
+.sd-note.sd-over { color: #e6e9ee; font-size: 1.1rem; font-weight: 700; }
+
+/* ---- number pad ---- */
+.sd-controls {
+  width: min(94vw, 25rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+.sd-pad { display: grid; grid-template-columns: repeat(9, 1fr); gap: 0.25rem; }
+.sd-key {
+  padding: 0;
+  min-width: 0;
+  height: 2.9rem;
+  border-radius: 9px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: #232935;
+  border: 1px solid #3c4453;
+  color: #eef1f6;
+}
+.sd-key.sd-pencilled { background: #1d2530; color: #9fc7f0; border-color: #38516b; }
+/* all nine placed: still tappable (you may need to fix one), just quieter */
+.sd-key.sd-done { color: #656e7d; background: #1a1e26; }
+.sd-key:disabled { opacity: 0.4; }
+.sd-controls .sd-key:not(:disabled):hover { border-color: #58637a; background: #2b3342; }
+
+.sd-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+.sd-tool {
+  padding: 0.6rem 0.4rem;
+  border-radius: 11px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: #232935;
+  border: 1px solid #3c4453;
+}
+.sd-tool.sd-on { background: #2f6f47; border-color: #3d8a57; color: #eaf6ee; }
+.sd-tool:disabled { opacity: 0.4; }
+.sd-tools .sd-tool:not(:disabled):hover { border-color: #58637a; background: #2b3342; }
+.sd-tools .sd-tool.sd-on:not(:disabled):hover { border-color: #6fd08c; background: #2f6f47; }

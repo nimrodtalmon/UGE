@@ -1,0 +1,54 @@
+{
+  "id": "boggle",
+  "name": "Boggle",
+  "players": { "min": 1, "max": 8 },
+  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "🎲",
+  "tagline": "same grid, three minutes",
+  "modes": [
+    {
+      "id": "classic",
+      "name": "Classic",
+      "tagline": "4×4, three minutes",
+      "config": { "size": 4, "seconds": 180 }
+    },
+    {
+      "id": "quick",
+      "name": "Quick",
+      "tagline": "4×4, two minutes",
+      "config": { "size": 4, "seconds": 120 },
+      "choice": true
+    },
+    {
+      "id": "long",
+      "name": "Long",
+      "tagline": "4×4, five minutes",
+      "config": { "size": 4, "seconds": 300 },
+      "choice": true
+    },
+    {
+      "id": "big",
+      "name": "Big",
+      "tagline": "5×5, five minutes",
+      "config": { "size": 5, "seconds": 300 },
+      "choice": true
+    }
+  ],
+  "help": {
+    "goal": "Everyone hunts words in the same grid of letters at the same time. A word only scores if nobody else wrote it too.",
+    "steps": [
+      "Tap a letter to start a word, then keep tapping letters that touch the last one — sideways, up, down or diagonally.",
+      "You cannot use the same tile twice in one word.",
+      "Tap ✓ to hand the word in, ⌫ to take back the last letter.",
+      "Keep going until the clock runs out, then read the results."
+    ],
+    "notes": [
+      "Scoring by length: 3 or 4 letters is 1 point, 5 is 2, 6 is 3, 7 is 5, 8 or more is 11.",
+      "Any word two or more players found is struck out for BOTH of them — the obvious words are worth nothing, so go long and go odd.",
+      "The Qu tile is two letters at once: QUIT is three taps and a four-letter word.",
+      "Your list is yours alone until the whistle. Other players only ever see how many words you have.",
+      "Alone, you play the board itself — the results screen tells you how many of its points you found."
+    ]
+  }
+}

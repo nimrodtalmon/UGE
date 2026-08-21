@@ -1,0 +1,33 @@
+{
+  "id": "gofish",
+  "name": "Go Fish",
+  "players": { "min": 2, "max": 6 },
+  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "🐟",
+  "tagline": "listen, then ask",
+  "bots": {
+    "levels": [
+      { "id": "easy", "name": "Easy", "tagline": "asks on a whim" },
+      { "id": "normal", "name": "Normal", "tagline": "remembers who asked for what" },
+      { "id": "sharp", "name": "Sharp", "tagline": "remembers what you took off it" }
+    ]
+  },
+  "help": {
+    "goal": "Collect books — all four cards of a rank. When the thirteenth book is laid down, whoever made the most wins.",
+    "steps": [
+      "On your turn, tap a rank in your own hand.",
+      "Tap the player you want to ask for it.",
+      "If they hold any, you get all of them and ask again.",
+      "If not, go fish: you draw one card from the pond.",
+      "Draw the very rank you asked for and you carry on anyway.",
+      "Four of a kind lays itself down as a book."
+    ],
+    "notes": [
+      "You may only ask for a rank you are already holding, so every ask tells the table something about your hand.",
+      "The asks list under the board is public — that is the whole game. Whoever asked for 7s is holding 7s.",
+      "Run out of cards and you draw a fresh one from the pond, if there is one left.",
+      "The bots play from the same public list you do: Easy asks at random, Normal listens to the asks, Sharp also remembers what you took off it."
+    ]
+  }
+}

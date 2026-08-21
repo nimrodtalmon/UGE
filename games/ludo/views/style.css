@@ -1,0 +1,287 @@
+/* Ludo — every class prefixed ld-. Two rules run through all of it: the board
+   is one fixed square whose tokens float above it (a token moving must never
+   reflow a cell), and the phone is a fixed box, never a scrolling page. */
+
+/* the platform's game viewport is a fixed box; a screen is exactly 100% of it
+   (see .game-viewport in src/client/style.css) — never 100vh */
+.ld-screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 2.7rem 0.5rem 0.6rem;
+  text-align: center;
+}
+.ld-phone {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* ---- the four colours ---- */
+.ld-board,
+.ld-seats,
+.ld-action {
+  --q0: #e2503f;
+  --q1: #46a86a;
+  --q2: #dfb03a;
+  --q3: #4a86d8;
+  --q0-dark: #99332a;
+  --q1-dark: #2c7147;
+  --q2-dark: #9c7717;
+  --q3-dark: #2d5a9c;
+}
+
+/* ---- status lines: both heights are reserved, so text appearing never
+       pushes the board down under a waiting finger ---- */
+.ld-status {
+  font-size: 1rem;
+  font-weight: 600;
+  min-height: 1.55rem;
+  line-height: 1.55rem;
+  max-width: 96%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ld-status.big { font-size: 1.35rem; min-height: 2rem; line-height: 2rem; }
+.ld-status.mine { color: #6fd08c; animation: ld-pulse 1.3s infinite; }
+@keyframes ld-pulse { 50% { opacity: 0.55; } }
+.ld-note {
+  font-size: 0.82rem;
+  color: #d8a657;
+  min-height: 1.15rem;
+  line-height: 1.15rem;
+  max-width: 96%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ld-note.big { font-size: 1rem; min-height: 1.5rem; line-height: 1.5rem; }
+
+/* ---- seat pills ---- */
+.ld-seats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: center;
+  align-items: center;
+  min-height: 1.9rem;
+  max-width: 100%;
+}
+.ld-seat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: #1d2026;
+  border: 2px solid #343a44;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+.ld-seat.current { border-color: #e4b83d; box-shadow: 0 0 10px #e4b83d44; }
+.ld-seat.won { border-color: #6fd08c; }
+.ld-dot { width: 0.65rem; height: 0.65rem; border-radius: 50%; flex: 0 0 auto; }
+.ld-seat.q0 .ld-dot { background: var(--q0); }
+.ld-seat.q1 .ld-dot { background: var(--q1); }
+.ld-seat.q2 .ld-dot { background: var(--q2); }
+.ld-seat.q3 .ld-dot { background: var(--q3); }
+.ld-who { max-width: 5.4rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ld-tally { font-weight: 700; color: #e8ecf3; }
+.ld-outof { color: #7d838d; font-weight: 400; }
+.ld-onboard { color: #7d838d; min-width: 0.9rem; text-align: left; }
+
+/* ---- the board ---- */
+.ld-board {
+  --ld-w: min(94vw, 50vh, 24rem);
+  position: relative;
+  width: var(--ld-w);
+  height: var(--ld-w);
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background: #20242c;
+  padding: 2px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+.ld-board.big { --ld-w: min(78vw, 62vh, 40rem); }
+
+.ld-grid {
+  position: absolute;
+  inset: 2px;
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  grid-template-rows: repeat(15, 1fr);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.ld-sq { background: #10131a; }
+.ld-track { background: #f3f0e6; box-shadow: inset 0 0 0 1px #b9b4a4; }
+.ld-track.safe { background: #ddd6c0; }
+.ld-track.safe::after {
+  content: '★';
+  display: block;
+  font-size: 0.75em;
+  line-height: 1;
+  color: #8a8163;
+  text-align: center;
+  margin-top: 0.05em;
+}
+.ld-track.q0 { background: var(--q0); box-shadow: inset 0 0 0 1px var(--q0-dark); }
+.ld-track.q1 { background: var(--q1); box-shadow: inset 0 0 0 1px var(--q1-dark); }
+.ld-track.q2 { background: var(--q2); box-shadow: inset 0 0 0 1px var(--q2-dark); }
+.ld-track.q3 { background: var(--q3); box-shadow: inset 0 0 0 1px var(--q3-dark); }
+.ld-track.q0.safe::after,
+.ld-track.q1.safe::after,
+.ld-track.q2.safe::after,
+.ld-track.q3.safe::after { color: rgba(255, 255, 255, 0.75); }
+.ld-lane.q0 { background: var(--q0); box-shadow: inset 0 0 0 1px var(--q0-dark); }
+.ld-lane.q1 { background: var(--q1); box-shadow: inset 0 0 0 1px var(--q1-dark); }
+.ld-lane.q2 { background: var(--q2); box-shadow: inset 0 0 0 1px var(--q2-dark); }
+.ld-lane.q3 { background: var(--q3); box-shadow: inset 0 0 0 1px var(--q3-dark); }
+.ld-yard.q0 { background: var(--q0); }
+.ld-yard.q1 { background: var(--q1); }
+.ld-yard.q2 { background: var(--q2); }
+.ld-yard.q3 { background: var(--q3); }
+.ld-hub { background: #f3f0e6; }
+
+/* the white parking bay each colour keeps its unplayed tokens in */
+.ld-bay {
+  position: absolute;
+  width: 30%;
+  height: 30%;
+  border-radius: 12%;
+  background: #f3f0e6;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.18);
+}
+
+/* the finish: four wedges meeting in the middle */
+.ld-hubface {
+  position: absolute;
+  left: 40%;
+  top: 40%;
+  width: 20%;
+  height: 20%;
+}
+.ld-wedge { position: absolute; inset: 0; }
+.ld-wedge.q0 { background: var(--q0); clip-path: polygon(0 0, 100% 0, 50% 50%); }
+.ld-wedge.q1 { background: var(--q1); clip-path: polygon(100% 0, 100% 100%, 50% 50%); }
+.ld-wedge.q2 { background: var(--q2); clip-path: polygon(100% 100%, 0 100%, 50% 50%); }
+.ld-wedge.q3 { background: var(--q3); clip-path: polygon(0 100%, 0 0, 50% 50%); }
+
+/* where the roll can land */
+.ld-target {
+  position: absolute;
+  width: 5.4%;
+  height: 5.4%;
+  margin: -2.7% 0 0 -2.7%;
+  border-radius: 50%;
+  border: 2px dashed rgba(20, 24, 32, 0.75);
+  animation: ld-breathe 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes ld-breathe { 50% { opacity: 0.3; transform: scale(0.8); } }
+
+/* ---- tokens ---- */
+.ld-token {
+  position: absolute;
+  width: 5.2%;
+  height: 5.2%;
+  margin: -2.6% 0 0 -2.6%;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  transition: left 0.22s ease, top 0.22s ease, transform 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.ld-token.q0 { background: radial-gradient(circle at 34% 28%, #ff8a78, var(--q0) 60%, var(--q0-dark)); }
+.ld-token.q1 { background: radial-gradient(circle at 34% 28%, #8fe0ab, var(--q1) 60%, var(--q1-dark)); }
+.ld-token.q2 { background: radial-gradient(circle at 34% 28%, #ffe497, var(--q2) 60%, var(--q2-dark)); }
+.ld-token.q3 { background: radial-gradient(circle at 34% 28%, #a5c9ff, var(--q3) 60%, var(--q3-dark)); }
+.ld-token.done { border-color: rgba(255, 255, 255, 0.4); opacity: 0.9; }
+.ld-token.just { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9); }
+.ld-token.bumped { animation: ld-bump 0.7s ease-out; }
+@keyframes ld-bump { 0% { transform: scale(1.7); } 60% { transform: scale(0.85); } }
+.ld-token.lit {
+  width: 6.4%;
+  height: 6.4%;
+  margin: -3.2% 0 0 -3.2%;
+  border-color: #fff;
+  box-shadow: 0 0 0 2px #fff, 0 0 12px rgba(255, 255, 255, 0.8);
+  animation: ld-lit 1.2s ease-in-out infinite;
+  cursor: pointer;
+}
+@keyframes ld-lit { 50% { box-shadow: 0 0 0 2px #fff, 0 0 4px rgba(255, 255, 255, 0.4); } }
+/* the platform's generic button rules must not repaint a token: this file is
+   loaded after src/client/style.css, and these selectors also out-specify it */
+.ld-board .ld-token:not(:disabled):hover { border-color: #fff; background-blend-mode: normal; }
+.ld-board .ld-token:not(:disabled):active { transform: scale(1.12); }
+.ld-board .ld-token:disabled { opacity: 1; cursor: default; }
+
+/* ---- the die ---- */
+.ld-dieslot { display: inline-flex; flex: 0 0 auto; }
+.ld-die {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 1px;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0.22rem;
+  border-radius: 6px;
+  background: linear-gradient(160deg, #fdfcf8, #e3e0d6);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+.ld-die.empty { background: #22262f; box-shadow: inset 0 0 0 1px #343a44; }
+.ld-pip { border-radius: 50%; }
+.ld-pip.on { background: #23262d; }
+
+/* ---- action row: its height is fixed so the board never moves ---- */
+.ld-action {
+  min-height: 4.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.ld-roll {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 750;
+  padding: 0.7rem 1.8rem;
+  border: none;
+  border-radius: 14px;
+  color: #0d1a12;
+  background: linear-gradient(165deg, #7fe0a0, #3d9c62);
+}
+.ld-action .ld-roll:not(:disabled):hover { border: none; background: linear-gradient(165deg, #92e9af, #45ab6d); }
+
+.ld-picks { display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: center; align-items: center; }
+.ld-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 650;
+  padding: 0.5rem 0.7rem;
+  border-radius: 11px;
+  border: 2px solid #3d444f;
+  background: #232830;
+  color: #e8ecf3;
+}
+.ld-action .ld-pick:not(:disabled):hover { border-color: #6b7686; background: #2b313b; }
+.ld-pickdot { width: 0.7rem; height: 0.7rem; border-radius: 50%; flex: 0 0 auto; }
+.ld-pick.q0 .ld-pickdot { background: var(--q0); }
+.ld-pick.q1 .ld-pickdot { background: var(--q1); }
+.ld-pick.q2 .ld-pickdot { background: var(--q2); }
+.ld-pick.q3 .ld-pickdot { background: var(--q3); }
+.ld-picktext { white-space: nowrap; }
+
+.ld-waiting { display: inline-flex; align-items: center; gap: 0.6rem; color: #8a8f98; }
+.ld-waittext { font-size: 0.95rem; max-width: 12rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

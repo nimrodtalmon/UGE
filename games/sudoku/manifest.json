@@ -1,0 +1,65 @@
+{
+  "id": "sudoku",
+  "name": "Sudoku",
+  "players": {
+    "min": 1,
+    "max": 1
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
+  "icon": "🔢",
+  "tagline": "one of each, everywhere",
+  "modes": [
+    {
+      "id": "easy",
+      "name": "Easy",
+      "tagline": "plenty of clues",
+      "choice": true,
+      "config": {
+        "clues": 42
+      }
+    },
+    {
+      "id": "medium",
+      "name": "Medium",
+      "tagline": "a proper sit-down",
+      "choice": true,
+      "config": {
+        "clues": 33
+      }
+    },
+    {
+      "id": "hard",
+      "name": "Hard",
+      "tagline": "bare board, one answer",
+      "choice": true,
+      "config": {
+        "clues": 26
+      }
+    }
+  ],
+  "help": {
+    "goal": "Fill every blank square so that each row, each column and each 3×3 box holds the digits 1 to 9 exactly once. There is only one way to do it.",
+    "steps": [
+      "Tap a blank square to select it — its row, column and box light up.",
+      "Tap a number key to write that digit in.",
+      "Tap the same key again, or ⌫, to rub it out.",
+      "Tap ✏️ to switch to pencil mode, then the number keys leave small maybes in the corner.",
+      "The dark squares are the clues you were dealt — they cannot be changed."
+    ],
+    "notes": [
+      "A digit that clashes with one already in its row, column or box turns red and adds one to ✖ — the mistake counter.",
+      "A red digit is not the end of anything: rub it out and carry on.",
+      "A number key fades once all nine of that digit are on the board.",
+      "⏱ runs from the deal; it stops the moment the grid is complete.",
+      "Easy, Medium and Hard differ only in how many clues you start with — every board has exactly one solution."
+    ]
+  }
+}

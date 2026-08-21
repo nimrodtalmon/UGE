@@ -1,0 +1,50 @@
+{
+  "id": "ludo",
+  "name": "Ludo",
+  "players": { "min": 2, "max": 4 },
+  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "🎲",
+  "tagline": "roll a six and run",
+  "modes": [
+    {
+      "id": "quick",
+      "name": "Quick",
+      "tagline": "2 tokens each",
+      "config": { "tokens": 2 },
+      "choice": true
+    },
+    {
+      "id": "classic",
+      "name": "Classic",
+      "tagline": "4 tokens each",
+      "config": { "tokens": 4 },
+      "choice": true
+    }
+  ],
+  "bots": {
+    "levels": [
+      { "id": "easy", "name": "Easy", "tagline": "moves whatever it fancies" },
+      { "id": "normal", "name": "Normal", "tagline": "hunts, and runs for home" },
+      { "id": "sharp", "name": "Sharp", "tagline": "counts the dice aimed at it" }
+    ]
+  },
+  "help": {
+    "goal": "Walk all of your tokens out of your corner, once round the board and up your own colour's lane into the middle. First one home wins.",
+    "steps": [
+      "Tap 🎲 Roll on your turn.",
+      "A 6 frees a token from your corner onto your start square.",
+      "Tap a lit token — or one of the buttons under the board — to walk it.",
+      "Land on a lone enemy token and it goes back to its corner.",
+      "Roll a 6 and you throw again, up to three times.",
+      "You need the exact number to step into the middle."
+    ],
+    "notes": [
+      "The eight starred squares are safe: nobody is ever sent home from one.",
+      "Two of your tokens on one square make a block — no enemy may land there.",
+      "Three sixes in a row and the turn is lost, so the third one is never free.",
+      "If the roll has nothing to play, the turn passes on its own and says why.",
+      "Quick uses 2 tokens each and Classic 4; play alone and bots take the other corners."
+    ]
+  }
+}
