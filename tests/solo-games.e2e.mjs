@@ -64,14 +64,14 @@ const faceUp = await me.locator('.sol-card:not(.down):not(.slot)').count();
 if (faceUp < 7) fail(`expected at least 7 face-up cards after the deal, got ${faceUp}`);
 const down = await me.locator('.sol-card.down').count();
 if (down < 21) fail(`expected the stock plus face-down tableau cards, got ${down}`);
-// the top row is: 4 foundations, then stock, then waste
-const stock = me.locator('.sol-board .sol-row').first().locator('.sol-slot').nth(4);
+// the top row is: 4 foundations, then waste, then stock (tap pile on the right)
+const stock = me.locator('.sol-board .sol-row').first().locator('.sol-slot').nth(5);
 const before = Number((await stock.locator('.sol-count').textContent()).trim());
 if (before !== 24) fail(`expected a 24-card stock, got ${before}`);
 await stock.locator('.sol-card').click();
 await me.waitForFunction(
   (n) => {
-    const el = document.querySelectorAll('.sol-board .sol-row')[0].querySelectorAll('.sol-slot')[4];
+    const el = document.querySelectorAll('.sol-board .sol-row')[0].querySelectorAll('.sol-slot')[5];
     return Number(el.querySelector('.sol-count').textContent.trim()) === n - 1;
   },
   before, { timeout: 8000 },

@@ -1,4 +1,5 @@
 import type { GameDef } from '../../src/shared/plugin.js';
+import { decide } from './bot.js';
 import {
   buildDeck,
   cmpEval,
@@ -351,6 +352,43 @@ const game: GameDef<PokerState, PokerView> = {
       endsAt: state.endsAt,
       winner: state.winner,
     };
+  },
+
+  /**
+   * AI opponent. It is handed its own hole cards and the public table only —
+   * never another seat's cards and never the rest of the deck (see bot.ts).
+   */
+  bot(state, { seat, level, random }) {
+    if (state.winner !== null || state.stage === 'handover') return null;
+    if (state.toAct !== seat) return null; // handover timers are the table's job
+    const me = state.seats[seat];
+    if (!me || !canAct(me)) return null;
+    const n = state.seats.length;
+    let toActAfter = 0;
+    for (let step = 1; step < n; step++) {
+      const q = state.seats[(seat + step) % n]!;
+      if (canAct(q) && (!q.acted || q.streetBet < state.currentBet)) toActAfter++;
+    }
+    const action = decide({
+      hole: me.hole,
+      board: state.board,
+      stage: state.stage,
+      pot: state.seats.reduce((sum, p) => sum + p.totalBet, 0),
+      toCall: Math.min(state.currentBet - me.streetBet, me.chips),
+      chips: me.chips,
+      streetBet: me.streetBet,
+      currentBet: state.currentBet,
+      minRaise: state.minRaise,
+      bb: BB,
+      canRaise: !state.noReraise.includes(seat),
+      opponents: state.seats.filter((p, i) => i !== seat && inHand(p)).length,
+      toActAfter,
+      level,
+      random,
+    });
+    return action.name === 'raise'
+      ? { name: 'raise', args: [action.to] }
+      : { name: action.name };
   },
 
   isOver(state) {

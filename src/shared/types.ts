@@ -162,4 +162,6 @@ export interface SyncRequest {
 export interface SyncResponse {
   deviceId: string;
   snapshot: LobbySnapshot;
+  /** This device was removed from the room and is not in the snapshot. */
+  kicked?: boolean;
 }

@@ -8,6 +8,7 @@ import QRCode from 'qrcode';
 import { lanAddress } from './lan.js';
 import { loadPlugins } from './games.js';
 import { CODE_RE, DEFAULT_ROOM, Rooms } from './rooms.js';
+import { FeedbackBook, feedbackPage } from './feedback.js';
 import type { SyncRequest } from '../shared/types.js';
 
 const PORT = Number(process.env.PORT) || 8000;
@@ -89,6 +90,7 @@ try {
 }
 
 const rooms = new Rooms(plugins);
+const feedback = new FeedbackBook(path.join(root, 'feedback.jsonl'));
 
 /** The public join URL for a room — the default room keeps the classic /join. */
 function joinUrlFor(code: string): string {
@@ -123,6 +125,10 @@ api.post('/lobby/seats', (req, res) => {
 });
 api.post('/lobby/table', (req, res) => {
   lobbyOf(res).setTable(req.body.deviceId, req.body.on === true);
+  res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
+});
+api.post('/lobby/kick', (req, res) => {
+  lobbyOf(res).kick(String(req.body.targetId ?? ''));
   res.json(lobbyOf(res).snapshotFor(req.body.deviceId));
 });
 api.post('/lobby/bots', (req, res) => {
@@ -165,6 +171,11 @@ api.get('/session', (_req, res) => {
   });
 });
 
+api.post('/feedback', (req, res) => {
+  const saved = feedback.add({ ...req.body, room: codeOf(res) });
+  res.json({ ok: saved !== null });
+});
+
 api.get('/qr.svg', async (_req, res) => {
   const svg = await QRCode.toString(joinUrlFor(codeOf(res)), { type: 'svg', margin: 1 });
   res.type('image/svg+xml').send(svg);
@@ -194,6 +205,10 @@ api.post('/admin/update', (_req, res) => {
 
 app.use('/r/:code/api', api);
 app.use('/api', api);
+
+// everything anyone sent, newest first — open it in any browser
+app.get('/feedback', (_req, res) => res.type('html').send(feedbackPage(feedback.list())));
+app.get('/api/feedback', (_req, res) => res.json(feedback.list()));
 
 // room creation (used by the public landing page)
 app.post('/api/rooms', (_req, res) => {

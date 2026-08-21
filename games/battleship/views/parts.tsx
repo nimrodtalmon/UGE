@@ -211,12 +211,13 @@ export function PlaceBoard(props: {
     const y = yOf(i);
     if (sel !== null) {
       const s = fleet[sel]!;
-      // tapping the already-selected hull flips it
-      if (ship === sel && down.current.wasSel) {
-        tryPlace(sel, s.x, s.y, !s.horizontal);
+      if (ship === sel) {
+        // tapping the hull that was ALREADY selected flips it; the tap that
+        // selected it in the first place does nothing else
+        if (down.current.wasSel) tryPlace(sel, s.x, s.y, !s.horizontal);
         return;
       }
-      if (ship === undefined || ship === sel) {
+      if (ship === undefined) {
         tryPlace(sel, x, y, s.horizontal);
         return;
       }
@@ -236,7 +237,10 @@ export function PlaceBoard(props: {
       onPointerCancel={() => {
         drag.current = null;
       }}
-      onPointerLeave={() => !drag.current && setGhost(null)}
+      onPointerLeave={(e) => {
+        // a touch "leaves" on release — only a mouse leaving clears the ghost
+        if (e.pointerType !== 'touch' && !drag.current) setGhost(null);
+      }}
     >
       {Array.from({ length: SIZE * SIZE }, (_, i) => {
         const ship = shipAt.get(i);

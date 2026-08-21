@@ -20,19 +20,31 @@
 }
 .sol-status.stuck { color: #c9a04e; font-weight: 600; }
 .sol-status.won { color: #6fd08c; font-size: 1.3rem; font-weight: 800; }
-.sol-hint { color: #6b7078; font-size: 0.8rem; min-height: 1.1rem; }
+.sol-hint { color: #6b7078; font-size: 0.8rem; min-height: 1.1rem; max-width: 92vw; }
 
-/* one knob drives every measurement: 7 columns must always fit the screen */
+/*
+ * One knob drives every measurement: --sol-w is a card's width, a card is 1.4
+ * of those tall, and the whole board is sized in those units. Seven columns
+ * must fit the width AND the tallest pile must fit the height, so the knob is
+ * capped against both (a 360x640 phone lands on ~41px: 7 columns = 324px wide,
+ * and a board of ~10 units = 410px tall, inside the ~470px the screen leaves
+ * it — a real game's worst column, 6 face-down under 12 face-up, needs 8.5).
+ * --sol-up is the sliver a face-up card leaves of the one below it; the piles
+ * override it per column (see upStep() in parts.tsx).
+ */
 .sol-board {
-  --sol-w: min(2.7rem, 12vw);
+  --sol-w: clamp(1.7rem, min(12vw, 6.4vh), 3rem);
+  --sol-up: 0.62;
   --sol-face: linear-gradient(160deg, #fdfcf8, #ebe8df);
   --sol-back: repeating-linear-gradient(45deg, #2a3350 0 5px, #34406b 5px 10px);
   --sol-empty: rgba(255, 255, 255, 0.04);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  /* dragging a run must never pan or scroll the page under it */
+  touch-action: none;
 }
-.sol-board.big { --sol-w: min(5.4rem, 11vw); gap: 0.9rem; }
+.sol-board.big { --sol-w: min(5.4rem, 11vw, 8.2vh); gap: 0.9rem; }
 
 .sol-row {
   display: grid;
@@ -61,6 +73,8 @@
   font-weight: 800;
   line-height: 1;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  touch-action: none;
 }
 /* the table's board is all disabled buttons — keep it looking like cards */
 .sol-card:disabled { opacity: 1; }
@@ -89,15 +103,51 @@
   box-shadow: 0 0 0 3px #e4b83d, 0 5px 10px rgba(0, 0, 0, 0.5);
 }
 .sol-card.hot { box-shadow: 0 0 0 3px #6fd08c, 0 0 12px #6fd08c66; border-color: #6fd08c; }
+/* the card is in the air: the ghost under the finger is the real one now */
+.sol-card.flying { opacity: 0.22; box-shadow: none; }
 .sol-rank { font-size: calc(var(--sol-w) * 0.42); }
 .sol-suit { font-size: calc(var(--sol-w) * 0.38); }
 .sol-ghost { font-size: calc(var(--sol-w) * 0.5); }
 
-/* tableau: columns of overlapping cards */
+/* a stacked card only shows its top strip, so rank and suit live in the corner */
+.sol-card.corner {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: calc(var(--sol-w) * 0.05);
+  padding: calc(var(--sol-w) * 0.06) 0 0 calc(var(--sol-w) * 0.09);
+  white-space: nowrap;
+}
+.sol-card.corner .sol-rank { font-size: calc(var(--sol-w) * 0.36); }
+.sol-card.corner .sol-suit { font-size: calc(var(--sol-w) * 0.34); }
+
+/* tableau: columns of overlapping cards. Each face-up card leaves --sol-up of
+   the one below it visible — enough for the corner index; face-down cards say
+   nothing, so they stay packed. */
 .sol-piles { align-items: start; }
 .sol-pile { display: flex; flex-direction: column; align-items: center; }
-.sol-pile > * + * { margin-top: calc(var(--sol-w) * -0.98); }
+.sol-pile > * + * { margin-top: calc(var(--sol-w) * (var(--sol-up) - 1.4)); }
 .sol-pile > * + .sol-card.down { margin-top: calc(var(--sol-w) * -1.14); }
+
+/* a legal destination with the finger over it */
+.sol-drop {
+  border-radius: calc(var(--sol-w) * 0.2);
+  background: rgba(111, 208, 140, 0.14);
+  box-shadow: 0 0 0 2px #6fd08c, 0 0 14px rgba(111, 208, 140, 0.35);
+}
+
+/* the run in flight: follows the finger, never catches a hit-test */
+.sol-drag {
+  position: fixed;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  transform-origin: 50% 0;
+  filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.6));
+}
+.sol-drag > * + * { margin-top: calc(var(--sol-w) * (var(--sol-up) - 1.4)); }
 
 /* the ⤒ badge rides the selected card — bigger than it looks, for thumbs */
 .sol-wrap { position: relative; display: block; }
@@ -105,7 +155,6 @@
 .sol-home {
   position: absolute;
   top: -0.85rem;
-  /* the waste sits in the last column — keep the badge inside the screen */
   right: calc(var(--sol-w) * -0.2);
   z-index: 4;
   width: 1.75rem;
@@ -120,6 +169,8 @@
   line-height: 1;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
+/* the waste's neighbour is the stock — put its badge on the empty side */
+.sol-wrap.waste .sol-home { right: auto; left: calc(var(--sol-w) * -0.35); }
 
 .sol-actions {
   display: flex;

@@ -3,14 +3,20 @@ import type { CSSProperties, ReactNode } from 'react';
 import { hueOf } from '../../shared/avatar.js';
 import type { DeviceTile, GameEntry, Manifest } from '../../shared/types.js';
 
-/** Everyone in the room, as a row of avatar bubbles. */
-export function PeopleStrip(props: { devices: DeviceTile[]; myId: string | null }) {
+/** Everyone in the room, as a row of avatar bubbles. Tap one to manage them. */
+export function PeopleStrip(props: {
+  devices: DeviceTile[];
+  myId: string | null;
+  onPick?: (d: DeviceTile) => void;
+}) {
   if (props.devices.length === 0) return <p className="muted">nobody here yet</p>;
   return (
     <div className="people">
       {props.devices.map((d) => (
-        <div
+        <button
           key={d.id}
+          type="button"
+          onClick={() => props.onPick?.(d)}
           className={['person', 'tile', d.id === props.myId && 'me', d.away && 'away', d.bot && 'is-bot']
             .filter(Boolean)
             .join(' ')}
@@ -22,7 +28,7 @@ export function PeopleStrip(props: { devices: DeviceTile[]; myId: string | null 
             {d.seats > 1 && !d.isTable && <span className="mark seats">{d.seats}</span>}
           </span>
           <span className="who">{d.name}</span>
-        </div>
+        </button>
       ))}
     </div>
   );

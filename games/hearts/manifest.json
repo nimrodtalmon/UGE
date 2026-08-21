@@ -6,6 +6,13 @@
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "🖤",
   "tagline": "avoid the queen",
+  "bots": {
+    "levels": [
+      { "id": "easy", "name": "Easy", "tagline": "plays loose" },
+      { "id": "normal", "name": "Normal", "tagline": "ducks and dodges the queen" },
+      { "id": "sharp", "name": "Sharp", "tagline": "counts the cards that have gone" }
+    ]
+  },
   "help": {
     "goal": "Collect as few points as you can. When somebody hits 100 the lowest score wins.",
     "steps": [

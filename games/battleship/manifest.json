@@ -1,9 +1,19 @@
 {
   "id": "battleship",
   "name": "Battleship",
-  "players": { "min": 2, "max": 2 },
-  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
-  "pieces": { "static": 0, "dynamic": 0 },
+  "players": {
+    "min": 2,
+    "max": 2
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
   "icon": "🚢",
   "tagline": "sink the fleet",
   "bots": {
@@ -28,14 +38,15 @@
   "help": {
     "goal": "Sink all five of the other player's ships before they sink yours.",
     "steps": [
-      "Your fleet is placed for you; tap 🔀 Shuffle for a new layout.",
-      "Tap ⚓ Ready once you are happy with it.",
-      "On your turn tap any square in Target to fire there.",
-      "💥 is a hit, • is a miss, 🚢 is a sunk ship.",
-      "Watch My sea to see where your opponent is shooting."
+      "Your fleet starts placed for you — tap ⚓ Ready to sail with it.",
+      "To rearrange: drag a ship on the board, or tap a ship and then tap the square its bow should sit on.",
+      "↻ Rotate (or tapping the selected ship again) turns it; 🔀 Shuffle re-rolls the whole fleet.",
+      "Green means the ship fits there, red means it does not.",
+      "On your turn tap any square in 🎯 Target to fire there.",
+      "💥 is a hit, • is a miss, 🚢 is a sunk ship. Your own sea rides along as the minimap — tap it to swap the two boards."
     ],
     "notes": [
-      "Ships are always placed at random. You can shuffle before you are ready, but never drag them yourself.",
+      "Once you tap ⚓ Ready your fleet is locked in for the game.",
       "A hit does not earn you another shot. Turns alternate after every single shot.",
       "House rule: ships are allowed to touch, so there is no gap between hulls."
     ]

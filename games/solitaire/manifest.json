@@ -9,7 +9,8 @@
   "help": {
     "goal": "Move all 52 cards to the four foundations, each built up by suit from ace to king.",
     "steps": [
-      "Tap a card to pick it up, then tap where it should go.",
+      "Drag a card where it should go — the run on top of it comes along.",
+      "Or tap a card to pick it up, then tap where it should go.",
       "On the piles, stack down in alternating red and black.",
       "Double-tap a card to send it straight to its foundation.",
       "Tap the face-down stock to turn the next card over.",

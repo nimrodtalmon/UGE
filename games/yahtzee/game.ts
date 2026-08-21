@@ -1,4 +1,5 @@
 import type { GameDef, MoveCtx } from '../../src/shared/plugin.js';
+import { pickCategory, planHolds } from './bot.js';
 import { CATEGORIES, emptyCard, grandTotal, scoreFor } from './scoring.js';
 import type { Card, CategoryId } from './scoring.js';
 
@@ -96,6 +97,32 @@ const game: GameDef<YahtzeeState, YahtzeeView> = {
     return winners.length === 1
       ? { text: `${winners[0]} wins with ${top} points! 🏆` }
       : { text: `Tie — ${winners.join(' & ')} (${top} points)` };
+  },
+
+  /**
+   * AI opponent — see bot.ts. Dice and scorecards are public, so there is
+   * nothing here it should not look at; it just plays its own turn.
+   *
+   * One move per call: it toggles holds until they match the plan, then rolls
+   * or scores. planHolds is stable for a given roll, so the holds converge and
+   * the turn always ends in a score.
+   */
+  bot(state, { seat, level }) {
+    if (state.done) return null;
+    // pass-the-phone seats are virtual — the shared device plays them all
+    if (state.pass) return null;
+    if (seat !== state.current) return null;
+    const card = state.cards[seat];
+    if (!card) return null;
+    if (state.rollsLeft >= 3) return { name: 'roll' };
+
+    const want = planHolds(state.dice, card, level);
+    for (let i = 0; i < want.length; i++) {
+      if (want[i] !== state.held[i]) return { name: 'hold', args: [i] };
+    }
+    // nothing left to improve (or no rolls left): write it down
+    if (state.rollsLeft > 0 && want.some((w) => !w)) return { name: 'roll' };
+    return { name: 'score', args: [pickCategory(state.dice, card, level)] };
   },
 };
 

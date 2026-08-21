@@ -13,6 +13,7 @@ import {
 } from './LobbyBits.js';
 import { GameScreen } from './GameScreen.js';
 import { AVATARS, avatarFor, randomIdentity } from '../../shared/avatar.js';
+import type { DeviceTile } from '../../shared/types.js';
 
 /**
  * One app for every device. You land ready to play as yourself; sheets hold
@@ -80,6 +81,7 @@ function InviteSheet(props: {
   onSeats: (n: number) => void;
   onTable: (on: boolean) => void;
   onUpdate: () => void;
+  onFeedback: () => void;
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState<string | null>(null);
@@ -156,6 +158,11 @@ function InviteSheet(props: {
         </>
       )}
 
+      <button className="link-row feedback-link" onClick={props.onFeedback}>
+        <span>💬 Send feedback</span>
+        <span className="copy">say it here</span>
+      </button>
+
       <footer className="sheet-foot room-foot">
         <span className="muted">v {props.session?.version ?? '…'}</span>
         {props.session?.updatable !== false && (
@@ -168,13 +175,55 @@ function InviteSheet(props: {
   );
 }
 
+/** Say something about UGE; it lands on the brain's /feedback page. */
+function FeedbackSheet(props: { name: string; game: string | null; onClose: () => void }) {
+  const [text, setText] = useState('');
+  const [sent, setSent] = useState(false);
+  const send = async () => {
+    if (!text.trim()) return;
+    await fetch(api('/api/feedback'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text: text.trim(), from: props.name, game: props.game }),
+    }).catch(() => {});
+    setSent(true);
+    setTimeout(props.onClose, 1200);
+  };
+  return (
+    <Sheet title="Tell us what you think" onClose={props.onClose}>
+      {sent ? (
+        <p className="ok-note">Thanks — noted! 🙏</p>
+      ) : (
+        <>
+          <textarea
+            className="feedback-text"
+            autoFocus
+            rows={5}
+            maxLength={2000}
+            placeholder="what broke, what felt clunky, what you wish it did…"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <p className="muted hint">
+            {props.game ? `sent along with: ${props.game}` : 'sent from the lobby'}
+          </p>
+          <button className="primary wide" disabled={!text.trim()} onClick={send}>
+            Send feedback
+          </button>
+        </>
+      )}
+    </Sheet>
+  );
+}
+
 export function App({ host = false }: { host?: boolean }) {
   const [profile, setProfile] = useState<Profile>(() => loadProfile(host));
   const [session, setSession] = useState<Session | null>(null);
-  const [sheet, setSheet] = useState<null | 'invite' | 'profile' | 'help'>(null);
+  const [sheet, setSheet] = useState<null | 'invite' | 'profile' | 'help' | 'feedback'>(null);
+  const [person, setPerson] = useState<DeviceTile | null>(null);
   const [filter, setFilter] = useState<GameFilter>('ready');
   const [updating, setUpdating] = useState(false);
-  const { snapshot, deviceId, offline, act } = useLobby({ ...profile, host });
+  const { snapshot, deviceId, offline, kicked, rejoin, act } = useLobby({ ...profile, host });
 
   useEffect(() => {
     fetch(api('/api/session'))
@@ -219,6 +268,21 @@ export function App({ host = false }: { host?: boolean }) {
     );
   }
 
+  if (kicked) {
+    return (
+      <div className="center-screen">
+        <div className="stack">
+          <div className="big-avatar">👋</div>
+          <h1>UGE</h1>
+          <p className="muted">You were removed from this room.</p>
+          <button className="primary" onClick={rejoin}>
+            Join again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!snapshot) {
     return (
       <div className="center-screen">
@@ -241,6 +305,12 @@ export function App({ host = false }: { host?: boolean }) {
           snapshot.games.find((g) => g.manifest.id === snapshot.selectedGameId)?.manifest;
         return m ? <HelpSheet manifest={m} onClose={() => setSheet(null)} /> : null;
       })()
+    ) : sheet === 'feedback' ? (
+      <FeedbackSheet
+        name={profile.name}
+        game={snapshot.game?.name ?? playingManifest?.name ?? null}
+        onClose={() => setSheet(null)}
+      />
     ) : sheet === 'invite' ? (
       <InviteSheet
         session={session}
@@ -249,6 +319,7 @@ export function App({ host = false }: { host?: boolean }) {
         onSeats={(n) => act('/api/lobby/seats', { seats: n })}
         onTable={(on) => act('/api/lobby/table', { on })}
         onUpdate={update}
+        onFeedback={() => setSheet('feedback')}
         onClose={() => setSheet(null)}
       />
     ) : null;
@@ -270,6 +341,9 @@ export function App({ host = false }: { host?: boolean }) {
         )}
         <button className="help-chip" onClick={() => setSheet('help')} aria-label="how to play">
           ?
+        </button>
+        <button className="say-chip" onClick={() => setSheet('feedback')} aria-label="send feedback">
+          💬
         </button>
         {showControls && (
           <div className="game-controls">
@@ -328,7 +402,7 @@ export function App({ host = false }: { host?: boolean }) {
       {offline && <p className="offline">connection lost — retrying…</p>}
 
       <section className="card group-card">
-        <PeopleStrip devices={snapshot.devices} myId={deviceId} />
+        <PeopleStrip devices={snapshot.devices} myId={deviceId} onPick={setPerson} />
         <div className="group-foot">
           <div className="setup-line">
             <span className="stat">
@@ -482,6 +556,39 @@ export function App({ host = false }: { host?: boolean }) {
         </div>
       )}
       {sheetEl}
+      {person && (
+        <Sheet title={person.name} onClose={() => setPerson(null)}>
+          <div className="big-avatar">{person.avatar}</div>
+          <p className="muted">
+            {person.bot
+              ? 'an AI opponent'
+              : person.isTable
+                ? 'the table screen'
+                : person.seats > 1
+                  ? `${person.seats} people on this device`
+                  : 'on their own device'}
+          </p>
+          {person.id === deviceId ? (
+            <button className="wide" onClick={() => (setPerson(null), setSheet('profile'))}>
+              Change my name & look
+            </button>
+          ) : person.bot ? (
+            <button className="wide" onClick={() => setPerson(null)}>
+              Close
+            </button>
+          ) : (
+            <button
+              className="danger wide"
+              onClick={() => {
+                void act('/api/lobby/kick', { targetId: person.id });
+                setPerson(null);
+              }}
+            >
+              Remove from the room
+            </button>
+          )}
+        </Sheet>
+      )}
     </div>
   );
 }

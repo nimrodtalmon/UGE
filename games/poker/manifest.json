@@ -6,6 +6,13 @@
   "pieces": { "static": 0, "dynamic": 0 },
   "icon": "♠️",
   "tagline": "hold'em — chips only",
+  "bots": {
+    "levels": [
+      { "id": "easy", "name": "Easy", "tagline": "calls along" },
+      { "id": "normal", "name": "Normal", "tagline": "counts the pot odds" },
+      { "id": "sharp", "name": "Sharp", "tagline": "plays position, bluffs a little" }
+    ]
+  },
   "help": {
     "goal": "Win all the chips. Make the best five card hand at showdown, or bet until everyone else folds.",
     "steps": [

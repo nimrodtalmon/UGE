@@ -27,6 +27,8 @@ const REMOVE_MS = 45_000;
 const BOT_THINK_MS = 900;
 
 const BOT_NAMES = ['Robo', 'Chip', 'Ada', 'Vera', 'Otto', 'Pixel'];
+/** A removed device stays out this long before it may rejoin as itself. */
+const KICK_MS = 90_000;
 
 interface Device {
   id: string;
@@ -56,6 +58,7 @@ export class Lobby {
   private session: GameSession | null = null;
   private selectedModeId: string | null = null;
   /** AI opponents filling seats, and the difficulty they all play at. */
+  private kicked = new Map<string, number>(); // deviceId -> when it was removed
   private bots = 0;
   private botLevel: string | null = null;
   private nextBotAt = 0;
@@ -64,6 +67,15 @@ export class Lobby {
 
   sync(req: SyncRequest): SyncResponse {
     const id = req.deviceId ?? randomUUID();
+    const out = this.kicked.get(id);
+    if (out !== undefined) {
+      if (Date.now() - out < KICK_MS) {
+        // don't re-add them; the client shows a "removed" screen and may
+        // rejoin as a fresh device (this is a family kick, not a ban)
+        return { deviceId: id, snapshot: this.snapshotFor(undefined), kicked: true };
+      }
+      this.kicked.delete(id);
+    }
     const existing = this.devices.get(id);
     this.devices.set(id, {
       id,
@@ -91,6 +103,16 @@ export class Lobby {
       d.seats = Math.max(1, Math.min(12, seats));
       this.pickDefaultMode(); // the group changed — re-pick a mode that fits it
     }
+    this.tick();
+  }
+
+  /** Remove a device from the room (anyone may; it is a family game night). */
+  kick(targetId: string): void {
+    if (!this.devices.has(targetId)) return;
+    this.devices.delete(targetId);
+    this.claims.delete(targetId);
+    this.optOut.delete(targetId);
+    this.kicked.set(targetId, Date.now());
     this.tick();
   }
 

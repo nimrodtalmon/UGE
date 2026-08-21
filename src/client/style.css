@@ -436,6 +436,36 @@ h3 { font-size: 1.05rem; }
   height: 2rem;
   opacity: 0.78;
 }
+.say-chip {
+  position: fixed;
+  top: 0.6rem;
+  left: 6rem;
+  z-index: 30;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  opacity: 0.78;
+}
+.feedback-text {
+  width: 100%;
+  min-height: 8rem;
+  resize: vertical;
+  font: inherit;
+  color: inherit;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 0.8rem 0.9rem;
+  text-align: left;
+  line-height: 1.45;
+}
+.feedback-text:focus { outline: none; border-color: #3d8a57; }
+.feedback-link { border-color: #2f5c40; color: var(--accent); }
+.ok-note { color: var(--accent); font-size: 1.05rem; padding: 1.4rem 0; }
+.person { background: none; border: none; padding: 0; font: inherit; cursor: pointer; }
+
 .help { display: flex; flex-direction: column; gap: 0.9rem; text-align: left; width: 100%; }
 .help-goal { font-size: 1rem; color: var(--text); }
 .help-steps { display: flex; flex-direction: column; gap: 0.5rem; padding-left: 1.2rem; color: var(--dim); }

@@ -1,4 +1,5 @@
 import type { GameDef } from '../../src/shared/plugin.js';
+import { knowsOf, pickChoice, thinkMs } from './bot.js';
 import questionsJson from './assets/questions.json' with { type: 'json' };
 
 interface Question {
@@ -131,6 +132,22 @@ const game: GameDef<TriviaState, TriviaView> = {
     return winners.length === 1
       ? { text: `${winners[0]} wins with ${top}/${state.questions.length}! 🏆` }
       : { text: `Tie — ${winners.join(' & ')} (${top}/${state.questions.length})` };
+  },
+
+  /**
+   * AI opponent — see bot.ts. The right answer is in the state and is used for
+   * one thing only: deciding whether this bot happens to know it. It gets the
+   * question wrong at its level's rate, and it thinks for a couple of seconds
+   * first. The timers stay with the real devices; the bot only ever answers.
+   */
+  bot(state, { seat, level, random, now }) {
+    if (state.phase !== 'question') return null;
+    if (state.answers[seat] !== null) return null; // already tapped
+    const q = state.questions[state.qIdx];
+    if (!q) return null;
+    const startedAt = state.endsAt - QUESTION_MS;
+    if (now - startedAt < thinkMs(seat, state.qIdx, level)) return null;
+    return { name: 'answer', args: [pickChoice(q.a, q.choices.length, knowsOf(level), random(), random())] };
   },
 };
 

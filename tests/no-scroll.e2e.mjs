@@ -14,9 +14,11 @@ const me = await openHome(browser, {
   onError: (e) => fail(`pageerror: ${e.message}`),
 });
 
-await me.click('.seg:has-text("Ready")');
-const games = await me.$$eval('.game .game-name', (els) => els.map((e) => e.textContent.trim()));
-if (games.length < 10) fail(`expected a lone player to have many games, got ${games.length}`);
+// the Solo tab is every one-player game, so coverage does not depend on who
+// else happens to be connected when the suite runs
+await me.click('.seg:has-text("Solo")');
+const games = await me.$$eval('.game.ready .game-name', (els) => els.map((e) => e.textContent.trim()));
+if (games.length < 10) fail(`expected at least 10 solo games, got ${games.length}: ${games}`);
 
 const bad = [];
 for (const name of games) {

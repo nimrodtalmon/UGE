@@ -23,6 +23,7 @@ export function useLobby(me: { name: string; avatar?: string; host: boolean } | 
   const [snapshot, setSnapshot] = useState<LobbySnapshot | null>(null);
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [offline, setOffline] = useState(false);
+  const [kicked, setKicked] = useState(false);
   const deviceIdRef = useRef<string | null>(null);
   /**
    * The id we will claim on the next sync. Held in a ref, not just
@@ -58,6 +59,7 @@ export function useLobby(me: { name: string; avatar?: string; host: boolean } | 
         });
         claimRef.current = res.deviceId;
         if (stopped) return;
+        setKicked(res.kicked === true);
         localStorage.setItem(storageKey, res.deviceId);
         deviceIdRef.current = res.deviceId;
         setDeviceId(res.deviceId);
@@ -95,5 +97,12 @@ export function useLobby(me: { name: string; avatar?: string; host: boolean } | 
     }
   }, []);
 
-  return { snapshot, deviceId, offline, act };
+  /** Forget who we were and come back as a new device. */
+  const rejoin = useCallback(() => {
+    localStorage.removeItem(storageKey);
+    claimRef.current = null;
+    setKicked(false);
+  }, [storageKey]);
+
+  return { snapshot, deviceId, offline, kicked, rejoin, act };
 }

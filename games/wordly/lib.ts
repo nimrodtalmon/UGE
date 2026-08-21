@@ -25,6 +25,9 @@ const ALLOWED = new Set<string>([
   ...(allowedJson as string[]).filter((w) => WORD_RE.test(w)),
 ]);
 
+/** Every word a guess may be — the list form of ALLOWED, for the bot. */
+export const ALLOWED_WORDS: string[] = [...ALLOWED];
+
 export function isAllowedGuess(word: string): boolean {
   return ALLOWED.has(word);
 }

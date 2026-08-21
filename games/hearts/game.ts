@@ -1,4 +1,5 @@
 import type { GameDef, MoveCtx } from '../../src/shared/plugin.js';
+import { pickPass, pickPlay, playedSet } from './bot.js';
 
 const TRICK_END_MS = 2_800;
 const HANDOVER_MS = 8_000;
@@ -112,7 +113,7 @@ const ledSuitOf = (s: HeartsState): number | null =>
   s.leader >= 0 ? (s.trick[s.leader]?.s ?? null) : null;
 
 /** Which cards seat `me` (whose turn it is) may play right now. */
-function legalMask(s: HeartsState, me: number): boolean[] {
+export function legalMask(s: HeartsState, me: number): boolean[] {
   const hand = s.hands[me]!;
   const led = ledSuitOf(s);
   if (led === null) {
@@ -319,6 +320,36 @@ const game: GameDef<HeartsState, HeartsView> = {
       endsAt: state.endsAt,
       handSummary: state.handSummary,
     };
+  },
+
+  /**
+   * AI opponent. It is handed its own hand, the open trick and the set of
+   * cards already played (see bot.ts) — never another seat's cards.
+   */
+  bot(state, { seat, level, random }) {
+    if (state.winner !== null) return null;
+    if (state.phase === 'passing') {
+      if (state.passes[seat]) return null;
+      const hand = state.hands[seat];
+      if (!hand || hand.length < 3) return null;
+      return { name: 'passCards', args: [pickPass(hand, level, random)] };
+    }
+    // trickEnd and handover are driven by the platform's timers
+    if (state.phase !== 'play' || state.turn !== seat) return null;
+    const hand = state.hands[seat];
+    if (!hand || hand.length === 0) return null;
+    const index = pickPlay({
+      hand,
+      legal: legalMask(state, seat),
+      trick: state.trick,
+      leader: state.leader,
+      trickNum: state.trickNum,
+      heartsBroken: state.heartsBroken,
+      gone: playedSet(state.hands),
+      level,
+      random,
+    });
+    return index < 0 ? null : { name: 'playCard', args: [index] };
   },
 
   isOver(state) {
