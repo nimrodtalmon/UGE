@@ -49,7 +49,17 @@
   overflow: hidden;
   transition: transform 0.15s, opacity 0.3s;
 }
-.cn-board.mini .cn-card { min-height: 2.6rem; font-size: 0.62rem; border-width: 1.5px; }
+/* MILLIONAIRE does not fit a fifth of a phone at 0.62rem — let the longest
+   words shrink and wrap instead of being cut off mid-word by overflow:hidden */
+.cn-board.mini .cn-card {
+  min-height: 2.6rem;
+  font-size: clamp(0.46rem, 2.1vw, 0.62rem);
+  border-width: 1.5px;
+  padding: 0 1px;
+  line-height: 1.05;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .cn-card:not(:disabled):active { transform: scale(0.95); }
 /* display-only boards (table, spymasters) must not look washed out */
 .cn-card:disabled { opacity: 1; cursor: default; }

@@ -21,7 +21,7 @@ export default function HandView({ view, over, move }: GameViewProps<CodenamesVi
           suffix={
             myTurn
               ? "tap your team's guess"
-              : `${view.turn === 'red' ? '🔴 red' : '🔵 blue'} is guessing — your board is locked until they finish`
+              : 'your board is locked until they finish'
           }
         />
       )}
