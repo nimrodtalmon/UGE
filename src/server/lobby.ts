@@ -185,13 +185,14 @@ export class Lobby {
       this.optOut.clear();
       this.bots = 0;
       this.botLevel = null;
+      this.selectedModeId = null; // the old mode belonged to the old game
       const m = this.selectedPlugin()?.manifest;
       // too few humans but the game brings an AI? offer it, pre-filled
       if (m) {
         const fill = this.botFillFor(m);
         if (fill > 0) this.setBots(fill);
       }
-      this.pickDefaultMode();
+      this.pickDefaultMode(false);
     }
     this.tick();
   }
@@ -204,7 +205,16 @@ export class Lobby {
     this.tick();
   }
 
-  private pickDefaultMode(): void {
+  /**
+   * Settle on a mode for the selected game.
+   *
+   * `keep` guards a choice the player actually made: the group changing (a
+   * phone joins, seats change, an AI is hired) must not silently swap the mode
+   * out from under them, so a still-offered selection survives. Only a mode
+   * that no longer fits gets replaced. Picking a different game passes
+   * keep: false — that selection belongs to the old game.
+   */
+  private pickDefaultMode(keep = true): void {
     const m = this.selectedPlugin()?.manifest;
     if (!m) {
       this.selectedModeId = null;
@@ -212,6 +222,10 @@ export class Lobby {
     }
     const modes = this.modesOf(m);
     const group = this.group();
+    if (keep && this.selectedModeId !== null) {
+      const current = modes.find((mo) => mo.id === this.selectedModeId);
+      if (current && this.modeOffer(m, current, group).fits) return;
+    }
     const best = modes.find((mo) => this.modeOffer(m, mo, group).offered);
     this.selectedModeId = (best ?? modes[0]!).id;
   }
