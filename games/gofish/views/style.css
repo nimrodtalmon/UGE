@@ -123,6 +123,10 @@
 .gf-suit { font-size: 0.95em; }
 
 /* ---- my hand: one tappable group per rank ---- */
+/* A hand can grow to twenty-odd cards while the pond drains, so the wrap is
+   allowed to scroll inside itself — but it must scroll from the TOP: a
+   centred flex child that outgrows its scroller has its first row clipped
+   above the scroll origin and cannot be scrolled back to. */
 .gf-handwrap {
   flex: 0 1 auto;
   min-height: 3.4rem;
@@ -131,7 +135,7 @@
   overscroll-behavior: contain;
   width: 100%;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 }
 .gf-hand { display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: center; padding: 0.15rem; }
@@ -182,8 +186,10 @@
 .gf-bookwho { font-size: 0.8rem; }
 
 /* ---- the public ask log: the only thing on the page that scrolls ---- */
+/* basis 0, not auto: the log's own content is dozens of rows tall, and an
+   `auto` basis would let it push the hand above it into a squeeze */
 .gf-log {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 3.2rem;
   width: 100%;
   max-width: 32rem;
