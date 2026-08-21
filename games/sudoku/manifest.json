@@ -52,7 +52,7 @@
       "Tap a number key to write that digit in.",
       "Tap the same key again, or ⌫, to rub it out.",
       "Tap ✏️ to switch to pencil mode, then the number keys leave small maybes in the corner.",
-      "The dark squares are the clues you were dealt — they cannot be changed."
+      "The shaded squares are the clues you were dealt — they cannot be changed."
     ],
     "notes": [
       "A digit that clashes with one already in its row, column or box turns red and adds one to ✖ — the mistake counter.",

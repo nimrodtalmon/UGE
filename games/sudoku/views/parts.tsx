@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import type { CSSProperties } from 'react';
 import { useServerClock } from '../../../src/shared/gameKit.js';
 import type { SdView } from '../game.js';
 import { boxOf, colOf, conflicts, formatClock, rowOf } from '../rules.js';
@@ -118,7 +117,6 @@ export function Pad(props: {
           <button
             key={d}
             className={`sd-key${(props.counts[d] ?? 0) >= 9 ? ' sd-done' : ''}${props.pencil ? ' sd-pencilled' : ''}`}
-            style={{ '--sd-k': d } as CSSProperties}
             disabled={props.disabled}
             onClick={() => props.onDigit(d)}
           >
