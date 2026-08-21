@@ -49,6 +49,25 @@ function deviceAvatar(d: Device): string {
   return d.isTable ? '🖥️' : (d.avatar ?? avatarFor(d.name));
 }
 
+/**
+ * The client is not to be trusted, and one bad field used to be fatal: a sync
+ * with no name stored a nameless device, and every snapshot after that threw
+ * in avatarFor — so one malformed request bricked the room for everyone in it.
+ */
+function cleanName(name: unknown, fallback?: string): string {
+  if (typeof name === 'string') {
+    const trimmed = name.trim().slice(0, 24);
+    if (trimmed.length > 0) return trimmed;
+  }
+  return fallback ?? 'Player';
+}
+
+function cleanScreen(screen: unknown): { w: number; h: number } {
+  const s = screen as { w?: unknown; h?: unknown } | null | undefined;
+  const num = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+  return { w: num(s?.w), h: num(s?.h) };
+}
+
 export class Lobby {
   private devices = new Map<string, Device>();
   private claims = new Map<string, string>(); // deviceId -> role
@@ -65,8 +84,12 @@ export class Lobby {
 
   constructor(private readonly games: GamePlugin[]) {}
 
-  sync(req: SyncRequest): SyncResponse {
-    const id = req.deviceId ?? randomUUID();
+  sync(request: SyncRequest): SyncResponse {
+    // `curl -d null` parses to null, and a bare string or array is just as
+    // easy to post — nothing below may assume the body is even an object.
+    const req: Partial<SyncRequest> =
+      typeof request === 'object' && request !== null && !Array.isArray(request) ? request : {};
+    const id = typeof req.deviceId === 'string' && req.deviceId.length <= 64 ? req.deviceId : randomUUID();
     const out = this.kicked.get(id);
     if (out !== undefined) {
       if (Date.now() - out < KICK_MS) {
@@ -79,9 +102,9 @@ export class Lobby {
     const existing = this.devices.get(id);
     this.devices.set(id, {
       id,
-      name: req.name,
-      avatar: req.avatar,
-      screen: req.screen,
+      name: cleanName(req.name, existing?.name),
+      avatar: typeof req.avatar === 'string' && req.avatar.length <= 8 ? req.avatar : undefined,
+      screen: cleanScreen(req.screen),
       host: req.host === true,
       isTable: existing?.isTable ?? false,
       seats: existing?.seats ?? 1,

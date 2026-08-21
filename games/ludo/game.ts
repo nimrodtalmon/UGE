@@ -169,6 +169,16 @@ const nameOf = (state: LudoState, seat: number): string =>
 const isTurnOwner = (state: LudoState, ctx: MoveCtx): boolean =>
   ctx.players[state.turn]?.id === ctx.playerId;
 
+/**
+ * The beat under the board ("no legal move", a capture) has to survive long
+ * enough to be read. It explains what happened to ONE seat, so it stays up
+ * through everybody else's turn and clears only when that seat plays again.
+ */
+const keepNote = (state: LudoState, seat: number): Pick<LudoState, 'note' | 'noteSeat'> =>
+  state.noteSeat === seat || state.noteSeat === null
+    ? { note: null, noteSeat: null }
+    : { note: state.note, noteSeat: state.noteSeat };
+
 const game: GameDef<LudoState, LudoView> = {
   setup({ players, mode }) {
     const raw = mode.config['tokens'];
@@ -237,8 +247,7 @@ const game: GameDef<LudoState, LudoView> = {
         sixes: die === 6 ? state.sixes + 1 : 0,
         legal,
         phase: 'move',
-        note: null,
-        noteSeat: null,
+        ...keepNote(state, seat),
         lastCapture: null,
       };
     },
@@ -285,8 +294,7 @@ const game: GameDef<LudoState, LudoView> = {
         phase: 'roll',
         turn: again ? seat : nextSeat(state, seat),
         sixes: again ? state.sixes : 0,
-        note,
-        noteSeat: note === null ? null : seat,
+        ...(note === null ? keepNote(state, seat) : { note, noteSeat: seat }),
         lastMoved: { seat, token: index },
         lastCapture,
         winner: won ? seat : null,

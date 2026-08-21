@@ -12,9 +12,15 @@ export function randomIdentity(): { name: string; avatar: string } {
 }
 
 export function avatarFor(name: string): string {
+  return AVATARS[hashOf(name) % AVATARS.length]!;
+}
+
+/** Tolerates junk: these run on whatever a client sent, and a throw here used
+ *  to take down every snapshot in the room. */
+function hashOf(s: unknown): number {
   let h = 0;
-  for (const ch of name) h = (h * 31 + (ch.codePointAt(0) ?? 0)) >>> 0;
-  return AVATARS[h % AVATARS.length]!;
+  if (typeof s === 'string') for (const ch of s) h = (h * 31 + (ch.codePointAt(0) ?? 0)) >>> 0;
+  return h;
 }
 
 const PLAYER_COLORS = ['#e4573d', '#3d8ae4', '#3dbf6e', '#e4b83d', '#a03de4', '#e43d9c'];
@@ -25,7 +31,5 @@ export function colorFor(seat: number): string {
 
 /** Stable accent hue for any string (game id, player name) — for CSS hsl(). */
 export function hueOf(s: string): number {
-  let h = 0;
-  for (const ch of s) h = (h * 31 + (ch.codePointAt(0) ?? 0)) >>> 0;
-  return h % 360;
+  return hashOf(s) % 360;
 }
