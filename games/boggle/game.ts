@@ -217,9 +217,10 @@ const game: GameDef<BoggleState, BoggleView> = {
     }
     const top = Math.max(...results.map((r) => r.points));
     const winners = results.filter((r) => r.points === top).map((r) => state.names[r.seat] ?? '?');
+    const pts = `${top} point${top === 1 ? '' : 's'}`;
     return winners.length === 1
-      ? { text: `🎲 ${winners[0]} wins with ${top} points!` }
-      : { text: `🎲 Tie — ${winners.join(' & ')} on ${top}` };
+      ? { text: `🎲 ${winners[0]} wins with ${pts}!` }
+      : { text: `🎲 Tie — ${winners.join(' & ')} on ${pts}` };
   },
 };
 

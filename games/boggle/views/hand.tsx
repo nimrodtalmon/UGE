@@ -2,7 +2,7 @@ import './style.css';
 import { useEffect, useRef, useState } from 'react';
 import type { GameViewProps } from '../../../src/shared/plugin.js';
 import { useDeadline } from '../../../src/shared/gameKit.js';
-import { isAdjacent } from '../lib.js';
+import { isAdjacent, scoreWord } from '../lib.js';
 import type { BoggleView } from '../game.js';
 import { Counts, Grid, Results, clock, faceOf } from './parts.js';
 
@@ -76,26 +76,26 @@ export default function HandView({ view, players, me, over, move, serverNow }: G
   const fresh = last !== null && serverNow - last.at < VERDICT_MS;
   const verdict = (): { text: string; tone: string } => {
     if (path.length > 0) {
-      return word.length < view.minLen
-        ? { text: `${view.minLen} letters or more`, tone: 'bg-dim' }
-        : { text: `worth ${points(word.length)}`, tone: 'bg-dim' };
+      if (word.length < view.minLen) return { text: `${view.minLen} letters or more`, tone: 'bo-dim' };
+      const n = scoreWord(word);
+      return { text: `worth ${n} point${n === 1 ? '' : 's'}`, tone: 'bo-dim' };
     }
-    if (!fresh || last === null) return { text: ' ', tone: 'bg-dim' };
+    if (!fresh || last === null) return { text: ' ', tone: 'bo-dim' };
     const quoted = `“${last.word}”`;
-    if (last.reason === null) return { text: `${quoted} +${last.points}`, tone: 'bg-good' };
-    if (last.reason === 'short') return { text: `${quoted} is too short`, tone: 'bg-bad' };
-    if (last.reason === 'dup') return { text: `${quoted} — you have that already`, tone: 'bg-bad' };
-    if (last.reason === 'path') return { text: `${quoted} isn't on this grid`, tone: 'bg-bad' };
-    return { text: `${quoted} isn't in the word list`, tone: 'bg-bad' };
+    if (last.reason === null) return { text: `${quoted} +${last.points}`, tone: 'bo-good' };
+    if (last.reason === 'short') return { text: `${quoted} is too short`, tone: 'bo-bad' };
+    if (last.reason === 'dup') return { text: `${quoted} — you have that already`, tone: 'bo-bad' };
+    if (last.reason === 'path') return { text: `${quoted} isn't on this grid`, tone: 'bo-bad' };
+    return { text: `${quoted} isn't in the word list`, tone: 'bo-bad' };
   };
   const v = verdict();
 
   // ---- after the whistle
   if (!playing) {
     return (
-      <div className="bg-screen bg-phone">
-        <p className="bg-over">{over?.text ?? 'Time!'}</p>
-        <div className="bg-scroll">
+      <div className="bo-screen">
+        <p className="bo-over">{over?.text ?? 'Time!'}</p>
+        <div className="bo-scroll">
           <Results view={view} players={players} />
         </div>
       </div>
@@ -103,27 +103,27 @@ export default function HandView({ view, players, me, over, move, serverNow }: G
   }
 
   return (
-    <div className="bg-screen bg-phone">
-      <div className="bg-hud">
-        <span className={remaining <= 15_000 ? 'bg-clock bg-hot' : 'bg-clock'}>{clock(remaining)}</span>
+    <div className="bo-screen">
+      <div className="bo-hud">
+        <span className={remaining <= 15_000 ? 'bo-clock bo-hot' : 'bo-clock'}>{clock(remaining)}</span>
         <Counts view={view} players={players} />
       </div>
 
-      <p className={`bg-verdict ${v.tone}`}>{v.text}</p>
+      <p className={`bo-verdict ${v.tone}`}>{v.text}</p>
 
-      <p className="bg-wordline">
+      <p className="bo-wordline">
         {path.length === 0 ? (
-          <span className="bg-hint">{spectator ? "you're watching" : 'tap letters that touch'}</span>
+          <span className="bo-hint">{spectator ? "you're watching" : 'tap letters that touch'}</span>
         ) : (
           path.map((cell, i) => (
-            <span key={i} className="bg-word-letter">
+            <span key={i} className="bo-word-letter">
               {faceOf(view.letters[cell] ?? '')}
             </span>
           ))
         )}
       </p>
 
-      <div className="bg-gridwrap">
+      <div className="bo-gridwrap">
         <Grid
           letters={view.letters}
           size={view.size}
@@ -136,37 +136,27 @@ export default function HandView({ view, players, me, over, move, serverNow }: G
         />
       </div>
 
-      <div className="bg-keys">
-        <button type="button" className="bg-key" disabled={path.length === 0} onClick={undo}>
+      <div className="bo-keys">
+        <button type="button" className="bo-key" disabled={path.length === 0} onClick={undo}>
           ⌫
         </button>
-        <button type="button" className="bg-key bg-go" disabled={!canSend} onClick={send}>
+        <button type="button" className="bo-key bo-go" disabled={!canSend} onClick={send}>
           ✓ {word.length > 0 ? word.toLowerCase() : 'submit'}
         </button>
       </div>
 
-      <div className="bg-found">
-        <span className="bg-dim">
+      <div className="bo-found">
+        <span className="bo-dim">
           {spectator
             ? `${me?.name ?? 'you'} — no seat this round`
-            : `${view.myWords.length} words · ${view.myRaw} points so far`}
+            : `${view.myWords.length} word${view.myWords.length === 1 ? '' : 's'} · ${view.myRaw} points so far`}
         </span>
         {[...view.myWords].reverse().map((w) => (
-          <span key={w} className="bg-word-chip">
+          <span key={w} className="bo-word-chip">
             {w}
           </span>
         ))}
       </div>
     </div>
   );
-}
-
-/** Mirrors lib.ts's scoreWord — shown as a nudge while a word is being traced. */
-function points(n: number): number {
-  if (n < 3) return 0;
-  if (n <= 4) return 1;
-  if (n === 5) return 2;
-  if (n === 6) return 3;
-  if (n === 7) return 5;
-  return 11;
 }

@@ -280,7 +280,7 @@ const game: GameDef<GoFishState, GoFishView> = {
     if (state.over || state.turn !== seat) return null;
     const hand = state.hands[seat];
     if (!hand || hand.length === 0) return null;
-    const choice = pickAsk({
+    const seen = {
       seat,
       hand: hand.map((c) => ({ r: c.r, s: c.s })),
       counts: state.hands.map((h) => h.length),
@@ -288,7 +288,15 @@ const game: GameDef<GoFishState, GoFishView> = {
       log: state.log.map((e) => ({ ...e })),
       level,
       random,
-    });
+    };
+    // never hand back null on our own turn: the rules only leave the turn with
+    // a seat that holds cards and has somebody to ask, so take the first pair.
+    const fallback = (): { target: number; rank: number } | null => {
+      const target = seen.counts.findIndex((n, i) => i !== seat && n > 0);
+      const rank = seen.hand[0]?.r;
+      return target < 0 || rank === undefined ? null : { target, rank };
+    };
+    const choice = pickAsk(seen) ?? fallback();
     return choice === null ? null : { name: 'ask', args: [choice.target, choice.rank] };
   },
 };

@@ -114,6 +114,8 @@
   -webkit-tap-highlight-color: transparent;
 }
 .st-card:disabled { opacity: 1; cursor: default; }
+/* the table screen renders cards as divs — display only, so no pointer */
+div.st-card { cursor: default; }
 .st-grid .st-card:not(:disabled):hover { border-color: #cfcabd; background: #fffdf7; }
 .st-card:not(:disabled):active { transform: scale(0.96); }
 

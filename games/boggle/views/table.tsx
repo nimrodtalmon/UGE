@@ -20,9 +20,9 @@ export default function TableView({ view, players, over, move, serverNow }: Game
 
   if (!playing) {
     return (
-      <div className="bg-screen bg-table">
-        <p className="bg-over">{over?.text ?? 'Time!'}</p>
-        <div className="bg-scroll">
+      <div className="bo-screen bo-table">
+        <p className="bo-over">{over?.text ?? 'Time!'}</p>
+        <div className="bo-scroll">
           <Results view={view} players={players} wide />
         </div>
       </div>
@@ -30,16 +30,16 @@ export default function TableView({ view, players, over, move, serverNow }: Game
   }
 
   return (
-    <div className="bg-screen bg-table">
-      <p className={remaining <= 15_000 ? 'bg-bigclock bg-hot' : 'bg-bigclock'}>{clock(remaining)}</p>
+    <div className="bo-screen bo-table">
+      <p className={remaining <= 15_000 ? 'bo-bigclock bo-hot' : 'bo-bigclock'}>{clock(remaining)}</p>
 
-      <div className="bg-gridwrap">
+      <div className="bo-gridwrap">
         <Grid letters={view.letters} size={view.size} path={[]} />
       </div>
 
       <Counts view={view} players={players} wide />
 
-      <p className="bg-foot">
+      <p className="bo-foot">
         Same grid on every phone · {view.minLen}+ letters · a word two people found scores nothing
       </p>
     </div>

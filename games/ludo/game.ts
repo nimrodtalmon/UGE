@@ -127,11 +127,20 @@ export function occupantsOf(state: LudoState, a: number, exceptSeat: number): [n
   return out;
 }
 
-/** Own tokens standing on ring square `a`. */
+/** Tokens of `seat` standing on ring square `a`. */
 export function ownOn(state: LudoState, seat: number, a: number): number {
   const q = state.colours[seat] ?? 0;
   return (state.tokens[seat] ?? []).filter((t) => t >= 0 && t < RING && ringSquare(q, t) === a)
     .length;
+}
+
+/**
+ * A block: two tokens of ONE other colour standing together. Nobody may land
+ * there. Two tokens of DIFFERENT colours sharing a square is not a block —
+ * they are two lone tokens, and landing on them sends both home.
+ */
+export function isBlocked(state: LudoState, seat: number, a: number): boolean {
+  return state.tokens.some((_, other) => other !== seat && ownOn(state, other, a) >= 2);
 }
 
 /** Where token `i` of `seat` lands with `die`, or null when the move is illegal. */
@@ -144,8 +153,8 @@ export function destinationOf(state: LudoState, seat: number, i: number, die: nu
   if (to >= HOME_COL) return to; // the home column is private: always free
   const a = ringSquare(state.colours[seat] ?? 0, to);
   if (isSafe(a)) return to; // a safe square takes everyone
-  // two or more enemy tokens hold the square as a block
-  return occupantsOf(state, a, seat).length >= 2 ? null : to;
+  // two tokens of one enemy colour hold the square as a block
+  return isBlocked(state, seat, a) ? null : to;
 }
 
 /** Every token `seat` may legally play `die` with. */
@@ -305,8 +314,10 @@ const game: GameDef<LudoState, LudoView> = {
     if (state.phase === 'roll') return { name: 'roll' };
     const die = state.die;
     if (die === null) return { name: 'roll' };
-    const index = pickToken(state, seat, die, level, random);
-    return index === null ? null : { name: 'moveToken', args: [index] };
+    // never hand back null on our own turn: the rules already guarantee at
+    // least one legal token in the move phase, so fall back to the first.
+    const index = pickToken(state, seat, die, level, random) ?? legalTokens(state, seat, die)[0];
+    return index === undefined ? null : { name: 'moveToken', args: [index] };
   },
 };
 

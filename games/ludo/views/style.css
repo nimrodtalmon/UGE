@@ -47,7 +47,19 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.ld-status.big { font-size: 1.35rem; min-height: 2rem; line-height: 2rem; }
+/* the table sentence is the longest one ("… rolled 5 — picking a token"), so
+   give it two reserved lines rather than an ellipsis on a narrow screen; the
+   height is fixed either way, so nothing below it ever moves */
+.ld-status.big {
+  font-size: 1.35rem;
+  min-height: 4rem;
+  line-height: 2rem;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
 .ld-status.mine { color: #6fd08c; animation: ld-pulse 1.3s infinite; }
 @keyframes ld-pulse { 50% { opacity: 0.55; } }
 .ld-note {

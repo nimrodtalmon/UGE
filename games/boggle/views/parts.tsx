@@ -37,15 +37,15 @@ export function Grid({ letters, size, path, onTap, reachable }: GridProps) {
 
   return (
     <div
-      className="bg-grid"
-      style={{ gridTemplateColumns: `repeat(${size}, 1fr)`, '--bg-n': size } as CSSProperties}
+      className="bo-grid"
+      style={{ gridTemplateColumns: `repeat(${size}, 1fr)`, '--bo-n': size } as CSSProperties}
     >
       {letters.map((letter, cell) => {
         const on = path.includes(cell);
-        const classes = ['bg-tile'];
-        if (on) classes.push('bg-on');
-        if (cell === head) classes.push('bg-head');
-        if (!on && reachable && !reachable(cell)) classes.push('bg-far');
+        const classes = ['bo-tile'];
+        if (on) classes.push('bo-on');
+        if (cell === head) classes.push('bo-head');
+        if (!on && reachable && !reachable(cell)) classes.push('bo-far');
         // always a button when this device plays: swapping the element type
         // mid-trace would remount the tile and swallow the tap landing on it
         if (onTap) {
@@ -69,7 +69,7 @@ export function Grid({ letters, size, path, onTap, reachable }: GridProps) {
       })}
       {/* the trace, drawn over the tiles but deaf to taps */}
       <svg
-        className="bg-trace"
+        className="bo-trace"
         viewBox={`0 0 ${size} ${size}`}
         preserveAspectRatio="none"
         aria-hidden="true"
@@ -93,16 +93,16 @@ export function Counts({
   wide?: boolean;
 }) {
   return (
-    <div className={wide ? 'bg-counts bg-wide' : 'bg-counts'}>
+    <div className={wide ? 'bo-counts bo-wide' : 'bo-counts'}>
       {view.names.map((name, i) => (
         <div
           key={i}
-          className={`bg-chip${i === view.myIndex ? ' bg-me' : ''}`}
+          className={`bo-chip${i === view.myIndex ? ' bo-me' : ''}`}
           style={{ '--seat': colorFor(i) } as CSSProperties}
           title={`${players[i]?.name ?? name}: ${view.counts[i] ?? 0} words`}
         >
-          <span className="bg-av">{players[i]?.avatar ?? '🙂'}</span>
-          {wide && <span className="bg-who">{players[i]?.name ?? name}</span>}
+          <span className="bo-av">{players[i]?.avatar ?? '🙂'}</span>
+          {wide && <span className="bo-who">{players[i]?.name ?? name}</span>}
           <strong>{view.counts[i] ?? 0}</strong>
         </div>
       ))}
@@ -130,11 +130,11 @@ export function Results({
   if (view.solo) {
     const only = results[0];
     return (
-      <div className="bg-results">
-        <p className="bg-tally">
+      <div className="bo-results">
+        <p className="bo-tally">
           You found <strong>{only?.points ?? 0}</strong> of the board's{' '}
           <strong>{view.bestPoints}</strong> points
-          <span className="bg-dim">
+          <span className="bo-dim">
             {' '}
             · {only?.unique.length ?? 0} of {view.bestCount} words
           </span>
@@ -148,24 +148,24 @@ export function Results({
   }
 
   return (
-    <div className={wide ? 'bg-results bg-wide' : 'bg-results'}>
+    <div className={wide ? 'bo-results bo-wide' : 'bo-results'}>
       {ranked.map((r) => (
-        <div key={r.seat} className={`bg-card${r.seat === view.myIndex ? ' bg-me' : ''}`}>
-          <div className="bg-cardhead" style={{ '--seat': colorFor(r.seat) } as CSSProperties}>
-            <span className="bg-av">{players[r.seat]?.avatar ?? '🙂'}</span>
-            <span className="bg-who">{players[r.seat]?.name ?? view.names[r.seat] ?? '?'}</span>
+        <div key={r.seat} className={`bo-card${r.seat === view.myIndex ? ' bo-me' : ''}`}>
+          <div className="bo-cardhead" style={{ '--seat': colorFor(r.seat) } as CSSProperties}>
+            <span className="bo-av">{players[r.seat]?.avatar ?? '🙂'}</span>
+            <span className="bo-who">{players[r.seat]?.name ?? view.names[r.seat] ?? '?'}</span>
             <strong>{r.points}</strong>
           </div>
           <WordRow label="" words={r.unique} />
           {r.dupes.length > 0 && (
-            <p className="bg-dupes">
-              <span className="bg-dim">everyone had: </span>
+            <p className="bo-dupes">
+              <span className="bo-dim">everyone had: </span>
               {r.dupes.map((w) => (
                 <s key={w}>{w}</s>
               ))}
             </p>
           )}
-          {r.unique.length === 0 && r.dupes.length === 0 && <p className="bg-dim">nothing</p>}
+          {r.unique.length === 0 && r.dupes.length === 0 && <p className="bo-dim">nothing</p>}
         </div>
       ))}
       {view.missed && view.missed.length > 0 && (
@@ -185,11 +185,11 @@ function WordRow({
   faded?: boolean;
 }) {
   return (
-    <p className={faded ? 'bg-words bg-faded' : 'bg-words'}>
-      {label && <span className="bg-dim">{label}: </span>}
-      {words.length === 0 && <span className="bg-dim">—</span>}
+    <p className={faded ? 'bo-words bo-faded' : 'bo-words'}>
+      {label && <span className="bo-dim">{label}: </span>}
+      {words.length === 0 && <span className="bo-dim">—</span>}
       {words.map((w) => (
-        <span key={w.word} className="bg-word-chip">
+        <span key={w.word} className="bo-word-chip">
           {w.word}
           <sup>{w.points}</sup>
         </span>

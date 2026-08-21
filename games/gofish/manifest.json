@@ -26,6 +26,7 @@
     "notes": [
       "You may only ask for a rank you are already holding, so every ask tells the table something about your hand.",
       "The asks list under the board is public — that is the whole game. Whoever asked for 7s is holding 7s.",
+      "If the pond runs dry and nobody can ask any more, the game stops there and the books are counted.",
       "Run out of cards and you draw a fresh one from the pond, if there is one left.",
       "The bots play from the same public list you do: Easy asks at random, Normal listens to the asks, Sharp also remembers what you took off it."
     ]
