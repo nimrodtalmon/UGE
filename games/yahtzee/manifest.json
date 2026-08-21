@@ -30,7 +30,8 @@
       },
       "config": {
         "pass": true
-      }
+      },
+      "shared": true
     }
   ],
   "bots": {

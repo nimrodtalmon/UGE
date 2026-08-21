@@ -19,9 +19,9 @@ const hint = await me.textContent('.game:has-text("Chess")');
 if (!hint.includes('vs AI')) fail(`chess should be marked as playable vs AI, got: ${hint}`);
 console.log('ok: chess offered to a lone player, marked vs AI');
 
-// selecting it pre-fills one AI opponent and offers difficulties
+// selecting it opens the game sheet with one AI pre-filled and difficulties
 await me.click('.game:has-text("Chess")');
-await me.waitForSelector('.bot-row', { timeout: 8000 });
+await me.waitForSelector('.sheet .bot-row', { timeout: 8000 });
 // a 2-player game has exactly one free seat, so the AI is a yes/no, ticked
 if (!(await me.locator('.tick.on').count())) fail('AI should be pre-ticked for a lone player');
 if (await me.locator('.bot-count').count()) fail('a single opponent should not need a stepper');
@@ -40,15 +40,26 @@ console.log('ok: the AI counts as a player in the group');
 
 await me.click('button:has-text("Start Chess")');
 await me.waitForSelector('.ch-board', { timeout: 10000 });
+// playing an AI must never ask you to pass the phone to it
+if ((await me.content()).toLowerCase().includes('pass the phone')) {
+  fail('vs AI should not use a pass-the-phone mode');
+}
 // I am white: play e4, then the bot must answer by itself
 await me.waitForSelector('.ch-status:has-text("your move")', { timeout: 8000 });
 await me.click('[data-sq="e2"]');
 await me.waitForSelector('[data-sq="e4"].target', { timeout: 5000 });
 await me.click('[data-sq="e4"]');
+// my own move must land straight away — not only once the AI has replied
+const shown = Date.now();
 await me.waitForFunction(
   () => document.querySelector('[data-sq="e4"]')?.classList.contains('last'),
   null, { timeout: 8000 },
 );
+const mine = Date.now() - shown;
+const blackAnswered = await me.evaluate(() =>
+  [...document.querySelectorAll('[data-sq].last')].some((el) => Number(el.getAttribute('data-sq')[1]) >= 6));
+if (blackAnswered) fail('my move only appeared together with the AI reply');
+if (mine > 2500) fail(`my own move took ${mine}ms to show`);
 // the bot replies within a few seconds, and it is my turn again
 await me.waitForSelector('.ch-status:has-text("your move")', { timeout: 20000 });
 const blackMoved = await me.evaluate(() => {
@@ -63,9 +74,11 @@ await endGame(me);
 await me.click('.seg:has-text("Ready")');
 await me.waitForSelector('.game.ready:has-text("Memory")', { timeout: 10000 });
 await me.click('.game:has-text("Memory")');
-await me.waitForSelector('.bot-row', { timeout: 8000 });
+await me.waitForSelector('.sheet .bot-row', { timeout: 8000 });
 await me.click('button:has-text("Start Memory")');
 await me.waitForSelector('.mem-card', { timeout: 10000 });
+// memory vs AI must be a real two-seat game, not a shared-phone one
+if ((await me.content()).toLowerCase().includes('pass')) fail('memory vs AI fell into pass-the-phone mode');
 // play my turn: flip two cards, then the AI must take its turn unaided
 for (const n of [0, 1]) {
   const card = me.locator('.mem-card.down:not([disabled])').first();

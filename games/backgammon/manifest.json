@@ -1,26 +1,56 @@
 {
   "id": "backgammon",
   "name": "Shesh-Besh",
-  "players": { "min": 2, "max": 2 },
-  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
-  "pieces": { "static": 0, "dynamic": 0 },
+  "players": {
+    "min": 2,
+    "max": 2
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
   "icon": "🧿",
   "tagline": "the classic race",
   "modes": [
-    { "id": "phones", "name": "Phone each" },
+    {
+      "id": "phones",
+      "name": "Phone each"
+    },
     {
       "id": "shared",
       "name": "One phone",
       "tagline": "pass it between moves",
-      "phones": { "min": 1 },
-      "config": { "shared": true }
+      "phones": {
+        "min": 1
+      },
+      "config": {
+        "shared": true
+      },
+      "shared": true
     }
   ],
   "bots": {
     "levels": [
-      { "id": "easy", "name": "Easy", "tagline": "moves at random" },
-      { "id": "normal", "name": "Normal", "tagline": "hits, makes points, hides its blots" },
-      { "id": "sharp", "name": "Sharp", "tagline": "weighs the position after every checker" }
+      {
+        "id": "easy",
+        "name": "Easy",
+        "tagline": "moves at random"
+      },
+      {
+        "id": "normal",
+        "name": "Normal",
+        "tagline": "hits, makes points, hides its blots"
+      },
+      {
+        "id": "sharp",
+        "name": "Sharp",
+        "tagline": "weighs the position after every checker"
+      }
     ]
   },
   "help": {

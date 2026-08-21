@@ -513,7 +513,20 @@ a.wordmark { text-decoration: none; }
   animation: slide-up 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes slide-up { from { transform: translateY(14%); opacity: 0.6; } }
-/* full-screen modal: how-to-play is read, not glanced at */
+/* the landing page is one screen; nothing below the fold to reach */
+body.landing-page, body.landing-page .center-screen { height: 100dvh; overflow: hidden; }
+body.landing-page .center-screen { padding: 1.2rem; }
+
+/* game sheet: everything about one game in the shape of the invite sheet */
+.game-sheet-tag { font-size: 1rem; }
+.sheet-modes, .sheet-bots { width: 100%; justify-content: center; }
+.sheet-modes { overflow-x: auto; margin: 0.2rem 0; }
+.sheet-body .role-row { justify-content: center; margin-top: 0.2rem; }
+.sheet-body .big-start { width: 100%; margin-top: 0.4rem; }
+.blockers.reserve { min-height: 1.2rem; font-size: 0.85rem; }
+.sheet-body .help { margin-top: 0.2rem; }
+
+/* full-screen modal (kept for anything that needs the whole screen) */
 .sheet-scrim.full { align-items: stretch; }
 .sheet.full {
   width: 100%;
@@ -693,7 +706,7 @@ a.wordmark { text-decoration: none; }
 
 /* ---------- centered single-purpose screens (landing, loading) ---------- */
 .center-screen {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
   text-align: center;

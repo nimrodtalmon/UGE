@@ -4,6 +4,7 @@ import { api, roomBase } from './room.js';
 import {
   Celebration,
   GameGrid,
+  HelpBody,
   HelpSheet,
   PeopleStrip,
   Segmented,
@@ -13,7 +14,7 @@ import {
 } from './LobbyBits.js';
 import { GameScreen } from './GameScreen.js';
 import { AVATARS, avatarFor, randomIdentity } from '../../shared/avatar.js';
-import type { DeviceTile } from '../../shared/types.js';
+import type { DeviceTile, GameEntry, LobbySnapshot } from '../../shared/types.js';
 
 /**
  * One app for every device. You land ready to play as yourself; sheets hold
@@ -216,14 +217,145 @@ function FeedbackSheet(props: { name: string; game: string | null; onClose: () =
   );
 }
 
+/** Tap a game and this is what opens: what it is, who plays, and Start. */
+function GameSheet(props: {
+  entry: GameEntry;
+  snapshot: LobbySnapshot;
+  myRole: string | null;
+  iAmTable: boolean;
+  act: (path: string, body?: object) => Promise<void>;
+  onClose: () => void;
+}) {
+  const { entry, snapshot, act } = props;
+  const m = entry.manifest;
+  const players = snapshot.setup.players;
+  const modes = entry.modes.filter((mo) => mo.offered);
+  const freeSeats = m.players.max - (players - snapshot.bots);
+  return (
+    <Sheet title={`${m.icon ?? '🎲'} ${m.name}`} onClose={props.onClose}>
+      <p className="muted game-sheet-tag">{m.tagline ?? ''}</p>
+      <p className="meta">
+        {m.players.min === m.players.max
+          ? `${m.players.min} player${m.players.min === 1 ? '' : 's'}`
+          : `${m.players.min}–${m.players.max} players`}
+        {' · '}
+        {players} here
+      </p>
+
+      {modes.length > 1 && (
+        <div className="mode-row sheet-modes">
+          {modes.map((mo) => (
+            <button
+              key={mo.id}
+              className={['mode', snapshot.selectedModeId === mo.id && 'on'].filter(Boolean).join(' ')}
+              onClick={() => act('/api/lobby/mode', { modeId: mo.id })}
+            >
+              <strong>{mo.name}</strong>
+              <span className="meta">{mo.tagline ?? ''}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {m.bots && (
+        <div className="bot-row sheet-bots">
+          {freeSeats <= 1 ? (
+            <button
+              className={snapshot.bots > 0 ? 'tick on' : 'tick'}
+              onClick={() => act('/api/lobby/bots', { count: snapshot.bots > 0 ? 0 : 1 })}
+            >
+              <span className="box">{snapshot.bots > 0 ? '✓' : ''}</span>
+              🤖 Play against the computer
+            </button>
+          ) : (
+            <div className="bot-count">
+              <span className="bot-label">🤖 AI opponents</span>
+              <div className="stepper small">
+                <button
+                  disabled={snapshot.bots === 0}
+                  onClick={() => act('/api/lobby/bots', { count: snapshot.bots - 1 })}
+                >
+                  −
+                </button>
+                <strong>{snapshot.bots}</strong>
+                <button
+                  disabled={players >= m.players.max}
+                  onClick={() => act('/api/lobby/bots', { count: snapshot.bots + 1 })}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          )}
+          {snapshot.bots > 0 && (
+            <div className="bot-levels">
+              {m.bots.levels.map((lv) => (
+                <button
+                  key={lv.id}
+                  className={snapshot.botLevel === lv.id ? 'chip on' : 'chip'}
+                  onClick={() => act('/api/lobby/bots', { count: snapshot.bots, level: lv.id })}
+                >
+                  {lv.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* your own seat: extra roles, or sitting this one out */}
+      {!props.iAmTable && (
+        <div className="role-row">
+          {m.roles.extras
+            .filter((extra) => extra !== props.myRole)
+            .map((extra) => (
+              <button key={extra} className="ghost" onClick={() => act('/api/lobby/claim', { role: extra })}>
+                Become {extra.replace(/-/g, ' ')}
+              </button>
+            ))}
+          {props.myRole === null ? (
+            <button className="ghost" onClick={() => act('/api/lobby/claim', { role: 'hand' })}>
+              Jump in
+            </button>
+          ) : (
+            <button className="ghost" onClick={() => act('/api/lobby/claim', { role: null })}>
+              {props.myRole === 'hand' ? 'Sit out' : `Stop being ${props.myRole.replace(/-/g, ' ')}`}
+            </button>
+          )}
+        </div>
+      )}
+
+      <button
+        className="primary wide big-start"
+        disabled={!snapshot.canStart}
+        onClick={() => {
+          void act('/api/lobby/start');
+          props.onClose(); // get out of the way of the board
+        }}
+      >
+        ▶ Start {m.name}
+      </button>
+      <p className="blockers reserve">{snapshot.blockers.join(' · ')}</p>
+
+      <h4 className="sheet-h">How to play</h4>
+      <HelpBody manifest={m} />
+    </Sheet>
+  );
+}
+
 export function App({ host = false }: { host?: boolean }) {
   const [profile, setProfile] = useState<Profile>(() => loadProfile(host));
   const [session, setSession] = useState<Session | null>(null);
-  const [sheet, setSheet] = useState<null | 'invite' | 'profile' | 'help' | 'feedback'>(null);
+  const [sheet, setSheet] = useState<null | 'invite' | 'profile' | 'help' | 'feedback' | 'game'>(null);
   const [person, setPerson] = useState<DeviceTile | null>(null);
   const [filter, setFilter] = useState<GameFilter>('ready');
   const [updating, setUpdating] = useState(false);
   const { snapshot, deviceId, offline, kicked, rejoin, act } = useLobby({ ...profile, host });
+
+  const playing = snapshot?.phase === 'playing';
+  useEffect(() => {
+    if (playing) setSheet(null);
+  }, [playing]);
 
   useEffect(() => {
     fetch(api('/api/session'))
@@ -295,6 +427,7 @@ export function App({ host = false }: { host?: boolean }) {
   const iAmTable = me?.isTable === true;
   const playingManifest =
     snapshot.game && snapshot.games.find((g) => g.manifest.id === snapshot.game!.id)?.manifest;
+  const selectedEntry = snapshot.games.find((g) => g.manifest.id === snapshot.selectedGameId) ?? null;
   const sheetEl =
     sheet === 'profile' ? (
       <ProfileSheet initial={profile} onSave={saveProfile} onClose={() => setSheet(null)} />
@@ -305,6 +438,15 @@ export function App({ host = false }: { host?: boolean }) {
           snapshot.games.find((g) => g.manifest.id === snapshot.selectedGameId)?.manifest;
         return m ? <HelpSheet manifest={m} onClose={() => setSheet(null)} /> : null;
       })()
+    ) : sheet === 'game' && selectedEntry ? (
+      <GameSheet
+        entry={selectedEntry}
+        snapshot={snapshot}
+        myRole={me?.role ?? null}
+        iAmTable={iAmTable}
+        act={act}
+        onClose={() => setSheet(null)}
+      />
     ) : sheet === 'feedback' ? (
       <FeedbackSheet
         name={profile.name}
@@ -363,7 +505,6 @@ export function App({ host = false }: { host?: boolean }) {
   }
 
   // ---- home
-  const selected = snapshot.games.find((g) => g.manifest.id === snapshot.selectedGameId) ?? null;
   const { players, phones, hasTable } = snapshot.setup;
   const counts: Record<GameFilter, number> = {
     ready: filterGames(snapshot.games, 'ready').length,
@@ -374,7 +515,7 @@ export function App({ host = false }: { host?: boolean }) {
   const shown = filterGames(snapshot.games, filter);
 
   return (
-    <div className={selected ? 'app has-bar' : 'app'}>
+    <div className="app">
       <header className="appbar">
         <a className="wordmark" href={`${roomBase}/`} title="UGE home">
           UGE
@@ -434,127 +575,12 @@ export function App({ host = false }: { host?: boolean }) {
       <GameGrid
         games={shown}
         selectedGameId={snapshot.selectedGameId}
-        onSelect={(gameId) => act('/api/lobby/select', { gameId })}
+        onSelect={(gameId) => {
+          void act('/api/lobby/select', { gameId });
+          setSheet('game');
+        }}
       />
 
-      {/* your own seat: extra roles (spymasters…), or sitting this one out */}
-      {selected && !iAmTable && me && (
-        <div className="role-row">
-          {selected.manifest.roles.extras
-            .filter((extra) => extra !== me.role)
-            .map((extra) => (
-              <button key={extra} className="ghost" onClick={() => act('/api/lobby/claim', { role: extra })}>
-                Become {extra.replace(/-/g, ' ')}
-              </button>
-            ))}
-          {me.role === null ? (
-            <button className="ghost" onClick={() => act('/api/lobby/claim', { role: 'hand' })}>
-              Jump in
-            </button>
-          ) : (
-            <button className="ghost" onClick={() => act('/api/lobby/claim', { role: null })}>
-              {me.role === 'hand' ? 'Sit out' : `Stop being ${me.role.replace(/-/g, ' ')}`}
-            </button>
-          )}
-        </div>
-      )}
-
-      {selected && (
-        <div className="startbar">
-          <div className="startbar-inner">
-            <span className="sb-icon">{selected.manifest.icon ?? '🎲'}</span>
-            <div className="sb-text">
-              <strong>{selected.manifest.name}</strong>
-              {snapshot.blockers.length > 0 ? (
-                <span className="blockers">{snapshot.blockers.join(' · ')}</span>
-              ) : (
-                <span className="meta">
-                  {/* the mode name only means something when there was a choice */}
-                  {selected.modes.filter((mo) => mo.offered).length > 1
-                    ? (selected.modes.find((mo) => mo.id === snapshot.selectedModeId)?.name ?? 'ready')
-                    : `${players} player${players === 1 ? '' : 's'} · ready`}
-                </span>
-              )}
-            </div>
-            <button className="help-btn" onClick={() => setSheet('help')} aria-label="how to play">
-              ?
-            </button>
-            <button
-              className="primary big-start"
-              disabled={!snapshot.canStart}
-              onClick={() => act('/api/lobby/start')}
-            >
-              ▶ Start {selected.manifest.name}
-            </button>
-          </div>
-          {/* AI opponents: offered by games that ship a bot, pre-filled when
-              there aren't enough humans to play at all */}
-          {selected.manifest.bots && (
-            <div className="bot-row">
-              {/* one free seat means one possible opponent — that is a yes/no */}
-              {selected.manifest.players.max - (players - snapshot.bots) <= 1 ? (
-                <button
-                  className={snapshot.bots > 0 ? 'tick on' : 'tick'}
-                  onClick={() => act('/api/lobby/bots', { count: snapshot.bots > 0 ? 0 : 1 })}
-                >
-                  <span className="box">{snapshot.bots > 0 ? '✓' : ''}</span>
-                  🤖 Play against the computer
-                </button>
-              ) : (
-                <div className="bot-count">
-                  <span className="bot-label">🤖 AI opponents</span>
-                  <div className="stepper small">
-                    <button
-                      disabled={snapshot.bots === 0}
-                      onClick={() => act('/api/lobby/bots', { count: snapshot.bots - 1 })}
-                    >
-                      −
-                    </button>
-                    <strong>{snapshot.bots}</strong>
-                    <button
-                      disabled={players >= selected.manifest.players.max}
-                      onClick={() => act('/api/lobby/bots', { count: snapshot.bots + 1 })}
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              )}
-              {snapshot.bots > 0 && (
-                <div className="bot-levels">
-                  {selected.manifest.bots.levels.map((lv) => (
-                    <button
-                      key={lv.id}
-                      className={snapshot.botLevel === lv.id ? 'chip on' : 'chip'}
-                      onClick={() => act('/api/lobby/bots', { count: snapshot.bots, level: lv.id })}
-                    >
-                      {lv.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-          {/* only genuine choices appear — the lobby auto-picks the mode that
-              best uses the devices that are actually here */}
-          {selected.modes.filter((mo) => mo.offered).length > 1 && (
-            <div className="mode-row">
-              {selected.modes
-                .filter((mo) => mo.offered)
-                .map((mo) => (
-                  <button
-                    key={mo.id}
-                    className={['mode', snapshot.selectedModeId === mo.id && 'on'].filter(Boolean).join(' ')}
-                    onClick={() => act('/api/lobby/mode', { modeId: mo.id })}
-                  >
-                    <strong>{mo.name}</strong>
-                    <span className="meta">{mo.tagline ?? ''}</span>
-                  </button>
-                ))}
-            </div>
-          )}
-        </div>
-      )}
       {sheetEl}
       {person && (
         <Sheet title={person.name} onClose={() => setPerson(null)}>

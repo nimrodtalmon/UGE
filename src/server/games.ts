@@ -21,7 +21,14 @@ export async function loadPlugins(gamesDir: string): Promise<GamePlugin[]> {
     const dir = path.join(gamesDir, entry.name);
     const manifestFile = path.join(dir, 'manifest.json');
     if (!fs.existsSync(manifestFile)) continue;
-    const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8')) as Manifest;
+    let manifest: Manifest;
+    try {
+      manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8')) as Manifest;
+    } catch (err) {
+      // a half-written manifest must not take the whole brain down
+      console.warn(`games/${entry.name}: unreadable manifest.json — skipping (${String(err)})`);
+      continue;
+    }
     if (manifest.id !== entry.name) {
       console.warn(`games/${entry.name}: manifest id "${manifest.id}" != folder name, skipping`);
       continue;
@@ -30,7 +37,16 @@ export async function loadPlugins(gamesDir: string): Promise<GamePlugin[]> {
     let def: GameDef | null = null;
     const gameFile = path.join(dir, 'game.ts');
     if (fs.existsSync(gameFile)) {
-      def = ((await import(pathToFileURL(gameFile).href)) as { default: GameDef }).default;
+      try {
+        def = ((await import(pathToFileURL(gameFile).href)) as { default: GameDef }).default;
+      } catch (err) {
+        // One broken plugin used to crash the server on startup, taking every
+        // other game with it. A game that will not load is simply listed as
+        // not playable — the rest of the room carries on.
+        console.warn(`games/${entry.name}: game.ts failed to load — listed as not playable`);
+        console.warn(`  ${String(err).split('\n')[0]}`);
+        def = null;
+      }
     }
 
     const views: Record<string, string> = {};

@@ -31,7 +31,8 @@
       },
       "config": {
         "hotseat": true
-      }
+      },
+      "shared": true
     }
   ],
   "bots": {

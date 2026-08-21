@@ -31,7 +31,8 @@
       },
       "config": {
         "shared": true
-      }
+      },
+      "shared": true
     }
   ],
   "bots": {

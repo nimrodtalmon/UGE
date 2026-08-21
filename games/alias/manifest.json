@@ -1,9 +1,19 @@
 {
   "id": "alias",
   "name": "Alias",
-  "players": { "min": 2, "max": 12 },
-  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
-  "pieces": { "static": 0, "dynamic": 0 },
+  "players": {
+    "min": 2,
+    "max": 12
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
   "icon": "🗣️",
   "tagline": "explain it fast",
   "modes": [
@@ -11,16 +21,28 @@
       "id": "teams",
       "name": "Teams — pass the phone",
       "tagline": "🔴 vs 🔵 — explain to your team",
-      "players": { "min": 4, "max": 12 },
-      "phones": { "min": 1 },
+      "players": {
+        "min": 4,
+        "max": 12
+      },
+      "phones": {
+        "min": 1
+      },
       "choice": true,
-      "config": { "pass": true, "teams": true }
+      "config": {
+        "pass": true,
+        "teams": true
+      },
+      "shared": true
     },
     {
       "id": "party",
       "name": "Party — phone each",
       "tagline": "everyone for themselves",
-      "players": { "min": 2, "max": 8 },
+      "players": {
+        "min": 2,
+        "max": 8
+      },
       "choice": true
     }
   ],

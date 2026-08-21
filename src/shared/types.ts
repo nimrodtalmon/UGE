@@ -65,6 +65,11 @@ export interface GameMode {
    * when it fits, even when another fitting mode uses more devices.
    */
   choice?: boolean;
+  /**
+   * People share one device and pass it around (virtual seats). Never offered
+   * when an AI fills a seat — there is nobody to hand the phone to.
+   */
+  shared?: boolean;
 }
 
 /** A mode as shown in the lobby, matched against the declared group. */

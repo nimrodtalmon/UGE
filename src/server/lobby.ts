@@ -255,6 +255,12 @@ export class Lobby {
     if (m.roles.table === 'required' && !setup.hasTable) {
       return { fits: false, reason: 'needs a table screen' };
     }
+    // "pass the phone" only makes sense between people: an AI seat has no
+    // phone to be handed, and the shared-seat games use virtual seats that
+    // a bot cannot be mapped onto.
+    if (mode.shared && this.botsIn(setup) > 0) {
+      return { fits: false, reason: 'not with an AI opponent' };
+    }
     const pr = mode.players ?? m.players;
     if (setup.players < pr.min) return { fits: false, reason: `for ${pr.min}+ players` };
     if (setup.players > pr.max) {
@@ -321,6 +327,9 @@ export class Lobby {
     const role = this.claims.get(deviceId);
     if (this.phase === 'playing' && this.session && role) {
       this.session.applyMove(deviceId, role, name, args);
+      // Give the answer back before any bot replies: otherwise the bot moves
+      // inside this very request and the player never sees their own move land.
+      this.nextBotAt = Math.max(this.nextBotAt, Date.now() + BOT_THINK_MS);
     }
     this.tick();
   }

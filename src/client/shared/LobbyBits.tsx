@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { hueOf } from '../../shared/avatar.js';
 import type { DeviceTile, GameEntry, Manifest } from '../../shared/types.js';
@@ -84,7 +84,7 @@ export function Segmented(props: {
 export function GameGrid(props: {
   games: GameEntry[];
   selectedGameId: string | null;
-  onSelect: (gameId: string | null) => void;
+  onSelect: (gameId: string) => void;
 }) {
   if (props.games.length === 0) {
     return <p className="empty-note">nothing here — try another tab, or add people</p>;
@@ -99,7 +99,7 @@ export function GameGrid(props: {
             key={manifest.id}
             className={['game', selected && 'selected', feasible ? 'ready' : 'locked'].filter(Boolean).join(' ')}
             style={{ '--hue': hue } as CSSProperties}
-            onClick={() => props.onSelect(selected ? null : manifest.id)}
+            onClick={() => props.onSelect(manifest.id)}
           >
             <span className="game-icon">{manifest.icon ?? '🎲'}</span>
             <span className="game-name">{manifest.name}</span>
@@ -135,6 +135,14 @@ export function Sheet(props: {
   full?: boolean;
   children: ReactNode;
 }) {
+  // freeze what is behind: a modal you can scroll the page under is a mess
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
   return (
     <div className={props.full ? 'sheet-scrim full' : 'sheet-scrim'} onClick={props.onClose}>
       <div className={props.full ? 'sheet full' : 'sheet'} onClick={(e) => e.stopPropagation()}>
@@ -151,11 +159,34 @@ export function Sheet(props: {
   );
 }
 
+/** The how-to-play body, so it can sit inside any sheet. */
+export function HelpBody({ manifest }: { manifest: Manifest }) {
+  const help = manifest.help;
+  if (!help) return <p className="muted">No instructions for this one yet.</p>;
+  return (
+    <div className="help">
+      <p className="help-goal">{help.goal}</p>
+      <ol className="help-steps">
+        {help.steps.map((step, i) => (
+          <li key={i}>{step}</li>
+        ))}
+      </ol>
+      {help.notes && help.notes.length > 0 && (
+        <ul className="help-notes">
+          {help.notes.map((note, i) => (
+            <li key={i}>{note}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 /** How to play, from the manifest — the same copy in the lobby and in-game. */
 export function HelpSheet(props: { manifest: Manifest; onClose: () => void }) {
   const help = props.manifest.help;
   return (
-    <Sheet title={`How to play ${props.manifest.name}`} onClose={props.onClose} full>
+    <Sheet title={`How to play ${props.manifest.name}`} onClose={props.onClose}>
       {help ? (
         <div className="help">
           <p className="help-goal">{help.goal}</p>
