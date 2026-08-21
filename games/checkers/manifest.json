@@ -1,0 +1,33 @@
+{
+  "id": "checkers",
+  "name": "Checkers",
+  "players": { "min": 2, "max": 2 },
+  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "🔴",
+  "tagline": "jump and crown",
+  "bots": {
+    "levels": [
+      { "id": "easy", "name": "Easy", "tagline": "plays anything legal" },
+      { "id": "normal", "name": "Normal", "tagline": "counts the trades" },
+      { "id": "sharp", "name": "Sharp", "tagline": "searches five moves deep" }
+    ]
+  },
+  "help": {
+    "goal": "Capture all twelve of your opponent's pieces, or leave them with no legal move.",
+    "steps": [
+      "Wait until the top line says your move.",
+      "Tap one of your pieces — its legal squares light up green.",
+      "Tap a lit square to move or jump there.",
+      "If a jump is on offer you must take it: only jumps light up.",
+      "After a jump the same piece stays picked when it can jump again — tap the next square.",
+      "Tap Resign 🏳️ to hand the game over."
+    ],
+    "notes": [
+      "Plain pieces only move forward, diagonally, one dark square at a time.",
+      "Reach the far row and you are crowned 👑: kings move and jump both ways. Crowning ends the turn, even mid-jump.",
+      "Play alone and a bot takes the seat: Easy plays anything legal, Normal counts the trades, Sharp searches five moves deep.",
+      "Forty moves each with no capture is a draw."
+    ]
+  }
+}

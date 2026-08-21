@@ -1,0 +1,54 @@
+{
+  "id": "connect4",
+  "name": "Connect Four",
+  "players": {
+    "min": 2,
+    "max": 2
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
+  "icon": "🔴",
+  "tagline": "four in a row wins",
+  "bots": {
+    "levels": [
+      {
+        "id": "easy",
+        "name": "Easy",
+        "tagline": "drops almost anywhere"
+      },
+      {
+        "id": "normal",
+        "name": "Normal",
+        "tagline": "looks three moves ahead"
+      },
+      {
+        "id": "sharp",
+        "name": "Sharp",
+        "tagline": "searches five and owns the centre"
+      }
+    ]
+  },
+  "help": {
+    "goal": "Line up four of your discs in a row — across, up, or diagonally — before the other player does.",
+    "steps": [
+      "Wait until the top line says your turn.",
+      "Tap a column anywhere down its height to drop a disc into it.",
+      "The disc hovering above the board shows the column you are about to use.",
+      "Your disc falls to the lowest free hole in that column.",
+      "A full column cannot be tapped — pick another."
+    ],
+    "notes": [
+      "🔴 always drops first, 🟡 second. The strip under the board says who is who and whose turn it is.",
+      "The winning four flashes white when the game ends.",
+      "If every hole fills with nobody connecting four, it is a draw.",
+      "Play alone and a bot takes the other seat: Easy drops almost anywhere but never misses a win or a block, Normal looks three moves ahead, Sharp searches five."
+    ]
+  }
+}

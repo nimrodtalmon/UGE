@@ -1,0 +1,54 @@
+{
+  "id": "reversi",
+  "name": "Reversi",
+  "players": {
+    "min": 2,
+    "max": 2
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
+  "icon": "⚫",
+  "tagline": "flip them all",
+  "bots": {
+    "levels": [
+      {
+        "id": "easy",
+        "name": "Easy",
+        "tagline": "plays any legal square"
+      },
+      {
+        "id": "normal",
+        "name": "Normal",
+        "tagline": "grabs corners and edges"
+      },
+      {
+        "id": "sharp",
+        "name": "Sharp",
+        "tagline": "searches four moves ahead"
+      }
+    ]
+  },
+  "help": {
+    "goal": "Own more discs than the other player when the board runs out of moves. ⚫ black plays first.",
+    "steps": [
+      "Wait until the top line says your turn.",
+      "The squares you may play show a soft white dot — only those can be tapped.",
+      "A legal square must trap a straight line of the other colour between your new disc and one of yours.",
+      "Every trapped line flips to your colour, in all eight directions at once.",
+      "If you have no legal square your turn is skipped and the line under the status says so."
+    ],
+    "notes": [
+      "The counter under the board is the live score: black discs, then white.",
+      "Corners can never be flipped back — they are worth far more than a big pile mid-game.",
+      "The game ends when neither player can move, which is usually but not always a full board. Equal discs is a draw.",
+      "Play alone and a bot takes the other seat: Easy plays any legal square, Normal chases corners and edges, Sharp searches four moves ahead."
+    ]
+  }
+}

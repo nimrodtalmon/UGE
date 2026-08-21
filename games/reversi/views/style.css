@@ -1,0 +1,120 @@
+/* Reversi — every class prefixed rv-. Two rules run through all of it: a
+   square is a fixed box whose disc floats inside it (a flip must never move
+   anything), and the phone is a fixed box, never a scrolling page. */
+
+/* the platform's game viewport is a fixed box; a screen is exactly 100% of it
+   (see .game-viewport in src/client/style.css) — never 100vh */
+.rv-screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2.7rem 0.5rem 0.6rem;
+  text-align: center;
+}
+.rv-phone {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* the status swaps between one line ("your turn — tap a dotted square") and
+   two (the game-over sentence), so hold the taller state or the board slides
+   up into the finger mid-tap */
+.rv-status { font-size: 1.05rem; font-weight: 600; min-height: 2.9rem; display: flex; align-items: center; }
+.rv-status.mine { color: #6fd08c; animation: rv-pulse 1.3s infinite; }
+@keyframes rv-pulse { 50% { opacity: 0.55; } }
+/* reserved whether or not anyone was skipped */
+.rv-skip {
+  font-size: 0.85rem;
+  color: #d8a657;
+  min-height: 1.2rem;
+  white-space: pre;
+}
+
+/* ---- board ---- */
+.rv-grid {
+  --rv-w: min(94vw, 56vh, 28rem);
+  width: var(--rv-w);
+  aspect-ratio: 1;
+  display: grid;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 8px;
+  background: #2c231a;
+  border: 5px solid #3a2f22;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+  flex: 0 0 auto;
+}
+.rv-grid.big { --rv-w: min(78vw, 66vh, 40rem); }
+.rv-sq {
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 2px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  background: #2f7d4f;
+  background-image: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.08), transparent 60%);
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+}
+.rv-sq.legal:not(:disabled) { cursor: pointer; }
+.rv-sq:disabled { opacity: 1; }
+.rv-sq.last { box-shadow: inset 0 0 0 2px rgba(255, 235, 150, 0.8); }
+
+/* a two-faced disc: changing colour rotates it instead of blinking */
+.rv-disc {
+  width: 84%;
+  aspect-ratio: 1;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  transition: transform 0.45s ease;
+}
+.rv-disc.w { transform: rotateY(180deg); }
+.rv-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.rv-face.b { background: radial-gradient(circle at 34% 28%, #5a606c, #1b1e25 62%, #0b0d11); }
+.rv-face.w {
+  transform: rotateY(180deg);
+  background: radial-gradient(circle at 34% 28%, #ffffff, #e2e6ee 62%, #b9bfcb);
+}
+.rv-disc.just { box-shadow: 0 0 12px rgba(255, 235, 150, 0.55); border-radius: 50%; }
+
+/* the dot that makes the game playable: where this player may legally play */
+.rv-dot {
+  width: 26%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.42);
+  animation: rv-breathe 1.8s ease-in-out infinite;
+}
+@keyframes rv-breathe { 50% { opacity: 0.35; transform: scale(0.8); } }
+
+/* ---- score ---- */
+.rv-score {
+  display: flex;
+  gap: 1.4rem;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+  color: #8a8f98;
+  min-height: 1.9rem;
+}
+.rv-side { display: inline-flex; align-items: center; gap: 0.35rem; }
+.rv-side.on { color: #e8ecf3; }
+.rv-side strong { font-size: 1.15rem; }
+.rv-who { max-width: 7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-chip { width: 0.95rem; height: 0.95rem; border-radius: 50%; display: inline-block; }
+.rv-chip.b { background: radial-gradient(circle at 34% 28%, #5a606c, #14171d 65%); }
+.rv-chip.w { background: radial-gradient(circle at 34% 28%, #fff, #c8cdd8 65%); }

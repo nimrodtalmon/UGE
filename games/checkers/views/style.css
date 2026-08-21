@@ -1,0 +1,74 @@
+.ck-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 0.8rem;
+  text-align: center;
+}
+.ck-status { font-size: 1.15rem; font-weight: 600; min-height: 1.5rem; }
+/* the phone status swaps between one line and a two-line game-over sentence:
+   reserve both, or the board slides out from under the tapping finger */
+.ck-phone .ck-status { min-height: 2.9rem; }
+.ck-note { color: #8a8f98; font-size: 0.9rem; min-height: 1.2rem; }
+.ck-phone .ck-note { min-height: 2.4rem; }
+.ck-tally { color: #8a8f98; font-size: 0.85rem; min-height: 1.1rem; }
+
+.ck-board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  width: min(92vw, 58vh, 30rem);
+  aspect-ratio: 1;
+  border: 5px solid #2f2418;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+.ck-board.big { width: min(88vw, 74vh, 44rem); }
+
+.ck-sq {
+  position: relative;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  line-height: 1;
+  cursor: pointer;
+}
+.ck-sq.light { background: #e8d5b0; }
+.ck-sq.dark { background: #8a5a38; }
+.ck-sq:disabled { opacity: 1; cursor: default; }
+.ck-sq.last { box-shadow: inset 0 0 0 100vmax rgba(228, 184, 61, 0.28); }
+.ck-sq.sel { box-shadow: inset 0 0 0 3px rgba(76, 156, 240, 1); }
+.ck-sq.tgt { box-shadow: inset 0 0 0 4px rgba(90, 200, 120, 0.95); }
+/* landing squares are always empty, so the dot always reads as "go here" */
+.ck-sq.tgt::after {
+  content: '';
+  position: absolute;
+  width: 26%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(90, 200, 120, 0.75);
+}
+
+.ck-pc {
+  width: 76%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: clamp(0.5rem, 3.4vw, 1.3rem);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+.ck-board.big .ck-pc { font-size: clamp(0.6rem, 3vh, 1.6rem); }
+.ck-pc.r { background: radial-gradient(circle at 35% 30%, #f0655b, #a41f18); }
+.ck-pc.b { background: radial-gradient(circle at 35% 30%, #5a5f70, #17181c); }
+.ck-pc.king { box-shadow: 0 0 0 2px #f5d76e, 0 2px 3px rgba(0, 0, 0, 0.5); }
+
+.ck-resign { font-size: 0.9rem; padding: 0.5rem 1.1rem; }
+.ck-resign-slot { display: flex; justify-content: center; min-height: 2.2rem; }
