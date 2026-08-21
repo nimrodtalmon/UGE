@@ -34,7 +34,11 @@ export default function HandView({ view, players, over, move }: GameViewProps<Rv
             ? '⏭ no move for you — turn skipped'
             : `⏭ ${names[view.skipped === 0 ? 0 : 1]} had no move — skipped`}
       </p>
-      <Board view={view} onPlace={myTurn ? (x, y) => move('place', x, y) : undefined} />
+      <Board
+        view={view}
+        idle={!myTurn}
+        onPlace={myTurn ? (x, y) => move('place', x, y) : undefined}
+      />
       <Score view={view} names={names} over={!!over} />
     </div>
   );

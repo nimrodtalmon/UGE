@@ -102,7 +102,10 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
+/* the platform's generic button styles must not paint a box over the board:
+   they are loaded before this file, so equal specificity here still wins */
 .c4-tap:active { background: rgba(255, 255, 255, 0.14); }
+.c4-taps .c4-tap:not(:disabled):hover { border: none; background: rgba(255, 255, 255, 0.08); }
 .c4-tap:disabled { cursor: default; background: transparent; }
 
 /* ---- who is which disc ---- */

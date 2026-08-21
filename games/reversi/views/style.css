@@ -64,7 +64,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 .rv-sq.legal:not(:disabled) { cursor: pointer; }
+/* the platform's generic button styles must not repaint the felt: they are
+   loaded before this file, so equal specificity here still wins */
 .rv-sq:disabled { opacity: 1; }
+.rv-grid .rv-sq:not(:disabled):hover { border: none; background: #37905b; }
 .rv-sq.last { box-shadow: inset 0 0 0 2px rgba(255, 235, 150, 0.8); }
 
 /* a two-faced disc: changing colour rotates it instead of blinking */
@@ -91,7 +94,8 @@
 }
 .rv-disc.just { box-shadow: 0 0 12px rgba(255, 235, 150, 0.55); border-radius: 50%; }
 
-/* the dot that makes the game playable: where this player may legally play */
+/* the dot that makes the game playable: where the player to move may play —
+   dimmed while you wait, so it reads as their options and not as your buttons */
 .rv-dot {
   width: 26%;
   aspect-ratio: 1;
@@ -100,6 +104,7 @@
   animation: rv-breathe 1.8s ease-in-out infinite;
 }
 @keyframes rv-breathe { 50% { opacity: 0.35; transform: scale(0.8); } }
+.rv-grid.idle .rv-dot { opacity: 0.4; animation: none; }
 
 /* ---- score ---- */
 .rv-score {

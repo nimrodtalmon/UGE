@@ -10,12 +10,14 @@ export function Board(props: {
   big?: boolean;
   /** Show the legal-move dots (always on: they are what makes the game playable). */
   dots?: boolean;
+  /** Dim those dots — they are the other player's options, not yours. */
+  idle?: boolean;
   onPlace?: (x: number, y: number) => void;
 }) {
   const { view } = props;
   return (
     <div
-      className={props.big ? 'rv-grid big' : 'rv-grid'}
+      className={`rv-grid${props.big ? ' big' : ''}${props.idle ? ' idle' : ''}`}
       style={{ gridTemplateColumns: `repeat(${view.size}, 1fr)` }}
     >
       {view.board.map((seat, i) => {
