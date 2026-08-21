@@ -1,15 +1,58 @@
 {
   "id": "trivia",
   "name": "Trivia",
-  "players": { "min": 1, "max": 8 },
-  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
-  "pieces": { "static": 0, "dynamic": 0 },
+  "players": {
+    "min": 1,
+    "max": 8
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
   "icon": "❓",
   "tagline": "know it all?",
   "modes": [
-    { "id": "classic", "name": "Classic", "tagline": "10 questions", "config": { "questions": 10 } },
-    { "id": "quick", "name": "Quick", "tagline": "5 questions", "config": { "questions": 5 } }
+    {
+      "id": "classic",
+      "name": "Classic",
+      "tagline": "10 questions",
+      "config": {
+        "questions": 10
+      }
+    },
+    {
+      "id": "quick",
+      "name": "Quick",
+      "tagline": "5 questions",
+      "config": {
+        "questions": 5
+      }
+    }
   ],
+  "bots": {
+    "levels": [
+      {
+        "id": "easy",
+        "name": "Easy",
+        "tagline": "knows about a third"
+      },
+      {
+        "id": "normal",
+        "name": "Normal",
+        "tagline": "knows more than it doesn’t"
+      },
+      {
+        "id": "sharp",
+        "name": "Sharp",
+        "tagline": "rarely caught out"
+      }
+    ]
+  },
   "help": {
     "goal": "Answer more questions right than anyone else. One point per correct answer, best score wins.",
     "steps": [
@@ -21,7 +64,8 @@
     "notes": [
       "You get 15 seconds per question and only one tap, so no changing your mind.",
       "Classic runs 10 questions, Quick runs 5.",
-      "Answering late scores nothing, so guess rather than run out of time."
+      "Answering late scores nothing, so guess rather than run out of time.",
+      "Bots can fill the empty seats. They do not peek at the answer — they simply know some questions and guess at the rest."
     ]
   }
 }

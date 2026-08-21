@@ -1,4 +1,5 @@
 import type { GameDef } from '../../src/shared/plugin.js';
+import { pickGuess, readyToGuess } from './bot.js';
 import {
   MAX_GUESSES,
   WORD_LENGTH,
@@ -183,6 +184,21 @@ const game: GameDef<WordlyState, WordlyView> = {
     return winners.length === 1
       ? { text: `🔤 ${winners[0]!.name} got it in ${best}!` }
       : { text: `🔤 Tie — ${winners.map((w) => w.name).join(' & ')} got it in ${best}!` };
+  },
+
+  /**
+   * AI opponent — see bot.ts. It races: only its own rows are handed over, so
+   * `state.answer` is out of its reach by construction and it hunts the word
+   * from its own green/yellow/grey like everybody else. A bot alone with the
+   * word would be pointless, but a bot seated beside a player still has to
+   * play — a seat that never guesses would leave the game unfinishable.
+   */
+  bot(state, { seat, level, random, now }) {
+    if (!state.race && state.seats.length <= 1) return null;
+    const me = state.seats[seat];
+    if (!me || me.finished) return null;
+    if (!readyToGuess(now, seat, me.guesses.length, level)) return null;
+    return { name: 'guess', args: [pickGuess(me.guesses, level, random)] };
   },
 };
 

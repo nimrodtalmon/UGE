@@ -33,6 +33,25 @@
       }
     }
   ],
+  "bots": {
+    "levels": [
+      {
+        "id": "easy",
+        "name": "Easy",
+        "tagline": "rolls and writes it down"
+      },
+      {
+        "id": "normal",
+        "name": "Normal",
+        "tagline": "keeps its pairs, protects the big boxes"
+      },
+      {
+        "id": "sharp",
+        "name": "Sharp",
+        "tagline": "chases the 63 bonus"
+      }
+    ]
+  },
   "help": {
     "goal": "Fill all thirteen boxes on your scorecard with dice combinations. Highest total at the end wins.",
     "steps": [
@@ -45,7 +64,8 @@
     "notes": [
       "Each box is used once. A box that does not fit your dice scores zero.",
       "Score 63 or more across Ones to Sixes for a 35 point bonus.",
-      "You must roll at least once before a box can be scored."
+      "You must roll at least once before a box can be scored.",
+      "Play with fewer people and bots take the empty seats: Easy rolls and writes it down, Normal keeps its pairs, Sharp chases the bonus."
     ]
   }
 }

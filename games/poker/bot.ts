@@ -149,20 +149,31 @@ function easy(r: Read, strength: number): Action {
   return CALL;
 }
 
-/** Pot odds: pay when the price is below the chance of winning. */
-function priced(r: Read, equity: number, loosen: number): Action {
+/**
+ * Pot odds: pay when the price is below the chance of winning. `slack` shifts
+ * every threshold at once — negative demands a clearer edge before chips go in.
+ */
+function priced(r: Read, equity: number, slack: number): Action {
   const pot = Math.max(r.bb, r.pot);
-  if (r.toCall === 0) return equity > 0.55 - loosen ? bet(r, 0.6, CALL) : CALL;
-  if (equity > 0.78 - loosen) return bet(r, 0.75, CALL);
+  if (r.toCall === 0) return equity > 0.55 - slack ? bet(r, 0.6, CALL) : CALL;
+  if (equity > 0.78 - slack) return bet(r, 0.75, CALL);
   const odds = r.toCall / (pot + r.toCall);
-  if (equity >= odds + 0.03 - loosen) return CALL;
+  if (equity >= odds + 0.03 - slack) return CALL;
   if (r.toCall <= r.bb && equity > 0.12) return CALL; // cheap enough to see one more
   return FOLD;
 }
 
+/** Sharp wants a clearer edge than Normal before it pays, more still out of position. */
+const DISCIPLINE = -0.12;
+const OUT_OF_POSITION = -0.04;
+const BLUFF_RATE = 0.1;
+/** Below this many big blinds there is no room to play: it is shove or fold. */
+const SHORT_STACK = 10;
+
 /**
- * Pick an action. Easy plays along, Normal prices every call, Sharp adds
- * position and the occasional bluff-raise.
+ * Pick an action. Easy plays along, Normal prices every call, Sharp is the
+ * disciplined one: it pays only with a real edge, tightens further when it has
+ * to act first, and now and then takes a pot away with a bluff-raise.
  */
 export function decide(r: Read): Action {
   const strength = strengthOf(r);
@@ -170,13 +181,18 @@ export function decide(r: Read): Action {
   if (r.level === 'easy') return easy(r, strength);
   if (r.level !== 'sharp') return priced(r, equity, 0);
 
-  // sharp: acting last is worth a wider range, and now and then a bluff
   const inPosition = r.toActAfter === 0;
   const pot = Math.max(r.bb, r.pot);
-  const bluffable = r.opponents <= 2 && r.toCall <= pot * 0.35 && equity < 0.5;
-  if (bluffable && inPosition && r.random() < 0.1) {
+  // short stack: nothing left to manoeuvre with, so get it all in with a hand
+  if (r.chips <= r.bb * SHORT_STACK && equity > 0.4) {
+    const to = raiseTo(r, r.streetBet + r.chips);
+    if (to !== null) return { name: 'raise', to };
+  }
+  // cheap, in position, against one or two: the pot is often there for the taking
+  const bluffable = inPosition && r.opponents <= 2 && r.toCall <= pot * 0.35 && equity < 0.5;
+  if (bluffable && r.random() < BLUFF_RATE) {
     const to = raiseTo(r, r.currentBet + Math.max(r.minRaise, Math.round(pot * 0.6)));
     if (to !== null) return { name: 'raise', to };
   }
-  return priced(r, equity, inPosition ? 0.05 : 0);
+  return priced(r, equity, DISCIPLINE + (inPosition ? 0 : OUT_OF_POSITION));
 }

@@ -14,8 +14,12 @@ const me = await openHome(browser, {
   onError: (e) => fail(`pageerror: ${e.message}`),
 });
 
-// the Solo tab is every one-player game, so coverage does not depend on who
-// else happens to be connected when the suite runs
+// Solo games only fit a ONE-player group, so wait out any devices a previous
+// suite left behind (they are pruned after ~45s) before taking the list.
+await me.waitForFunction(
+  () => (document.querySelector('.setup-line')?.textContent ?? '').includes('1 player'),
+  null, { timeout: 70000 },
+);
 await me.click('.seg:has-text("Solo")');
 const games = await me.$$eval('.game.ready .game-name', (els) => els.map((e) => e.textContent.trim()));
 if (games.length < 10) fail(`expected at least 10 solo games, got ${games.length}: ${games}`);

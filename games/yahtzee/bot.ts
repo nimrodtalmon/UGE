@@ -74,7 +74,7 @@ function kindValue(face: number, n: number, card: Card, level: string): number {
   if (level === 'sharp') {
     const upper = UPPER_BY_FACE[face - 1]!;
     // chase the bonus while it is still live, and only in a box we still hold
-    if (card[upper] === null && bonusGap(card) > 0 && n >= 2) value += face * 2;
+    if (card[upper] === null && bonusGap(card) > 0 && n >= 2) value += face * 3;
     if (card['fiveKind'] === null && n >= 4) value += 6;
   }
   return value;
@@ -161,6 +161,17 @@ function minAcceptable(id: CategoryId, card: Card, level: string): number {
   }
 }
 
+/**
+ * Sharp only: what a box is worth beyond its face points. An upper box filled
+ * at the 63 pace (three of its face) is worth more than the number in it,
+ * because it carries the 35 point bonus with it.
+ */
+function premium(id: CategoryId, points: number, card: Card, level: string): number {
+  if (level !== 'sharp') return 0;
+  const face = UPPER_BY_FACE.indexOf(id) + 1;
+  return face > 0 && bonusGap(card) > 0 && points >= 3 * face ? 12 : 0;
+}
+
 /** Where to write a hand nothing fits — cheapest box first, big boxes last. */
 const DUMP_ORDER: CategoryId[] = [
   'ones',
@@ -188,11 +199,13 @@ export function pickCategory(dice: number[], card: Card, level: string): Categor
     return scored.reduce((a, b) => (b.points > a.points ? b : a)).id;
   }
 
-  const worth = scored.filter((x) => x.points >= minAcceptable(x.id, card, level));
+  const worth = scored
+    .filter((x) => x.points >= minAcceptable(x.id, card, level))
+    .map((x) => ({ ...x, value: x.points + premium(x.id, x.points, card, level) }));
   if (worth.length > 0) {
-    // best points, and on a tie spend the box with the least left to give
+    // best value, and on a tie spend the box with the least left to give
     return worth.reduce((a, b) =>
-      b.points > a.points || (b.points === a.points && POTENTIAL[b.id] < POTENTIAL[a.id]) ? b : a,
+      b.value > a.value || (b.value === a.value && POTENTIAL[b.id] < POTENTIAL[a.id]) ? b : a,
     ).id;
   }
   return DUMP_ORDER.find((id) => card[id] === null) ?? open[0]!;

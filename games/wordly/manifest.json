@@ -1,21 +1,57 @@
 {
   "id": "wordly",
   "name": "Word Hunt",
-  "players": { "min": 1, "max": 6 },
-  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
-  "pieces": { "static": 0, "dynamic": 0 },
+  "players": {
+    "min": 1,
+    "max": 6
+  },
+  "roles": {
+    "table": "optional",
+    "hand": "per-player",
+    "extras": []
+  },
+  "pieces": {
+    "static": 0,
+    "dynamic": 0
+  },
   "icon": "🔤",
   "tagline": "six tries, five letters",
   "modes": [
-    { "id": "solo", "name": "Solo", "tagline": "just you and the word" },
+    {
+      "id": "solo",
+      "name": "Solo",
+      "tagline": "just you and the word"
+    },
     {
       "id": "race",
       "name": "Race",
       "tagline": "same word, first to solve",
-      "players": { "min": 2, "max": 6 },
+      "players": {
+        "min": 2,
+        "max": 6
+      },
       "choice": true
     }
   ],
+  "bots": {
+    "levels": [
+      {
+        "id": "easy",
+        "name": "Easy",
+        "tagline": "throws in wild words"
+      },
+      {
+        "id": "normal",
+        "name": "Normal",
+        "tagline": "plays the ordinary letters"
+      },
+      {
+        "id": "sharp",
+        "name": "Sharp",
+        "tagline": "narrows it down fast"
+      }
+    ]
+  },
   "help": {
     "goal": "Guess the hidden five letter word in six tries. In Race everyone hunts the same word and fewest guesses wins.",
     "steps": [
@@ -27,7 +63,8 @@
     "notes": [
       "Green means right letter in the right spot. Yellow means the letter is in the word somewhere else.",
       "Grey means that letter is not in the word at all. The keyboard keys tint the same way.",
-      "A guess that is not a real word shakes and costs you nothing."
+      "A guess that is not a real word shakes and costs you nothing.",
+      "Race a bot to the same word. It never sees the answer either, so it can run out of tries just like you."
     ]
   }
 }
