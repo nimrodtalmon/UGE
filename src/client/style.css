@@ -99,13 +99,32 @@ h3 { font-size: 1.05rem; }
 .hint { font-size: 0.85rem; }
 
 /* ---------- app shell ---------- */
+/* The home screen is one screenful: header, group, selection and tabs are
+   fixed and only the game list scrolls. Scrolling the whole document meant the
+   app bar slid away and the page rubber-banded on every flick. */
 .app {
   max-width: 64rem;
   margin: 0 auto;
-  padding: 0 var(--pad) 3rem;
+  padding: 0 var(--pad);
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   animation: fade-in 0.28s ease-out;
 }
 .app.has-bar { padding-bottom: calc(var(--bar) + 4.5rem); }
+.games-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 1.2rem;
+  /* fade the list out at the cut instead of slicing a card in half */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 1.4rem), transparent 100%);
+}
+.app > .appbar { flex: 0 0 auto; }
+.app > .card, .app > .section-head, .app > .offline { flex: 0 0 auto; }
 @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } }
 
 .appbar {
@@ -515,6 +534,8 @@ a.wordmark { text-decoration: none; }
 @keyframes slide-up { from { transform: translateY(14%); opacity: 0.6; } }
 /* the landing page is one screen; nothing below the fold to reach */
 body.landing-page, body.landing-page .center-screen { height: 100dvh; overflow: hidden; }
+/* the app home owns its own scrolling now, so the document must not scroll */
+body:has(> #root > .app) { overflow: hidden; }
 body.landing-page .center-screen { padding: 1.2rem; }
 
 /* game sheet: everything about one game in the shape of the invite sheet */

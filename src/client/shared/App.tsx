@@ -614,14 +614,18 @@ export function App({ host = false }: { host?: boolean }) {
         <Segmented value={filter} onChange={setFilter} counts={counts} />
       </div>
 
-      <GameGrid
-        games={shown}
-        selectedGameId={snapshot.selectedGameId}
-        onSelect={(gameId) => {
-          void act('/api/lobby/select', { gameId });
-          setSheet('game');
-        }}
-      />
+      {/* only this scrolls — the bar, the group and the tabs stay put, so the
+          home screen never rubber-bands away from under your thumb */}
+      <div className="games-scroll">
+        <GameGrid
+          games={shown}
+          selectedGameId={snapshot.selectedGameId}
+          onSelect={(gameId) => {
+            void act('/api/lobby/select', { gameId });
+            setSheet('game');
+          }}
+        />
+      </div>
 
       {sheetEl}
       {person && (
