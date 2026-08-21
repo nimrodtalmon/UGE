@@ -1,0 +1,32 @@
+{
+  "id": "mancala",
+  "name": "Mancala",
+  "players": { "min": 2, "max": 2 },
+  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "🫘",
+  "tagline": "sow and capture",
+  "bots": {
+    "levels": [
+      { "id": "easy", "name": "Easy", "tagline": "sows anywhere" },
+      { "id": "normal", "name": "Normal", "tagline": "grabs free turns" },
+      { "id": "sharp", "name": "Sharp", "tagline": "counts six moves ahead" }
+    ]
+  },
+  "help": {
+    "goal": "Bank more than half the 48 seeds in your store — the big pit on your right.",
+    "steps": [
+      "Wait until the top line says your move.",
+      "Tap any pit in your own row (the near one) that still has seeds.",
+      "The seeds drop one per pit going left to right along your row, into your store, and on round the board.",
+      "Your opponent's store is skipped — you never feed it.",
+      "The pits that just got a seed stay lit, so you can see where the sowing ended."
+    ],
+    "notes": [
+      "Land your last seed in your own store and it says GO AGAIN — take another turn straight away.",
+      "Land your last seed in an empty pit on your own side and you capture it plus everything in the pit facing it.",
+      "When either row runs out, the other player banks the seeds still on their side and the biggest store wins.",
+      "Play alone and a bot takes the seat: Easy sows anywhere, Normal grabs free turns, Sharp counts six moves ahead."
+    ]
+  }
+}

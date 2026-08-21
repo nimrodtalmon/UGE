@@ -50,7 +50,9 @@ export default function HandView({ view, over, move }: GameViewProps<CkView>) {
         ? 'a jump is on offer — you must take it'
         : view.lastMove?.crowned
           ? 'crowned 👑'
-          : '';
+          : myTurn
+            ? 'tap one of your pieces to see where it can go'
+            : '';
 
   return (
     <div className="ck-screen ck-phone">

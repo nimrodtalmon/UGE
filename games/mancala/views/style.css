@@ -1,0 +1,99 @@
+.mn-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 0.9rem;
+  text-align: center;
+}
+.mn-status { font-size: 1.15rem; font-weight: 600; min-height: 1.5rem; }
+/* the phone status swaps between one line and a two-line game-over sentence */
+.mn-phone .mn-status { min-height: 2.9rem; }
+.mn-status.again { color: #6fd08c; }
+.mn-note { color: #8a8f98; font-size: 0.9rem; min-height: 1.2rem; }
+.mn-phone .mn-note { min-height: 2.4rem; }
+.mn-scores { color: #8a8f98; font-size: 0.9rem; min-height: 1.2rem; }
+
+.mn-board {
+  display: grid;
+  grid-template-columns: 1.25fr repeat(6, 1fr) 1.25fr;
+  gap: 0.3rem;
+  width: min(96vw, 34rem);
+  padding: 0.45rem;
+  background: linear-gradient(#7a5334, #5b3d24);
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+.mn-board.big { width: min(90vw, 130vh, 60rem); gap: 0.5rem; padding: 0.8rem; }
+
+.mn-pit,
+.mn-store {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.15rem;
+  border: none;
+  border-radius: 44% / 30%;
+  background: radial-gradient(circle at 50% 35%, #3d2817, #26180d);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
+  color: #f0e2cd;
+  cursor: default;
+}
+.mn-pit { aspect-ratio: 5 / 7; }
+.mn-pit:disabled { opacity: 1; }
+/* tappable pits wear a green ring OUTSIDE; the last sow is drawn INSIDE with
+   an outline, so the two never fight over the same box-shadow */
+.mn-pit.live { cursor: pointer; box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(111, 208, 140, 0.85); }
+.mn-pit.lit, .mn-store.lit {
+  background: radial-gradient(circle at 50% 35%, #5c3d22, #3d2716);
+  outline: 2px solid rgba(240, 200, 90, 0.5);
+  outline-offset: -2px;
+}
+.mn-pit.land, .mn-store.land { outline: 3px solid rgba(245, 205, 95, 0.95); outline-offset: -3px; }
+.mn-pit.cap {
+  background: radial-gradient(circle at 50% 35%, #7d3535, #431919);
+  outline: 3px solid rgba(235, 120, 110, 0.95);
+  outline-offset: -3px;
+}
+
+.mn-store { border-radius: 45% / 22%; }
+.mn-store-name {
+  font-size: clamp(0.45rem, 1.7vw, 0.7rem);
+  color: #c9b79b;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mn-board.big .mn-store-name { font-size: clamp(0.6rem, 1.2vw, 1rem); }
+
+.mn-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  gap: 1px;
+  max-width: 88%;
+  line-height: 0;
+}
+.mn-dot {
+  width: clamp(4px, 1.4vw, 7px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f6e7c4, #c39a5c);
+}
+.mn-board.big .mn-dot { width: clamp(5px, 0.9vw, 11px); }
+.mn-board.big .mn-dots { gap: 2px; }
+.mn-count {
+  font-weight: 700;
+  font-size: clamp(0.72rem, 3.2vw, 1.05rem);
+  line-height: 1;
+}
+.mn-store .mn-count { font-size: clamp(0.85rem, 3.6vw, 1.3rem); }
+.mn-board.big .mn-count { font-size: clamp(0.9rem, 1.8vw, 1.6rem); }
+.mn-board.big .mn-store .mn-count { font-size: clamp(1.2rem, 2.6vw, 2.2rem); }
