@@ -71,3 +71,6 @@
 .cn-endturn-slot { display: flex; justify-content: center; min-height: 3.4rem; }
 /* holds one line even when the player has no team yet */
 .cn-myteam { color: #8a8f98; font-size: 0.9rem; min-height: 1.2rem; }
+
+/* the other team's turn: the grid stays readable but stops inviting taps */
+.cn-boardwrap.locked { opacity: 0.55; }

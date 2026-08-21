@@ -68,6 +68,7 @@ export default function HandView({ view, over, move }: GameViewProps<CityView>) 
             onClick={() => setTool(kind)}
           >
             <span className="ct-chip-icon">{ICON[kind]}</span>
+            <span className="ct-chip-name">{LABEL[kind]}</span>
             <span className="ct-chip-cost">${COST[kind]}</span>
           </button>
         ))}
@@ -77,6 +78,7 @@ export default function HandView({ view, over, move }: GameViewProps<CityView>) 
           onClick={() => setTool('bulldoze')}
         >
           <span className="ct-chip-icon">🚜</span>
+          <span className="ct-chip-name">bulldoze</span>
           <span className="ct-chip-cost">${BULLDOZE_COST}</span>
         </button>
       </div>

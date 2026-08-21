@@ -53,12 +53,20 @@ await start('Battleship');
 for (const p of phones) {
   // wait for the GAME screen — 'Ready' alone also matches the lobby filter tab
   await p.waitForSelector('.bs-screen button:has-text("Ready")', { timeout: 10000 });
-  if (!(await p.locator('.bs-cell.ship').count())) fail('phone does not see its own ships');
+  // the sea starts EMPTY now: a fleet has to be laid before Ready unlocks
+  if (await p.locator('.bs-cell.ship').count()) fail('the place phase should start on empty water');
+  await p.click('.bs-quiet');
+  await p.waitForFunction(() => document.querySelectorAll('.bs-cell.ship').length === 17, null, { timeout: 8000 });
 }
 if (await table.locator('.bs-cell.ship').count()) fail('table sees un-hit ship cells');
 for (const p of phones) await p.click('.bs-screen button:has-text("Ready")');
-const shooter = await phoneWith(phones, '.bs-section:has(.bs-label:has-text("Target")) button.bs-cell:not([disabled])');
-await shooter.click('.bs-section:has(.bs-label:has-text("Target")) button.bs-cell >> nth=44');
+// one board at a time now: the shooter's own screen shows the target grid
+const shooter = await phoneWith(phones, '.bs-section button.bs-cell:not([disabled])');
+await shooter.click('.bs-section button.bs-cell >> nth=44');
+// firing hands the turn over, so the board flips back to your own sea —
+// peek at the target grid to see where the shot landed
+await shooter.waitForSelector('.bs-switch button:has-text("Target")', { timeout: 8000 });
+await shooter.click('.bs-switch button:has-text("Target")');
 await shooter.waitForFunction(
   () => document.querySelectorAll('.bs-cell.hit, .bs-cell.miss, .bs-cell.sunk').length > 0,
   null, { timeout: 8000 },

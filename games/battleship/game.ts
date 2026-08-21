@@ -1,14 +1,16 @@
 import type { GameDef } from '../../src/shared/plugin.js';
-import { aim } from './bot.js';
+import { aim, layNext } from './bot.js';
 
 /**
  * Classic Battleship, two phones + table. House-rule simplifications:
  * ships may touch (no one-cell gap rule), and a hit does NOT grant an
  * extra shot — turns alternate after every shot.
  *
- * Fleets start auto-placed (a good default, one tap from playable) and the
- * place phase lets a player shuffle or rearrange each hull until they are
- * ready; every rearrangement goes through `placeShip`, validated here.
+ * Both fleets start in the tray: the place phase opens on an EMPTY sea and
+ * every hull is put down by its owner (drag it, or tap the ship and then the
+ * square its bow goes on), one `placeShip` at a time, validated here.
+ * `autoPlace` fills whatever is still in the tray for a player who cannot be
+ * bothered, and `ready` is refused until all five hulls are on the water.
  */
 
 export const SIZE = 10;
@@ -24,12 +26,14 @@ const FLEET = [
 export interface Ship {
   name: string;
   size: number;
-  /** Bow cell: leftmost when horizontal, topmost when vertical. */
+  /** Bow cell: leftmost when horizontal, topmost when vertical. Only meaningful once `placed`. */
   x: number;
   y: number;
   horizontal: boolean;
-  /** Board cells as y * SIZE + x — derived from x/y/horizontal/size. */
+  /** Board cells as y * SIZE + x — derived from x/y/horizontal/size. Empty while in the tray. */
   cells: number[];
+  /** False while the hull is still in the tray, waiting to be put on the water. */
+  placed: boolean;
 }
 
 type ShotMark = '' | 'hit' | 'miss';
@@ -71,6 +75,8 @@ export interface BsView {
   boards: [BsBoard, BsBoard];
   /** Hull positions of YOUR OWN fleet — for the placement UI. Null for the table. */
   myFleet: Ship[] | null;
+  /** How many hulls each seat has put down — a count, never a position. */
+  placedCount: [number, number];
   lastShot: BsState['lastShot'];
 }
 
@@ -92,7 +98,8 @@ export function shipCells(x: number, y: number, size: number, horizontal: boolea
 
 /**
  * Where ship #i in `fleet` would land — null when it runs off the board or
- * overlaps another hull. Ships are allowed to touch (house rule).
+ * overlaps another hull. Ships are allowed to touch (house rule). Hulls still
+ * in the tray hold no cells, so they never block anything.
  */
 export function canPlace(
   fleet: Ship[],
@@ -109,30 +116,24 @@ export function canPlace(
   return cells.some((c) => taken.has(c)) ? null : cells;
 }
 
-/** Random valid fleet: rejection-sample each ship, restart on a dead end. */
-function placeFleet(random: () => number): Ship[] {
-  for (;;) {
-    const taken = new Set<number>();
-    const ships: Ship[] = [];
-    for (const { name, size } of FLEET) {
-      let placed: Ship | null = null;
-      for (let attempt = 0; attempt < 200 && !placed; attempt++) {
-        const horizontal = random() < 0.5;
-        const x = Math.floor(random() * (horizontal ? SIZE - size + 1 : SIZE));
-        const y = Math.floor(random() * (horizontal ? SIZE : SIZE - size + 1));
-        const cells = shipCells(x, y, size, horizontal);
-        if (cells && !cells.some((c) => taken.has(c))) placed = { name, size, x, y, horizontal, cells };
-      }
-      if (!placed) break; // dead end (touching is allowed, so nearly impossible)
-      for (const c of placed.cells) taken.add(c);
-      ships.push(placed);
-    }
-    if (ships.length === FLEET.length) return ships;
-  }
+/** The whole fleet, still in the tray. */
+const emptyFleet = (): Ship[] =>
+  FLEET.map(({ name, size }) => ({ name, size, x: 0, y: 0, horizontal: true, cells: [], placed: false }));
+
+/** True once every hull is on the water — the gate on `ready`. */
+export const allPlaced = (fleet: Ship[]): boolean => fleet.every((s) => s.placed);
+
+/** The fleet with hull #i berthed at (x, y) — null when that berth is illegal. */
+function withShip(fleet: Ship[], i: number, x: number, y: number, horizontal: boolean): Ship[] | null {
+  const cells = canPlace(fleet, i, x, y, horizontal);
+  if (!cells) return null;
+  const next = [...fleet];
+  next[i] = { ...fleet[i]!, x, y, horizontal, cells, placed: true };
+  return next;
 }
 
 const isSunk = (ship: Ship, shots: ShotMark[]): boolean =>
-  ship.cells.every((c) => shots[c] === 'hit');
+  ship.cells.length > 0 && ship.cells.every((c) => shots[c] === 'hit');
 
 const fleetSunk = (fleet: Ship[], shots: ShotMark[]): boolean =>
   fleet.every((s) => isSunk(s, shots));
@@ -144,32 +145,25 @@ const seatOf = (ctx: { playerId: string; players: { id: string }[] }): number =>
   ctx.players.findIndex((p) => p.id === ctx.playerId);
 
 const game: GameDef<BsState, BsView> = {
-  setup({ players, random }) {
+  setup({ players }) {
     return {
       phase: 'place',
       current: 0,
       names: [players[0]?.name ?? 'Player 1', players[1]?.name ?? 'Player 2'],
       ready: [false, false],
-      fleets: [placeFleet(random), placeFleet(random)],
+      fleets: [emptyFleet(), emptyFleet()],
       shots: [emptyShots(), emptyShots()],
       lastShot: null,
     };
   },
 
   moves: {
-    /** Re-roll your own placement — only before you declared ready. */
-    shuffle(state, ctx) {
-      const seat = seatOf(ctx);
-      if (state.phase !== 'place' || (seat !== 0 && seat !== 1) || state.ready[seat]) return state;
-      const fleets: [Ship[], Ship[]] = [...state.fleets];
-      fleets[seat] = placeFleet(ctx.random);
-      return { ...state, fleets };
-    },
-
     /**
-     * Move one of your own hulls: bow at (x, y), lying horizontally or not.
-     * Only during the place phase, only for your own fleet, and never once
-     * you have declared ready. Illegal drops return the state unchanged.
+     * Put one of your own hulls on the water: bow at (x, y), lying
+     * horizontally or not. Works both for a hull coming out of the tray and
+     * for one already on the board. Only during the place phase, only for
+     * your own fleet, and never once you have declared ready. Illegal drops
+     * return the state unchanged.
      */
     placeShip(state, ctx, shipIndex: number, x: number, y: number, horizontal: boolean) {
       const seat = seatOf(ctx);
@@ -179,20 +173,36 @@ const game: GameDef<BsState, BsView> = {
       if (!Number.isInteger(x) || !Number.isInteger(y)) return state;
       if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return state;
       if (horizontal !== true && horizontal !== false) return state;
-      const cells = canPlace(fleet, shipIndex, x, y, horizontal);
-      if (!cells) return state;
-      const ship = fleet[shipIndex]!;
-      const next = [...fleet];
-      next[shipIndex] = { ...ship, x, y, horizontal, cells };
+      const next = withShip(fleet, shipIndex, x, y, horizontal);
+      if (!next) return state;
       const fleets: [Ship[], Ship[]] = [...state.fleets];
       fleets[seat] = next;
       return { ...state, fleets };
     },
 
-    /** Idempotent: declaring ready twice changes nothing. Both ready → play. */
+    /** "Fill the rest for me" — berths whatever is still in the tray at random. */
+    autoPlace(state, ctx) {
+      const seat = seatOf(ctx);
+      if (state.phase !== 'place' || (seat !== 0 && seat !== 1) || state.ready[seat]) return state;
+      let fleet = state.fleets[seat]!;
+      if (allPlaced(fleet)) return state;
+      for (let i = 0; i < FLEET.length; i++) {
+        const spot = layNext(fleet, ctx.random);
+        if (!spot) break;
+        const next = withShip(fleet, spot.shipIndex, spot.x, spot.y, spot.horizontal);
+        if (!next) break;
+        fleet = next;
+      }
+      const fleets: [Ship[], Ship[]] = [...state.fleets];
+      fleets[seat] = fleet;
+      return { ...state, fleets };
+    },
+
+    /** Refused until your whole fleet is down. Both ready → play. */
     ready(state, ctx) {
       const seat = seatOf(ctx);
       if (state.phase !== 'place' || (seat !== 0 && seat !== 1) || state.ready[seat]) return state;
+      if (!allPlaced(state.fleets[seat]!)) return state;
       const ready: [boolean, boolean] = [...state.ready];
       ready[seat] = true;
       return ready[0] && ready[1]
@@ -257,6 +267,10 @@ const game: GameDef<BsState, BsView> = {
       ready: state.ready,
       boards: [boardFor(0), boardFor(1)],
       myFleet,
+      placedCount: [
+        state.fleets[0].filter((s) => s.placed).length,
+        state.fleets[1].filter((s) => s.placed).length,
+      ],
       lastShot: state.lastShot,
     };
   },
@@ -272,13 +286,22 @@ const game: GameDef<BsState, BsView> = {
   },
 
   /**
-   * AI opponent — see bot.ts. It fires on its own shot marks alone: the
-   * opponent's fleet sits in the same state object and is never read here.
-   * It keeps the auto-placed layout and simply readies up.
+   * AI opponent — see bot.ts. It lays out its own fleet first, one hull per
+   * beat (so you can watch it fill up), and readies only when the last one is
+   * down. Then it fires on its own shot marks alone: the opponent's fleet sits
+   * in the same state object and is never read here.
    */
   bot(state, { seat, level, random }) {
     if (seat !== 0 && seat !== 1) return null;
-    if (state.phase === 'place') return state.ready[seat] ? null : { name: 'ready' };
+    if (state.phase === 'place') {
+      if (state.ready[seat]) return null;
+      const fleet = state.fleets[seat]!;
+      const spot = layNext(fleet, random);
+      if (spot) return { name: 'placeShip', args: [spot.shipIndex, spot.x, spot.y, spot.horizontal] };
+      // no berth left to fill: ready if the fleet is complete, otherwise sit
+      // still (unreachable — 17 cells of hull always fit on a 10x10 sea)
+      return allPlaced(fleet) ? { name: 'ready' } : null;
+    }
     if (state.current !== seat) return null;
     const shot = aim(state.shots[seat === 0 ? 1 : 0], level, random);
     return shot ? { name: 'fire', args: [shot.x, shot.y] } : null;

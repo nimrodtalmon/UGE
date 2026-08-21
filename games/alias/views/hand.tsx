@@ -90,15 +90,19 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
     );
   }
 
+  // the buzzer has gone but the server has not wrapped the round yet: the
+  // moves are already refused server-side, so stop offering them.
+  const buzzed = remaining <= 0;
+
   return (
     <div className="al-screen">
       <div className="al-clock small">{formatSeconds(remaining)}</div>
-      <div className="al-word">{view.word}</div>
+      <div className="al-word">{buzzed ? "Time's up!" : view.word}</div>
       <div className="al-actions">
-        <button className="al-got" onClick={() => move('gotIt')}>
+        <button className="al-got" disabled={buzzed} onClick={() => move('gotIt')}>
           Got it ✓
         </button>
-        <button className="al-skip" onClick={() => move('skip')}>
+        <button className="al-skip" disabled={buzzed} onClick={() => move('skip')}>
           Skip ↷
         </button>
       </div>

@@ -6,7 +6,7 @@ import express from 'express';
 import * as esbuild from 'esbuild';
 import QRCode from 'qrcode';
 import { lanAddress } from './lan.js';
-import { loadPlugins } from './games.js';
+import { loadPlugins, type GamePlugin } from './games.js';
 import { CODE_RE, DEFAULT_ROOM, Rooms } from './rooms.js';
 import { FeedbackBook, feedbackPage } from './feedback.js';
 import type { SyncRequest } from '../shared/types.js';
@@ -41,15 +41,14 @@ await esbuild.build({
 });
 
 // game view bundles — react aliased to shims so views share the shell's React
-const viewEntries: Record<string, string> = {};
-for (const p of plugins) {
-  for (const [role, file] of Object.entries(p.views)) {
-    viewEntries[`games/${p.manifest.id}/${role}`] = file;
-  }
-}
-if (Object.keys(viewEntries).length > 0) {
-  await esbuild.build({
-    entryPoints: viewEntries,
+const entriesFor = (p: GamePlugin): Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(p.views).map(([role, file]) => [`games/${p.manifest.id}/${role}`, file]),
+  );
+
+const buildViews = (entryPoints: Record<string, string>) =>
+  esbuild.build({
+    entryPoints,
     bundle: true,
     outdir: distDir,
     format: 'esm',
@@ -60,6 +59,27 @@ if (Object.keys(viewEntries).length > 0) {
       'react/jsx-runtime': path.join(clientDir, 'shared', 'jsx-runtime-shim.ts'),
     },
   });
+
+const withViews = plugins.filter((p) => Object.keys(p.views).length > 0);
+if (withViews.length > 0) {
+  try {
+    await buildViews(Object.assign({}, ...withViews.map(entriesFor)) as Record<string, string>);
+  } catch {
+    // One plugin with a missing import used to abort the whole bundle and with
+    // it the server — every other game gone because of one half-written folder.
+    // Fall back to building each game on its own and drop only the broken ones.
+    console.warn('a game view failed to bundle — rebuilding game by game');
+    for (const p of withViews) {
+      try {
+        await buildViews(entriesFor(p));
+      } catch (err) {
+        console.warn(`games/${p.manifest.id}: views failed to bundle — listed as not playable`);
+        console.warn(`  ${String(err).split('\n')[1] ?? String(err).split('\n')[0]}`);
+        p.def = null;
+        p.views = {};
+      }
+    }
+  }
 }
 
 // optional local config (gitignored — may hold a WiFi password).

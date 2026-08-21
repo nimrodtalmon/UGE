@@ -1,0 +1,37 @@
+{
+  "id": "blackjack",
+  "name": "Blackjack",
+  "players": { "min": 1, "max": 6 },
+  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "♠️",
+  "tagline": "beat the dealer, not 21",
+  "modes": [
+    { "id": "short", "name": "Short game", "tagline": "eight rounds", "config": { "rounds": 8 }, "choice": true },
+    { "id": "endless", "name": "Endless", "tagline": "play till the chips run out", "config": { "rounds": 0 }, "choice": true }
+  ],
+  "bots": {
+    "levels": [
+      { "id": "easy", "name": "Easy", "tagline": "hits below 17, never looks up" },
+      { "id": "normal", "name": "Normal", "tagline": "plays the basic strategy chart" },
+      { "id": "sharp", "name": "Sharp", "tagline": "counts what it has seen and presses its bets" }
+    ]
+  },
+  "help": {
+    "goal": "Beat the dealer's hand without going over 21. Everyone plays against the house, not each other.",
+    "steps": [
+      "Tap − and + to size your stake, then tap Bet to lock it in.",
+      "You get two cards face up; the dealer keeps one card face down.",
+      "Tap Hit for another card or Stand to stop. Over 21 and the hand is gone.",
+      "Double shows up on your first two cards: twice the stake, exactly one card.",
+      "Two cards of the same rank offer Split — one extra stake, two hands.",
+      "The dealer turns the hole card over, draws to 16, and the chips are paid."
+    ],
+    "notes": [
+      "Everyone starts on 500 chips. Blackjack pays 3:2, a tie pushes your stake back.",
+      "The dealer draws to 16 and stands on every 17, soft ones included.",
+      "You may split once — two hands per seat, and 21 on a split hand counts as 21, not blackjack.",
+      "No insurance and no surrender. Short game is eight rounds; endless runs until the chips are gone."
+    ]
+  }
+}

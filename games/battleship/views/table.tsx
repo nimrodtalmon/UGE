@@ -9,6 +9,11 @@ export default function TableView({ view, players, over }: GameViewProps<BsView>
   const nameOf = (seat: number): string => players[seat]?.name ?? view.names[seat] ?? '?';
   const avatarOf = (seat: number): string => players[seat]?.avatar ?? avatarFor(nameOf(seat));
   const current = view.current === 1 ? 1 : 0;
+  /** Progress only — the table never learns where a single hull sits. */
+  const placing = (seat: number): string =>
+    view.ready[seat]
+      ? `⚓ ${nameOf(seat)} ready`
+      : `⏳ ${nameOf(seat)} ${view.placedCount[seat] ?? 0}/5`;
 
   return (
     <div className="bs-screen">
@@ -16,7 +21,7 @@ export default function TableView({ view, players, over }: GameViewProps<BsView>
         {over
           ? over.text
           : view.phase === 'place'
-            ? `Fleets are being placed… ${view.ready[0] ? '⚓' : '⏳'} ${nameOf(0)} · ${view.ready[1] ? '⚓' : '⏳'} ${nameOf(1)}`
+            ? `Fleets are being placed… ${placing(0)} · ${placing(1)}`
             : `${avatarOf(current)} ${nameOf(current)} is aiming… 🎯`}
       </p>
       <div className="bs-boards">

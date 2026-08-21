@@ -112,8 +112,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.1rem;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 4rem;
+  height: 4rem;
   padding: 0;
   border-radius: 14px;
   background: #23272e;
@@ -122,7 +122,16 @@
   cursor: pointer;
   touch-action: manipulation;
 }
-.ct-chip-icon { font-size: 1.4rem; line-height: 1; }
+.ct-chip-icon { font-size: 1.25rem; line-height: 1; }
+/* an icon alone left new mayors guessing which blob was the power plant */
+.ct-chip-name {
+  font-size: 0.55rem;
+  line-height: 1;
+  max-width: 3.7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .ct-chip-cost { font-size: 0.66rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .ct-chip.ct-poor { opacity: 0.4; }
 .ct-chip.ct-on {

@@ -1,7 +1,10 @@
-import { SIZE } from './game.js';
+import { SIZE, canPlace } from './game.js';
+import type { Ship } from './game.js';
 
 /**
- * A Battleship gunner that only ever looks at its own shot results — the marks
+ * The AI opponent: a shipwright (`layNext`) and a gunner (`aim`).
+ *
+ * The gunner only ever looks at its own shot results — the marks
  * on the opponent's sea (`state.shots[opponent]`: '', 'hit' or 'miss'). The
  * opponent's fleet layout is in the state and is deliberately never read here,
  * so the bot hunts and targets exactly as a person with a pencil would.
@@ -25,8 +28,38 @@ const DIRS: Shot[] = [
   { x: 0, y: -1 },
 ];
 
-const pickOne = (cells: number[], random: () => number): number =>
-  cells[Math.min(cells.length - 1, Math.floor(random() * cells.length))]!;
+const pick = <T,>(list: T[], random: () => number): T =>
+  list[Math.min(list.length - 1, Math.floor(random() * list.length))]!;
+
+export interface Placement {
+  shipIndex: number;
+  x: number;
+  y: number;
+  horizontal: boolean;
+}
+
+/**
+ * Where to put the next hull that is still in the tray: the first unplaced
+ * ship, at a berth drawn uniformly from every legal one (the whole board is
+ * enumerated, so a fleet never dead-ends half laid out). Null once there is
+ * nothing left to place. One call = one `placeShip`, so the bot's fleet
+ * appears hull by hull just like a person's.
+ */
+export function layNext(fleet: Ship[], random: () => number): Placement | null {
+  for (let shipIndex = 0; shipIndex < fleet.length; shipIndex++) {
+    if (fleet[shipIndex]!.placed) continue;
+    const spots: Placement[] = [];
+    for (const horizontal of [true, false]) {
+      for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+          if (canPlace(fleet, shipIndex, x, y, horizontal)) spots.push({ shipIndex, x, y, horizontal });
+        }
+      }
+    }
+    if (spots.length > 0) return pick(spots, random);
+  }
+  return null;
+}
 
 const open = (shots: Mark[], x: number, y: number): boolean =>
   inside(x, y) && shots[cellAt(x, y)] === '';
@@ -82,18 +115,18 @@ const unshot = (shots: Mark[]): number[] => shots.flatMap((m, c) => (m === '' ? 
 export function aim(shots: Mark[], level: string, random: () => number): Shot | null {
   const free = unshot(shots);
   if (free.length === 0) return null;
-  if (level === 'easy') return xy(pickOne(free, random));
+  if (level === 'easy') return xy(pick(free, random));
 
   if (level === 'sharp') {
     const line = alongLines(shots);
-    if (line.length > 0) return xy(pickOne(line, random));
+    if (line.length > 0) return xy(pick(line, random));
   }
   const near = ring(shots);
-  if (near.length > 0) return xy(pickOne(near, random));
+  if (near.length > 0) return xy(pick(near, random));
 
   if (level === 'sharp') {
     const parity = free.filter((c) => (c % SIZE + Math.floor(c / SIZE)) % 2 === 0);
-    if (parity.length > 0) return xy(pickOne(parity, random));
+    if (parity.length > 0) return xy(pick(parity, random));
   }
-  return xy(pickOne(free, random));
+  return xy(pick(free, random));
 }

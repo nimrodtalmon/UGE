@@ -56,6 +56,8 @@
 }
 .al-got { background: #2f8a4d; }
 .al-skip { background: #4a5160; }
+/* buzzer gone: keep the colour, drop the invitation (the moves are refused) */
+.al-actions button:disabled { opacity: 0.4; }
 .al-start {
   font-size: 1.3rem;
   font-weight: 700;

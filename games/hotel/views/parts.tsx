@@ -64,7 +64,13 @@ function SlotCell(props: {
 }) {
   const { kind, view } = props;
   if (!kind) {
-    const body = <span className="ho-plus">＋</span>;
+    // a bare ＋ read as decoration; say what tapping it does
+    const body = (
+      <>
+        <span className="ho-plus">＋</span>
+        <span className="ho-slot-sub">build</span>
+      </>
+    );
     return props.onTap ? (
       <button className="ho-slot ho-empty" onClick={props.onTap}>
         {body}

@@ -18,10 +18,18 @@ export default function HandView({ view, over, move }: GameViewProps<CodenamesVi
       ) : (
         <TurnBanner
           view={view}
-          suffix={myTurn ? "tap your team's guess" : 'wait for your turn'}
+          suffix={
+            myTurn
+              ? "tap your team's guess"
+              : `${view.turn === 'red' ? '🔴 red' : '🔵 blue'} is guessing — your board is locked until they finish`
+          }
         />
       )}
-      <Board view={view} mini onGuess={myTurn ? (i) => move('guess', i) : undefined} />
+      {/* dimmed, not hidden: the other team's guesses are the whole point of
+          watching, but the cards must not look tappable while they are not */}
+      <div className={myTurn || over ? 'cn-boardwrap' : 'cn-boardwrap locked'}>
+        <Board view={view} mini onGuess={myTurn ? (i) => move('guess', i) : undefined} />
+      </div>
       {/* the slot stays even when the button is hidden — the column is centred,
           so a button popping in would re-centre the grid mid-guess */}
       <div className="cn-endturn-slot">

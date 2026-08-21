@@ -10,6 +10,14 @@
 }
 .ww-banner { font-size: clamp(1.5rem, 4vw, 2.6rem); }
 .ww-hint { color: #8a8f98; max-width: 32rem; }
+/* public role mix — deducible from the head count anyway, so say it out loud */
+.ww-mix {
+  color: #c8ccd4;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+}
 .ww-hint.done { color: #c8ccd2; }
 /* held space: status lines next to pick buttons never resize the column */
 .ww-hint.hold1 { min-height: 1.5rem; }

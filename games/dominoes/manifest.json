@@ -1,0 +1,31 @@
+{
+  "id": "dominoes",
+  "name": "Dominoes",
+  "players": { "min": 2, "max": 4 },
+  "roles": { "table": "optional", "hand": "per-player", "extras": [] },
+  "pieces": { "static": 0, "dynamic": 0 },
+  "icon": "🀄",
+  "tagline": "match the ends",
+  "bots": {
+    "levels": [
+      { "id": "easy", "name": "Easy", "tagline": "plays the first tile that fits" },
+      { "id": "normal", "name": "Normal", "tagline": "dumps its heavy tiles and its doubles early" },
+      { "id": "sharp", "name": "Sharp", "tagline": "remembers what you passed on" }
+    ]
+  },
+  "help": {
+    "goal": "Be the first to play out every tile in your hand. If everyone gets stuck, the lightest hand wins.",
+    "steps": [
+      "The highest double on the table opens the line for you.",
+      "On your turn tap a tile that matches one of the two open ends.",
+      "If it fits both ends, pick which end from the box that pops up.",
+      "Nothing fits? Tap Draw a tile — keep drawing until something does.",
+      "Boneyard empty and still stuck? Tap Pass."
+    ],
+    "notes": [
+      "Double six set, 28 tiles. Two players get 7 tiles each, three or four get 5.",
+      "You may only draw when you truly cannot play, and only pass when the boneyard is empty.",
+      "When every player passes in a row the line is blocked: add up the pips, fewest wins."
+    ]
+  }
+}

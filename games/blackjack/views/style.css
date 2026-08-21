@@ -1,0 +1,193 @@
+.bj-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 0.9rem;
+  text-align: center;
+}
+
+/* ---------- cards ---------- */
+.bj-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 3rem;
+  border-radius: 6px;
+  background: linear-gradient(160deg, #fdfcf8, #ebe8df);
+  color: #22242a;
+  font-weight: 800;
+  line-height: 1.05;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.bj-card.big { width: 2.9rem; height: 4.1rem; border-radius: 9px; font-size: 1.2rem; }
+.bj-card.red { color: #c0392b; }
+.bj-card.back {
+  background: repeating-linear-gradient(45deg, #2a3350 0 6px, #34406b 6px 12px);
+  color: #7583b5;
+}
+.bj-rank { font-size: 1.05em; }
+.bj-suit { font-size: 0.95em; }
+.bj-cards { display: flex; flex-wrap: wrap; gap: 0.25rem; justify-content: center; max-width: 92vw; }
+
+/* ---------- the dealer ---------- */
+.bj-dealerbox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 16px;
+  background: radial-gradient(ellipse at 50% 30%, #1e5c3a, #14432a 78%);
+  border: 2px solid #2c3f34;
+  min-height: 5.6rem;
+  justify-content: center;
+}
+.bj-dealerlabel { color: #9fd8b6; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.12em; }
+.bj-felt { display: flex; justify-content: center; }
+
+/* ---------- hands ---------- */
+.bj-hand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 12px;
+  border: 2px solid transparent;
+}
+.bj-hand.live { border-color: #e4b83d; box-shadow: 0 0 12px #e4b83d44; }
+.bj-hand.bust { opacity: 0.55; }
+.bj-handfoot { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; justify-content: center; }
+.bj-total { font-size: 1.15rem; font-weight: 800; color: #f2f2ef; }
+.bj-total.bust { color: #e4573d; }
+.bj-stake { color: #e4b83d; font-size: 0.85rem; }
+.bj-outcome { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.1rem 0.45rem; border-radius: 999px; }
+.bj-outcome.win, .bj-outcome.blackjack { background: #1f4a31; color: #7fe0a3; }
+.bj-outcome.push { background: #3a3f48; color: #c9cdd4; }
+.bj-outcome.lose { background: #4a2320; color: #e8998c; }
+
+/* my area on a phone: two split hands sit side by side */
+.bj-mine { display: flex; gap: 0.5rem; justify-content: center; align-items: flex-start; min-height: 7.4rem; }
+
+/* ---------- other seats ---------- */
+.bj-chipsrow { display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: center; min-height: 2rem; }
+.bj-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #1d2026;
+  border: 2px solid #3a4048;
+  font-size: 0.85rem;
+}
+.bj-chip.current { border-color: #e4b83d; }
+.bj-avatar { font-size: 1rem; }
+.bj-chipname { font-weight: 600; max-width: 5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bj-chipcount { color: #e4b83d; font-weight: 700; }
+.bj-chipcount.big { font-size: 1.6rem; }
+.bj-meline { color: #e4b83d; font-weight: 700; font-size: 0.95rem; min-height: 1.3rem; }
+.bj-chiptotal { color: #8ab4e4; }
+.bj-ready { color: #6fd08c; font-size: 0.8rem; }
+
+/* ---------- table screen ---------- */
+.bj-round { color: #8a8f98; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; }
+.bj-seats { display: flex; flex-wrap: wrap; gap: 0.7rem; justify-content: center; }
+.bj-seat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 16px;
+  background: #1d2026;
+  border: 2px solid #3a4048;
+  min-width: 8.5rem;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.bj-seat { max-width: 18rem; }
+.bj-seat.current { border-color: #e4b83d; transform: scale(1.04); box-shadow: 0 0 14px #e4b83d55; }
+.bj-seat.broke { opacity: 0.5; }
+.bj-seathead { display: flex; align-items: center; gap: 0.35rem; }
+/* inside a seat panel a hand keeps its cards on one line — wrapping them makes
+   the panel twice as tall, and six tall panels no longer fit a table screen */
+.bj-seat .bj-cards { flex-wrap: nowrap; max-width: 100%; }
+.bj-seathands { display: flex; gap: 0.4rem; justify-content: center; min-height: 4.6rem; align-items: center; }
+.bj-waiting { color: #6b7079; font-size: 0.85rem; }
+.bj-net { font-weight: 800; }
+.bj-net.up { color: #6fd08c; }
+.bj-net.down { color: #e4573d; }
+
+/* ---------- status ---------- */
+.bj-status { color: #8a8f98; min-height: 2.4rem; display: flex; align-items: center; justify-content: center; padding: 0 0.4rem; }
+.bj-status.mine { color: #6fd08c; font-weight: 700; }
+.bj-statusbox { min-height: 3.2rem; display: flex; align-items: center; justify-content: center; padding: 0 0.6rem; }
+.bj-result { font-size: 1.05rem; font-weight: 700; }
+.bj-next { color: #8a8f98; font-weight: 400; font-size: 0.9rem; }
+.bj-over { font-size: 1.25rem; font-weight: 800; padding: 0 0.6rem; }
+
+/* ---------- buttons ---------- */
+/* the row is held open whether or not Double and Split are legal this hand */
+.bj-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: min(94vw, 23rem);
+  min-height: 7.2rem;
+  justify-content: center;
+}
+.bj-row { display: flex; gap: 0.5rem; min-height: 3.2rem; }
+.bj-do {
+  flex: 1;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  background: #3f4750;
+}
+.bj-do.primary { background: #2f6b43; }
+.bj-do.hit { background: #2f5b8a; }
+.bj-do.stand { background: #6b4a2f; }
+.bj-do.extra { background: #5b3fa0; }
+.bj-do.ghost { background: #2a2f38; border: 1px solid #3a4048; color: #c9cdd4; font-size: 0.95rem; }
+.bj-step { flex: 0 0 3rem; font-size: 1.4rem; font-weight: 800; border-radius: 14px; }
+
+/* A phone standing in as the table screen: everything shrinks so six seats,
+   the dealer and the result line still land inside one viewport. */
+@media (max-width: 520px) {
+  .bj-screen { gap: 0.5rem; padding: 0.6rem; }
+  .bj-card { width: 1.7rem; height: 2.4rem; font-size: 0.72rem; border-radius: 5px; }
+  .bj-card.big { width: 2.4rem; height: 3.4rem; font-size: 1rem; }
+  .bj-dealerbox { min-height: 4.4rem; padding: 0.35rem 0.8rem; }
+  .bj-dealerbox .bj-card.big { width: 2.1rem; height: 3rem; font-size: 0.85rem; }
+  .bj-round { font-size: 0.75rem; }
+  .bj-statusbox { min-height: 2.6rem; }
+  .bj-result { font-size: 0.9rem; }
+  .bj-seat { min-width: 0; max-width: none; padding: 0.35rem 0.45rem; gap: 0.2rem; }
+  .bj-seathands { min-height: 2.8rem; gap: 0.2rem; flex-wrap: wrap; }
+  .bj-hand { padding: 0.2rem 0.35rem; gap: 0.2rem; }
+  .bj-seathead { font-size: 0.9rem; }
+  /* seats become a grid so six of them are two short rows, not six long ones */
+  .bj-seats {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(6.2rem, 1fr));
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .bj-total { font-size: 0.85rem; }
+  .bj-handfoot { gap: 0.25rem; }
+  /* the stake is already on the seat's chip line — drop the repeat */
+  .bj-seat .bj-stake { display: none; }
+  /* seat panels get the smallest cards: four of them still make one row */
+  .bj-seat .bj-card { width: 1.4rem; height: 2rem; font-size: 0.62rem; }
+  .bj-outcome { font-size: 0.62rem; padding: 0.05rem 0.3rem; }
+  .bj-stake { font-size: 0.75rem; }
+  .bj-chipname { max-width: 4rem; font-size: 0.8rem; }
+}

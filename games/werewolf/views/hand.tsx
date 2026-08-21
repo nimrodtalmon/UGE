@@ -66,6 +66,10 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
           {view.myRole === 'villager' && <span className="ww-role-sub">find the wolves before they find you</span>}
         </div>
         <p className="ww-hint">keep it secret — don't show your phone!</p>
+        <p className="ww-mix">
+          in this village: {view.wolfCount} wolf{view.wolfCount === 1 ? '' : 'ves'} 🐺 · 1 seer 🔮 ·{' '}
+          {view.villagerCount} villager{view.villagerCount === 1 ? '' : 's'} 🧑‍🌾
+        </p>
         {/* fixed-height slot: button and confirmation must occupy the same space */}
         <div className="ww-slot">
           {view.ready[me] ? (
@@ -161,6 +165,10 @@ export default function HandView({ view, players, over, move, serverNow }: GameV
         )}
         <div className="ww-clock">{formatSeconds(remaining)}</div>
         <p className="ww-hint">discuss! who is acting suspicious?</p>
+        {/* done arguing early? a majority can cut the clock short */}
+        <button className={view.iCalled ? 'ww-skip picked' : 'ww-skip'} onClick={() => move('callVote')}>
+          {view.iCalled ? 'Waiting to vote' : 'Vote now'} ({view.callers}/{view.callsNeeded})
+        </button>
       </div>
     );
   }

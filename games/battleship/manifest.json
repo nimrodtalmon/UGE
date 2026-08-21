@@ -38,14 +38,16 @@
   "help": {
     "goal": "Sink all five of the other player's ships before they sink yours.",
     "steps": [
-      "Your fleet starts placed for you — tap ⚓ Ready to sail with it.",
-      "To rearrange: drag a ship on the board, or tap a ship and then tap the square its bow should sit on.",
-      "↻ Rotate (or tapping the selected ship again) turns it; 🔀 Shuffle re-rolls the whole fleet.",
-      "Green means the ship fits there, red means it does not.",
-      "On your turn tap any square in 🎯 Target to fire there.",
-      "💥 is a hit, • is a miss, 🚢 is a sunk ship. Your own sea rides along as the minimap — tap it to swap the two boards."
+      "You start with an empty sea and five ships in the tray: Carrier 5, Battleship 4, Cruiser 3, Submarine 3, Destroyer 2.",
+      "Drag a ship from the tray onto the sea to place it, or tap the ship and then tap the square its bow should sit on.",
+      "↻ Rotate turns the ship in hand; tapping a ship already on the water turns it too. Drag a placed ship to move it.",
+      "Green means it fits there, red means it does not. ⚓ Ready lights up once all five are on the water.",
+      "On your turn tap any square on the target sea to fire there.",
+      "💥 is a hit, • is a miss, 🚢 is a sunk ship.",
+      "The screen shows the sea that matters: the target on your turn, your own while the other player aims. The 🎯 / 🛡 switch peeks at the other one."
     ],
     "notes": [
+      "In a hurry? \"place the rest for me\" drops whatever is still in the tray at random.",
       "Once you tap ⚓ Ready your fleet is locked in for the game.",
       "A hit does not earn you another shot. Turns alternate after every single shot.",
       "House rule: ships are allowed to touch, so there is no gap between hulls."

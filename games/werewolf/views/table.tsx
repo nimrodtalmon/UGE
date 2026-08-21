@@ -62,6 +62,10 @@ export default function TableView({ view, players, over, move, serverNow }: Game
           <p className="ww-hint">
             check your phones — quietly! ({seats.filter((i) => view.ready[i]).length}/{aliveSeats.length} ready)
           </p>
+          <p className="ww-mix">
+            {view.wolfCount} wolf{view.wolfCount === 1 ? '' : 'ves'} 🐺 · 1 seer 🔮 · {view.villagerCount} villager
+            {view.villagerCount === 1 ? '' : 's'} 🧑‍🌾
+          </p>
         </>
       ) : view.phase === 'night' ? (
         <>
@@ -96,7 +100,10 @@ export default function TableView({ view, players, over, move, serverNow }: Game
               style={{ width: `${Math.max(0, Math.min(100, (remaining / view.dayMs) * 100))}%` }}
             />
           </div>
-          <p className="ww-hint">discuss — the vote begins when the sun sets</p>
+          <p className="ww-hint">
+            discuss — the vote begins when the sun sets, or sooner if {view.callsNeeded} of you ask (
+            {view.callers}/{view.callsNeeded})
+          </p>
         </>
       ) : (
         <>

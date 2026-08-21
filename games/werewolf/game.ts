@@ -36,6 +36,8 @@ export interface WerewolfState {
   seerResults: SeerResult[];
   /** Day discussion deadline (server clock). */
   endsAt: number;
+  /** Day phase: alive seats asking to cut discussion short. */
+  callers: boolean[];
   /** Per seat: null = not voted, -1 = skip, else target seat. Public. */
   votes: (number | null)[];
   deaths: Death[];
@@ -69,8 +71,15 @@ export interface WerewolfView {
   seerDone: boolean;
   endsAt: number;
   dayMs: number;
+  /** Day: how many alive players want to vote now, and how many that takes. */
+  callers: number;
+  callsNeeded: number;
+  iCalled: boolean;
   votes: (number | null)[];
   deaths: Death[];
+  /** Public role mix — fixed by player count, so no secret to keep. */
+  wolfCount: number;
+  villagerCount: number;
 }
 
 function shuffle<T>(items: T[], random: () => number): T[] {
@@ -107,6 +116,7 @@ function nextNight(state: WerewolfState): WerewolfState {
     seerPeeked: false,
     votes: state.votes.map(() => null),
     endsAt: 0,
+    callers: state.callers.map(() => false),
   };
 }
 
@@ -137,7 +147,9 @@ function afterDeath(state: WerewolfState, seat: number, how: 'night' | 'lynch', 
       winText: `🐺 The wolves win! ${names.join(' & ')} ${names.length > 1 ? 'were' : 'was'} lurking among you all along.`,
     };
   }
-  return how === 'night' ? { ...next, phase: 'day', endsAt: now + DAY_MS } : nextNight(next);
+  return how === 'night'
+    ? { ...next, phase: 'day', endsAt: now + DAY_MS, callers: next.callers.map(() => false) }
+    : nextNight(next);
 }
 
 /** Night resolves once every alive wolf has picked and the seer has peeked
@@ -180,6 +192,7 @@ const game: GameDef<WerewolfState, WerewolfView> = {
       seerPeeked: false,
       seerResults: [],
       endsAt: 0,
+      callers: players.map(() => false),
       votes: players.map(() => null),
       deaths: [],
       winner: null,
@@ -221,6 +234,21 @@ const game: GameDef<WerewolfState, WerewolfView> = {
         { target: i, isWolf: state.roles[i] === 'wolf', night: state.night },
       ];
       return maybeResolveNight({ ...state, seerPeeked: true, seerResults }, ctx.now);
+    },
+
+    /** "Vote now": once a majority of the living ask for it, discussion ends
+     *  early. One tap each, and it can be taken back. */
+    callVote(state, ctx) {
+      if (state.phase !== 'day') return state;
+      const seat = aliveSeatOf(state, ctx);
+      if (seat < 0) return state;
+      const callers = state.callers.map((c, s) => (s === seat ? !c : c));
+      const aliveCount = state.alive.filter(Boolean).length;
+      const asked = callers.filter((c, s) => c && state.alive[s]).length;
+      if (asked >= Math.floor(aliveCount / 2) + 1) {
+        return { ...state, callers, phase: 'vote', endsAt: 0 };
+      }
+      return { ...state, callers };
     },
 
     /** Day timer ran out (table drives it, phones back it up; idempotent). */
@@ -282,8 +310,13 @@ const game: GameDef<WerewolfState, WerewolfView> = {
       seerDone: !seerAlive || state.seerPeeked,
       endsAt: state.endsAt,
       dayMs: DAY_MS,
+      callers: state.callers.filter((c, s) => c && state.alive[s]).length,
+      callsNeeded: Math.floor(state.alive.filter(Boolean).length / 2) + 1,
+      iCalled: myIndex >= 0 && state.callers[myIndex] === true,
       votes: state.votes,
       deaths: state.deaths,
+      wolfCount: wolves.length,
+      villagerCount: state.roles.filter((r) => r === 'villager').length,
     };
   },
 
