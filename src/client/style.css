@@ -809,3 +809,17 @@ body.landing-page .center-screen { padding: 1.2rem; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ---- selected-game strip (phones) -------------------------------------
+   The table picks the game; a phone may still have something to do about it
+   (claim the spymasters device, jump back in). That call to action has to be
+   on the home screen — it used to sit behind tapping the card a second time,
+   which nobody did, and Codenames could not be started at all. */
+.pick-card { display: grid; gap: 0.6rem; }
+.pick-head { display: flex; align-items: center; gap: 0.7rem; }
+.pick-icon { font-size: 1.6rem; line-height: 1; }
+.pick-text { display: grid; flex: 1 1 auto; min-width: 0; }
+.pick-text strong { font-size: 1rem; }
+.pick-text .muted { font-size: 0.8rem; }
+.pick-card .role-row { margin-top: 0; justify-content: center; }
+.pick-card .role-row:empty { display: none; }

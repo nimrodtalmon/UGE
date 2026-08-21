@@ -567,6 +567,48 @@ export function App({ host = false }: { host?: boolean }) {
         </div>
       </section>
 
+      {/* Someone has picked a game. Anything you personally have to do about it
+          — claiming a spymasters phone, jumping back in after sitting out —
+          belongs here, not buried behind tapping the card again. */}
+      {selectedEntry && !iAmTable && (
+        <section className="card pick-card">
+          <div className="pick-head">
+            <span className="pick-icon">{selectedEntry.manifest.icon ?? '🎲'}</span>
+            <div className="pick-text">
+              <strong>{selectedEntry.manifest.name}</strong>
+              <span className="muted">
+                {snapshot.blockers.length > 0 ? snapshot.blockers.join(' · ') : 'ready when you are'}
+              </span>
+            </div>
+            <button className="ghost" onClick={() => setSheet('game')}>
+              Details
+            </button>
+          </div>
+          <div className="role-row">
+            {selectedEntry.manifest.roles.extras
+              .filter((extra) => extra !== me?.role)
+              .map((extra) => (
+                <button
+                  key={extra}
+                  className="ghost accent"
+                  onClick={() => act('/api/lobby/claim', { role: extra })}
+                >
+                  Become {extra.replace(/-/g, ' ')}
+                </button>
+              ))}
+            {me?.role == null ? (
+              <button className="ghost accent" onClick={() => act('/api/lobby/claim', { role: 'hand' })}>
+                Jump in
+              </button>
+            ) : (
+              <button className="ghost" onClick={() => act('/api/lobby/claim', { role: null })}>
+                {me.role === 'hand' ? 'Sit out' : `Stop being ${me.role.replace(/-/g, ' ')}`}
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+
       <div className="section-head">
         <h2>Pick a game</h2>
         <Segmented value={filter} onChange={setFilter} counts={counts} />

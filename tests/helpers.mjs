@@ -57,7 +57,9 @@ export async function setSeats(page, n) {
 }
 
 export async function startGame(table, name) {
-  if (!(await table.locator(`button.game.selected:has-text("${name}")`).count())) {
+  // Start lives inside the game sheet, so the card has to be tapped every
+  // time — a game left selected from an earlier round still has no sheet open.
+  if (!(await table.locator('.sheet .big-start').count())) {
     await table.click(`button.game:has-text("${name}")`);
   }
   await table.waitForSelector(`button:has-text("Start ${name}"):not([disabled])`, { timeout: 10000 });
