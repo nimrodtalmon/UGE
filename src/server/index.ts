@@ -8,7 +8,7 @@ import QRCode from 'qrcode';
 import { lanAddress } from './lan.js';
 import { loadPlugins, type GamePlugin } from './games.js';
 import { CODE_RE, DEFAULT_ROOM, Rooms } from './rooms.js';
-import { FeedbackBook, feedbackPage } from './feedback.js';
+import { FeedbackBook, checkFeedbackTarget, feedbackPage } from './feedback.js';
 import type { SyncRequest } from '../shared/types.js';
 
 const PORT = Number(process.env.PORT) || 8000;
@@ -256,12 +256,18 @@ app.use('/static', express.static(clientDir));
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`UGE brain running${publicMode ? ' (public mode)' : ''}.`);
-  if (publicMode && feedback.durability().volatile) {
-    console.warn(
-      '  feedback: kept in memory only — a deploy or restart loses it.\n' +
-        '  set UGE_FEEDBACK_REPO and UGE_FEEDBACK_TOKEN to file it as GitHub issues.',
-    );
-  }
+  void checkFeedbackTarget().then((status) => {
+    if (status === 'not configured') {
+      if (publicMode) {
+        console.warn(
+          '  feedback: kept in memory only — a deploy or restart loses it.\n' +
+            '  set UGE_FEEDBACK_REPO and UGE_FEEDBACK_TOKEN to file it as GitHub issues.',
+        );
+      }
+    } else {
+      console.log(`  feedback: ${status}`);
+    }
+  });
   console.log(`  table: http://localhost:${PORT}`);
   console.log(`  join:  ${joinUrlFor(DEFAULT_ROOM)}`);
   if (!publicMode) openBrowser(`http://localhost:${PORT}`);

@@ -238,3 +238,11 @@ any hardware.
   and a scroll container that centres its content clips the first row above
   the scroll origin where nothing can reach it (align to start, or
   `justify-content: safe center`).
+- 2026-08: Feedback is meant to be gathered continuously from friends and
+  reviewed here now and then, so it must outlive the container: with
+  `UGE_FEEDBACK_REPO` + `UGE_FEEDBACK_TOKEN` set, every entry becomes a
+  GitHub issue labelled `feedback`, and closing the issue is how a report is
+  "dealt with". Without them a hosted brain keeps feedback in memory only and
+  loses it on the next deploy — which happened, so the brain now checks the
+  token once at boot, says where entries go, and `/feedback` tags each one
+  with its issue link or the reason it has none. Setup: `docs/feedback.md`.

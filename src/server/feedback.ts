@@ -14,6 +14,10 @@ export interface Feedback {
   room: string;
   game: string | null;
   text: string;
+  /** Where it ended up on GitHub, once filed. */
+  issue?: { number: number; url: string };
+  /** Why it did not get there, if it didn't. */
+  issueError?: string;
 }
 
 const MAX_KEPT = 300;
@@ -56,7 +60,12 @@ export class FeedbackBook {
     } catch {
       /* read-only disk (hosted) — memory and GitHub carry it instead */
     }
-    void fileIssue(item);
+    void fileIssue(item).then((result) => {
+      // the entry is already in the list; annotate it in place so /feedback
+      // can show a link, or say why there isn't one
+      if ('url' in result) item.issue = result;
+      else if (result.error) item.issueError = result.error;
+    });
     return item;
   }
 
@@ -77,29 +86,66 @@ export class FeedbackBook {
 }
 
 /** Best-effort: open a GitHub issue so feedback outlives the container. */
-async function fileIssue(item: Feedback): Promise<void> {
+async function fileIssue(
+  item: Feedback,
+): Promise<{ number: number; url: string } | { error: string | null }> {
   const repo = process.env.UGE_FEEDBACK_REPO; // e.g. "nimrodtalmon/UGE"
   const token = process.env.UGE_FEEDBACK_TOKEN;
-  if (!repo || !token) return;
+  if (!repo || !token) return { error: null }; // not configured; not an error
   const where = [item.game ? `game: ${item.game}` : null, item.room ? `room: ${item.room}` : null]
     .filter(Boolean)
     .join(' · ');
   try {
-    await fetch(`https://api.github.com/repos/${repo}/issues`, {
+    const r = await fetch(`https://api.github.com/repos/${repo}/issues`, {
       method: 'POST',
       headers: {
         authorization: `Bearer ${token}`,
         accept: 'application/vnd.github+json',
         'content-type': 'application/json',
+        'user-agent': 'uge-feedback',
       },
       body: JSON.stringify({
-        title: `Feedback from ${item.from}: ${item.text.slice(0, 60)}`,
-        body: `${item.text}\n\n---\n${where || 'from the lobby'}\nsent ${new Date(item.at).toISOString()}`,
+        title: `${item.game ? `[${item.game}] ` : ''}${item.text.slice(0, 60)}${item.text.length > 60 ? '…' : ''}`,
+        body: `${item.text}\n\n---\nfrom **${item.from}**${where ? ` · ${where}` : ''}\nsent ${new Date(item.at).toISOString()}`,
         labels: ['feedback'],
       }),
     });
-  } catch {
-    /* offline or rejected — the entry is still in memory and on disk */
+    if (!r.ok) {
+      const detail = r.status === 401 || r.status === 403 ? 'token rejected' : `HTTP ${r.status}`;
+      console.warn(`feedback: GitHub refused the issue (${detail})`);
+      return { error: detail };
+    }
+    const issue = (await r.json()) as { number: number; html_url: string };
+    return { number: issue.number, url: issue.html_url };
+  } catch (err) {
+    const detail = String(err).split('\n')[0]!.slice(0, 80);
+    console.warn(`feedback: could not reach GitHub (${detail})`);
+    return { error: detail };
+  }
+}
+
+/**
+ * One call at boot so a wrong token or repo is caught immediately, rather than
+ * silently swallowing every report until someone comes looking for them.
+ */
+export async function checkFeedbackTarget(): Promise<string> {
+  const repo = process.env.UGE_FEEDBACK_REPO;
+  const token = process.env.UGE_FEEDBACK_TOKEN;
+  if (!repo || !token) return 'not configured';
+  try {
+    const r = await fetch(`https://api.github.com/repos/${repo}`, {
+      headers: {
+        authorization: `Bearer ${token}`,
+        accept: 'application/vnd.github+json',
+        'user-agent': 'uge-feedback',
+      },
+    });
+    if (r.status === 404) return `cannot see ${repo} — wrong name, or the token lacks access`;
+    if (r.status === 401 || r.status === 403) return `${repo}: token rejected`;
+    if (!r.ok) return `${repo}: HTTP ${r.status}`;
+    return `ok — filing issues on ${repo}`;
+  } catch (err) {
+    return `could not reach GitHub (${String(err).split('\n')[0]!.slice(0, 60)})`;
   }
 }
 
@@ -118,6 +164,13 @@ export function feedbackPage(
       (f) => `<article>
       <header>${esc(f.from)}<span>${new Date(f.at).toLocaleString()}${f.game ? ` · ${esc(f.game)}` : ''}${f.room ? ` · room ${esc(f.room)}` : ''}</span></header>
       <p>${esc(f.text)}</p>
+      ${
+        f.issue
+          ? `<a class="tag ok" href="${esc(f.issue.url)}">filed as #${f.issue.number} ↗</a>`
+          : f.issueError
+            ? `<span class="tag bad">not filed on GitHub — ${esc(f.issueError)}</span>`
+            : ''
+      }
     </article>`,
     )
     .join('\n');
@@ -138,6 +191,10 @@ export function feedbackPage(
           padding:0.7rem 0.9rem; margin:0; line-height:1.45; }
   .ok { color:#8fd6a6; margin:0; }
   code { background:#0b0d11; padding:0.05rem 0.3rem; border-radius:5px; }
+  .tag { display:inline-block; margin-top:0.5rem; font-size:0.78rem; border-radius:999px;
+         padding:0.15rem 0.6rem; text-decoration:none; }
+  .tag.ok { background:#1d3b28; color:#8fd6a6; border:1px solid #2f6f47; }
+  .tag.bad { background:#3b1d1d; color:#e9a8a8; border:1px solid #6f2f2f; }
   button { align-self:flex-start; background:#2f6f47; color:#fff; border:1px solid #4b8f63;
            border-radius:999px; padding:0.45rem 1rem; font:inherit; font-weight:700; cursor:pointer; }
 </style></head><body><main>
