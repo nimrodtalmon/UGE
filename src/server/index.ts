@@ -8,7 +8,7 @@ import QRCode from 'qrcode';
 import { lanAddress } from './lan.js';
 import { loadPlugins, type GamePlugin } from './games.js';
 import { CODE_RE, DEFAULT_ROOM, Rooms } from './rooms.js';
-import { FeedbackBook, checkFeedbackTarget, feedbackPage } from './feedback.js';
+import { FeedbackBook, checkFeedbackTarget, feedbackPage, feedbackStatus } from './feedback.js';
 import type { SyncRequest } from '../shared/types.js';
 
 const PORT = Number(process.env.PORT) || 8000;
@@ -227,9 +227,13 @@ app.use('/r/:code/api', api);
 app.use('/api', api);
 
 // everything anyone sent, newest first — open it in any browser
-app.get('/feedback', (_req, res) =>
-  res.type('html').send(feedbackPage(feedback.list(), feedback.durability())),
-);
+app.get('/feedback', (_req, res) => {
+  // re-test the GitHub target on view (cached a minute) so this one page
+  // answers "is my feedback actually being saved?" without a trip to Render
+  void feedbackStatus().then((status) =>
+    res.type('html').send(feedbackPage(feedback.list(), feedback.durability(), status)),
+  );
+});
 app.get('/api/feedback', (_req, res) => res.json(feedback.list()));
 
 // room creation (used by the public landing page)

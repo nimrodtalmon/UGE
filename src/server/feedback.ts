@@ -180,6 +180,20 @@ async function fileIssue(
   }
 }
 
+let cachedCheck: { at: number; verdict: string } | null = null;
+
+/**
+ * The same verdict, but safe to call on every page view: re-tested at most
+ * once a minute. The Render log is an awkward place to read on a phone, so
+ * /feedback shows this instead of making anyone go looking for it.
+ */
+export async function feedbackStatus(): Promise<string> {
+  if (cachedCheck && Date.now() - cachedCheck.at < 60_000) return cachedCheck.verdict;
+  const verdict = await checkFeedbackTarget();
+  cachedCheck = { at: Date.now(), verdict };
+  return verdict;
+}
+
 /**
  * One call at boot so a wrong token or repo is caught immediately, rather than
  * silently swallowing every report until someone comes looking for them.
@@ -222,6 +236,7 @@ export function feedbackPage(
   durability: { github: boolean; disk: boolean; volatile: boolean } = {
     github: false, disk: false, volatile: false,
   },
+  status = '',
 ): string {
   const rows = items
     .map(
@@ -268,7 +283,10 @@ ${
     ? `<p class="warn">⚠ This brain keeps feedback in memory${durability.disk ? ' and on a disk that a deploy wipes' : ' only'} —
        it is lost on the next deploy or restart. Set <code>UGE_FEEDBACK_REPO</code> and
        <code>UGE_FEEDBACK_TOKEN</code> to file each entry as a GitHub issue. Until then, copy it out.</p>`
-    : '<p class="ok">✓ Each entry is also filed as a GitHub issue.</p>'
+    : status.startsWith('ok')
+      ? `<p class="ok">✓ GitHub: ${esc(status)}</p>`
+      : `<p class="warn">⚠ GitHub is configured but not working: <b>${esc(status)}</b>.
+         Nothing here is being filed — copy it out before the next deploy.</p>`
 }
 ${items.length > 0 ? '<button id="copy">Copy all</button>' : ''}
 ${rows || '<p class="empty">Nothing yet.</p>'}
