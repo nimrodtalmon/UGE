@@ -63,8 +63,12 @@ export class FeedbackBook {
     void fileIssue(item).then((result) => {
       // the entry is already in the list; annotate it in place so /feedback
       // can show a link, or say why there isn't one
-      if ('url' in result) item.issue = result;
-      else if (result.error) item.issueError = result.error;
+      if ('url' in result) {
+        item.issue = result;
+        void this.drainUnfiled(); // GitHub is answering — clear any backlog
+      } else if (result.error) {
+        item.issueError = result.error;
+      }
     });
     return item;
   }
@@ -74,24 +78,61 @@ export class FeedbackBook {
   }
 
   /**
+   * Re-file entries that never made it to GitHub — a rejected token that has
+   * since been fixed, or GitHub having been down for a minute. Runs off the
+   * back of a send that just succeeded, so it needs no endpoint of its own
+   * (and gives nobody a public button to hammer the API with).
+   */
+  private async drainUnfiled(limit = 20): Promise<void> {
+    const stuck = this.items.filter((f) => !f.issue && f.issueError).slice(0, limit);
+    for (const f of stuck) {
+      const result = await fileIssue(f);
+      if ('url' in result) {
+        f.issue = result;
+        delete f.issueError;
+      } else {
+        break; // still failing — stop hammering, the next send will try again
+      }
+    }
+  }
+
+  /**
    * Where a new entry would actually survive to. On a hosted brain the disk is
    * wiped by every deploy and the process restarts on its own, so without the
    * GitHub env vars feedback lives only until the next push — which is exactly
    * how a real report got lost. Say so instead of pretending it is filed.
    */
   durability(): { github: boolean; disk: boolean; volatile: boolean } {
-    const github = Boolean(process.env.UGE_FEEDBACK_REPO && process.env.UGE_FEEDBACK_TOKEN);
+    const github = feedbackConfig() !== null;
     return { github, disk: this.onDisk, volatile: !github };
   }
+}
+
+/**
+ * Read the two settings the same way everywhere, and forgive the two mistakes
+ * a dashboard makes easy: a value pasted with a trailing newline or spaces,
+ * and the repo given as a URL ("https://github.com/me/UGE") or with a .git
+ * suffix rather than the bare "owner/repo" the API wants.
+ */
+function feedbackConfig(): { repo: string; token: string } | null {
+  const rawRepo = (process.env.UGE_FEEDBACK_REPO ?? '').trim();
+  const token = (process.env.UGE_FEEDBACK_TOKEN ?? '').trim();
+  if (!rawRepo || !token) return null;
+  const repo = rawRepo
+    .replace(/^https?:\/\/(www\.)?github\.com\//i, '')
+    .replace(/\.git$/i, '')
+    .replace(/^\/+|\/+$/g, '');
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) return null;
+  return { repo, token };
 }
 
 /** Best-effort: open a GitHub issue so feedback outlives the container. */
 async function fileIssue(
   item: Feedback,
 ): Promise<{ number: number; url: string } | { error: string | null }> {
-  const repo = process.env.UGE_FEEDBACK_REPO; // e.g. "nimrodtalmon/UGE"
-  const token = process.env.UGE_FEEDBACK_TOKEN;
-  if (!repo || !token) return { error: null }; // not configured; not an error
+  const cfg = feedbackConfig();
+  if (!cfg) return { error: null }; // not configured; not an error
+  const { repo, token } = cfg;
   const where = [item.game ? `game: ${item.game}` : null, item.room ? `room: ${item.room}` : null]
     .filter(Boolean)
     .join(' · ');
@@ -129,9 +170,17 @@ async function fileIssue(
  * silently swallowing every report until someone comes looking for them.
  */
 export async function checkFeedbackTarget(): Promise<string> {
-  const repo = process.env.UGE_FEEDBACK_REPO;
-  const token = process.env.UGE_FEEDBACK_TOKEN;
-  if (!repo || !token) return 'not configured';
+  const cfg = feedbackConfig();
+  if (!cfg) {
+    const rawRepo = (process.env.UGE_FEEDBACK_REPO ?? '').trim();
+    const hasToken = Boolean((process.env.UGE_FEEDBACK_TOKEN ?? '').trim());
+    if (rawRepo && hasToken) return `UGE_FEEDBACK_REPO is not "owner/repo": "${rawRepo}"`;
+    if (rawRepo || hasToken) {
+      return `only ${rawRepo ? 'UGE_FEEDBACK_REPO' : 'UGE_FEEDBACK_TOKEN'} is set — both are needed`;
+    }
+    return 'not configured';
+  }
+  const { repo, token } = cfg;
   try {
     const r = await fetch(`https://api.github.com/repos/${repo}`, {
       headers: {

@@ -69,9 +69,63 @@ console.log(`ok: boot check says "${s404}" / "${s401}" / "${sOk}"`);
 
 // --- unconfigured is not an error
 delete process.env['UGE_FEEDBACK_TOKEN'];
-if ((await checkFeedbackTarget()) !== 'not configured') fail('missing token should read as unconfigured');
+delete process.env['UGE_FEEDBACK_REPO'];
+if ((await checkFeedbackTarget()) !== 'not configured') fail('neither set should read as unconfigured');
 if (!new FeedbackBook(path.join(dir, 'other.jsonl')).durability().volatile) fail('should be volatile with no token');
 console.log('ok: no token reads as "not configured", and volatile');
+// --- a fixed token drains the backlog on the next successful send
+{
+  process.env['UGE_FEEDBACK_REPO'] = 'nimrodtalmon/UGE';
+  process.env['UGE_FEEDBACK_TOKEN'] = 'tok';
+  const dir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'uge-fb2-'));
+  const b2 = new FeedbackBook(path.join(dir2, 'f.jsonl'));
+  reply = () => new Response('{"message":"Bad credentials"}', { status: 401 });
+  b2.add({ from: 'A', text: 'stuck one' });
+  b2.add({ from: 'B', text: 'stuck two' });
+  await sleep(30);
+  if (b2.list().filter((f) => f.issueError).length !== 2) fail('both should be stuck');
+  let n = 100;
+  reply = () => new Response(JSON.stringify({ number: n++, html_url: `https://x/${n}` }), { status: 201 });
+  b2.add({ from: 'C', text: 'after the fix' });
+  await sleep(80);
+  const filed = b2.list().filter((f) => f.issue);
+  if (filed.length !== 3) fail(`backlog not drained: ${filed.length} of 3 filed`);
+  if (b2.list().some((f) => f.issueError)) fail('a drained entry kept its error');
+  console.log('ok: two stuck entries filed themselves once the token started working');
+  fs.rmSync(dir2, { recursive: true, force: true });
+}
+
+// --- config is forgiving about how the repo was pasted
+for (const [given, why] of [
+  ['  nimrodtalmon/UGE\n', 'trailing newline and spaces'],
+  ['https://github.com/nimrodtalmon/UGE', 'pasted as a URL'],
+  ['nimrodtalmon/UGE.git', 'clone-style .git suffix'],
+  ['nimrodtalmon/UGE/', 'trailing slash'],
+]) {
+  process.env['UGE_FEEDBACK_REPO'] = given;
+  process.env['UGE_FEEDBACK_TOKEN'] = ' tok \n';
+  calls.length = 0;
+  reply = () => new Response(JSON.stringify({ number: 1, html_url: 'https://x/1' }), { status: 200 });
+  const status = await checkFeedbackTarget();
+  if (!status.startsWith('ok — filing issues on nimrodtalmon/UGE')) {
+    fail(`${why}: not normalised — "${status}"`);
+  }
+  const hdrs = calls[0]!.init.headers as Record<string, string>;
+  if (hdrs['authorization'] !== 'Bearer tok') fail(`${why}: token not trimmed`);
+}
+console.log('ok: repo accepted with a newline, as a URL, with .git, with a trailing slash');
+
+// --- and it names a value it cannot use
+process.env['UGE_FEEDBACK_REPO'] = 'just-a-name';
+const bad2 = await checkFeedbackTarget();
+if (!bad2.includes('not "owner/repo"')) fail(`bad repo not explained: ${bad2}`);
+process.env['UGE_FEEDBACK_REPO'] = 'nimrodtalmon/UGE';
+delete process.env['UGE_FEEDBACK_TOKEN'];
+const half = await checkFeedbackTarget();
+if (!half.includes('both are needed')) fail(`half-configured not explained: ${half}`);
+process.env['UGE_FEEDBACK_TOKEN'] = 'tok';
+console.log(`ok: says "${bad2}" and "${half}"`);
+
 // the entries really did reach the disk, and come back on a restart
 const reloaded = new FeedbackBook(store).list();
 if (reloaded.length !== 3) fail(`reload lost entries: ${reloaded.length} of 3`);
