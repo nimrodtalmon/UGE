@@ -73,6 +73,39 @@ delete process.env['UGE_FEEDBACK_REPO'];
 if ((await checkFeedbackTarget()) !== 'not configured') fail('neither set should read as unconfigured');
 if (!new FeedbackBook(path.join(dir, 'other.jsonl')).durability().volatile) fail('should be volatile with no token');
 console.log('ok: no token reads as "not configured", and volatile');
+// --- a repo with no "feedback" label must still get the report
+{
+  process.env['UGE_FEEDBACK_REPO'] = 'nimrodtalmon/UGE';
+  process.env['UGE_FEEDBACK_TOKEN'] = 'tok';
+  const dir3 = fs.mkdtempSync(path.join(os.tmpdir(), 'uge-fb3-'));
+  const b3 = new FeedbackBook(path.join(dir3, 'f.jsonl'));
+  calls.length = 0;
+  reply = () => {
+    const last = calls[calls.length - 1]!;
+    const sent = JSON.parse(String(last.init.body));
+    // refuse anything carrying a label, accept the bare retry
+    return sent.labels
+      ? new Response('{"message":"Validation Failed"}', { status: 422 })
+      : new Response(JSON.stringify({ number: 5, html_url: 'https://x/5' }), { status: 201 });
+  };
+  b3.add({ from: 'A', text: 'label-less repo' });
+  await sleep(40);
+  if (calls.length !== 2) fail(`expected a labelled try then a bare retry, got ${calls.length}`);
+  if (!JSON.parse(String(calls[0]!.init.body)).labels) fail('first try should carry the label');
+  if (JSON.parse(String(calls[1]!.init.body)).labels) fail('retry should drop the label');
+  if (b3.list()[0]!.issue?.number !== 5) fail('report lost over a label');
+  console.log('ok: a 422 on the label refiles bare — the report still lands');
+
+  // but a bad token must NOT be retried twice
+  calls.length = 0;
+  reply = () => new Response('{"message":"Bad credentials"}', { status: 401 });
+  b3.add({ from: 'B', text: 'bad token' });
+  await sleep(40);
+  if (calls.length !== 1) fail(`a 401 should not be retried, got ${calls.length} calls`);
+  console.log('ok: a 401 is not retried — no hammering with a dead token');
+  fs.rmSync(dir3, { recursive: true, force: true });
+}
+
 // --- a fixed token drains the backlog on the next successful send
 {
   process.env['UGE_FEEDBACK_REPO'] = 'nimrodtalmon/UGE';

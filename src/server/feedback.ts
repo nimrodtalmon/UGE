@@ -136,8 +136,10 @@ async function fileIssue(
   const where = [item.game ? `game: ${item.game}` : null, item.room ? `room: ${item.room}` : null]
     .filter(Boolean)
     .join(' · ');
-  try {
-    const r = await fetch(`https://api.github.com/repos/${repo}/issues`, {
+  const title = `${item.game ? `[${item.game}] ` : ''}${item.text.slice(0, 60)}${item.text.length > 60 ? '…' : ''}`;
+  const body = `${item.text}\n\n---\nfrom **${item.from}**${where ? ` · ${where}` : ''}\nsent ${new Date(item.at).toISOString()}`;
+  const post = (payload: object) =>
+    fetch(`https://api.github.com/repos/${repo}/issues`, {
       method: 'POST',
       headers: {
         authorization: `Bearer ${token}`,
@@ -145,14 +147,27 @@ async function fileIssue(
         'content-type': 'application/json',
         'user-agent': 'uge-feedback',
       },
-      body: JSON.stringify({
-        title: `${item.game ? `[${item.game}] ` : ''}${item.text.slice(0, 60)}${item.text.length > 60 ? '…' : ''}`,
-        body: `${item.text}\n\n---\nfrom **${item.from}**${where ? ` · ${where}` : ''}\nsent ${new Date(item.at).toISOString()}`,
-        labels: ['feedback'],
-      }),
+      body: JSON.stringify(payload),
     });
+  try {
+    let r = await post({ title, body, labels: ['feedback'] });
+    if (!r.ok && r.status !== 401) {
+      // The "feedback" label may not exist yet, and a token scoped to issues
+      // is not necessarily allowed to create one. Losing the report over a
+      // label would be absurd — file it bare and let the label follow later.
+      const retry = await post({ title, body });
+      if (retry.ok) {
+        console.warn('feedback: filed without the "feedback" label (GitHub refused it)');
+        r = retry;
+      }
+    }
     if (!r.ok) {
-      const detail = r.status === 401 || r.status === 403 ? 'token rejected' : `HTTP ${r.status}`;
+      const detail =
+        r.status === 401 || r.status === 403
+          ? 'token rejected'
+          : r.status === 404
+            ? 'repo not found, or the token cannot see it'
+            : `HTTP ${r.status}`;
       console.warn(`feedback: GitHub refused the issue (${detail})`);
       return { error: detail };
     }
