@@ -354,8 +354,13 @@ function GameSheet(props: {
       </button>
       <p className="blockers reserve">{snapshot.blockers.join(' · ')}</p>
 
-      <h4 className="sheet-h">How to play</h4>
-      <HelpBody manifest={m} />
+      {/* folded away by default: the rules are long, and pushing Start below
+          them made the sheet look like a manual rather than a game you can
+          begin. One tap opens it, and it stays open while the sheet is. */}
+      <details className="sheet-help">
+        <summary>How to play</summary>
+        <HelpBody manifest={m} />
+      </details>
     </Sheet>
   );
 }

@@ -1,4 +1,5 @@
 :root {
+  --bar-clear: 4.25rem;
   --bg: #0e1014;
   --surface: #171a21;
   --surface-2: #1d2029;
@@ -509,7 +510,10 @@ a.wordmark { text-decoration: none; }
 /* ---------- bottom sheet ---------- */
 .sheet-scrim {
   position: fixed;
-  inset: 0;
+  /* Leave the top bar uncovered: UGE, the room code, your avatar and 💬 stay
+     visible and tappable with a sheet open. Clears the tallest of them (the
+     home app bar, ~65px); the in-game chips end higher still. */
+  inset: var(--bar-clear) 0 0 0;
   z-index: 60;
   background: rgba(6, 8, 11, 0.62);
   backdrop-filter: blur(3px);
@@ -521,7 +525,7 @@ a.wordmark { text-decoration: none; }
 @keyframes fade { from { opacity: 0; } }
 .sheet {
   width: min(30rem, 100%);
-  max-height: 92vh;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #1b1f27, var(--surface));
@@ -847,3 +851,23 @@ body.landing-page .center-screen { padding: 1.2rem; }
 
 /* a feedback send that failed: say so, and keep the words */
 .bad-note { color: #e9a8a8; }
+
+/* game sheet: the rules fold away so Start is the first thing you reach */
+.sheet-help { width: 100%; margin-top: 0.3rem; }
+.sheet-help > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.55rem 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.sheet-help > summary::-webkit-details-marker { display: none; }
+.sheet-help > summary::before { content: '▸'; font-size: 0.85rem; }
+.sheet-help[open] > summary::before { content: '▾'; }
+.sheet-help > summary:hover { color: var(--text); }

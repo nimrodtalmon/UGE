@@ -132,9 +132,16 @@ export function PlaceArea(props: {
   } | null>(null);
   const down = useRef<{ ship: number | null; wasSel: boolean }>({ ship: null, wasSel: false });
   const dragged = useRef(false);
+  /** The hull currently in the air. It leaves its old squares while dragged,
+   *  so the ship really moves with the finger instead of staying put behind a
+   *  green preview of itself. */
+  const [lifted, setLifted] = useState<number | null>(null);
 
   const shipAt = new Map<number, number>();
-  fleet.forEach((s, i) => s.cells.forEach((c) => shipAt.set(c, i)));
+  fleet.forEach((s, i) => {
+    if (i === lifted) return; // in the air — its old squares are open water
+    s.cells.forEach((c) => shipAt.set(c, i));
+  });
 
   /**
    * Board coordinates under the pointer, or null when it is well off the
@@ -169,6 +176,7 @@ export function PlaceArea(props: {
     if (canPlace(fleet, i, x, y, horizontal)) {
       props.onPlace(i, x, y, horizontal);
       setGhost(null);
+      setLifted(null);
     } else {
       show(i, x, y, horizontal);
     }
@@ -225,6 +233,7 @@ export function PlaceArea(props: {
       if (!d.moved && s.placed && bx === s.x && by === s.y) return; // still sitting where it started
       d.moved = true;
       dragged.current = true;
+      setLifted(d.ship);
       if (!d.captured) {
         // now it is unmistakably a drag: hold the pointer so a release outside
         // the board still comes back here
@@ -242,7 +251,14 @@ export function PlaceArea(props: {
   const onUp = (): void => {
     const d = drag.current;
     drag.current = null;
-    if (!d || !d.moved || !d.at) return;
+    // Whatever happens next, the hull comes down: released off the board, or
+    // onto a square it cannot take, it snaps back to where it was. Leaving it
+    // lifted would erase it from the board entirely.
+    setLifted(null);
+    if (!d || !d.moved || !d.at) {
+      setGhost(null);
+      return;
+    }
     const s = fleet[d.ship];
     if (s) tryPlace(d.ship, d.at.x, d.at.y, layOf(s, horiz));
   };
@@ -286,6 +302,7 @@ export function PlaceArea(props: {
       onPointerCancel={() => {
         drag.current = null;
         setGhost(null);
+        setLifted(null); // a cancelled drag must not leave a hull in the air
       }}
       onPointerLeave={(e) => {
         // a touch "leaves" on release — only a mouse leaving clears the ghost
@@ -325,12 +342,16 @@ export function PlaceArea(props: {
       <div className="bs-grid bs-drop" ref={gridRef}>
         {Array.from({ length: SIZE * SIZE }, (_, i) => {
           const ship = shipAt.get(i);
-          const g = ghost && ghost.cells.includes(i) ? (ghost.ok ? ' bs-ghost bs-ok' : ' bs-ghost bs-bad') : '';
+          const onGhost = ghost !== null && ghost.cells.includes(i);
+          // a legal landing spot is drawn as the hull, not as a green stand-in:
+          // dragging should look like moving the ship, because it is
+          const carrying = onGhost && ghost.ok;
+          const g = onGhost ? (ghost.ok ? ' bs-lift' : ' bs-ghost bs-bad') : '';
           const on = ship !== undefined && ship === sel ? ' bs-sel' : '';
           return (
             <Cell
               key={i}
-              cell={ship === undefined ? 'water' : 'ship'}
+              cell={ship === undefined && !carrying ? 'water' : 'ship'}
               extra={`${on}${g}`}
               disabled={locked}
               onPointerDown={() => onCellDown(i)}

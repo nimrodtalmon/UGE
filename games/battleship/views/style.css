@@ -152,7 +152,6 @@
 
 /* ---- place phase ---- */
 .bs-cell.bs-sel { --bs-bg: #9aa6bb; --bs-line: #e4b83d; box-shadow: 0 0 0 2px #e4b83d inset; }
-.bs-cell.bs-ghost.bs-ok { --bs-bg: #2f8f52; --bs-line: #6fd08c; box-shadow: 0 0 0 2px #6fd08c inset; }
 .bs-cell.bs-ghost.bs-bad { --bs-bg: #7d2b28; --bs-line: #e4573d; box-shadow: 0 0 0 2px #e4573d inset; }
 
 /* The platform's button:not(:disabled):hover (0-2-1) outranks every .bs-cell
@@ -260,3 +259,12 @@
 }
 /* the sea currently being shot at */
 .bs-side.target { border-color: #e4b83d; box-shadow: 0 0 18px rgba(228, 184, 61, 0.25); }
+
+/* A hull being dragged is drawn as the hull itself at the new spot (it has
+   already left its old squares), lifted a little so it reads as in-hand.
+   Only a refusal still shows as a coloured stand-in. */
+.bs-cell.bs-lift {
+  --bs-bg: #4e6f95;
+  --bs-line: #8fb4dc;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+}
