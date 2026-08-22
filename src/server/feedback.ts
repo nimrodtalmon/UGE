@@ -102,9 +102,26 @@ export class FeedbackBook {
    * GitHub env vars feedback lives only until the next push — which is exactly
    * how a real report got lost. Say so instead of pretending it is filed.
    */
-  durability(): { github: boolean; disk: boolean; volatile: boolean } {
+  durability(): {
+    github: boolean;
+    disk: boolean;
+    volatile: boolean;
+    sawRepo: boolean;
+    sawToken: boolean;
+    ugeVars: string[];
+  } {
     const github = feedbackConfig() !== null;
-    return { github, disk: this.onDisk, volatile: !github };
+    return {
+      github,
+      disk: this.onDisk,
+      volatile: !github,
+      sawRepo: Boolean((process.env.UGE_FEEDBACK_REPO ?? '').trim()),
+      sawToken: Boolean((process.env.UGE_FEEDBACK_TOKEN ?? '').trim()),
+      // NAMES ONLY, never values — a variable typed UGE_FEEDBACK_TOKEEN or
+      // added to the wrong service is invisible otherwise, and that guesswork
+      // has cost more time than every other part of this feature.
+      ugeVars: Object.keys(process.env).filter((k) => k.startsWith('UGE_')).sort(),
+    };
   }
 }
 
@@ -233,9 +250,14 @@ const esc = (s: string): string =>
 /** A plain page so the feedback can be read from any browser. */
 export function feedbackPage(
   items: Feedback[],
-  durability: { github: boolean; disk: boolean; volatile: boolean } = {
-    github: false, disk: false, volatile: false,
-  },
+  durability: {
+    github: boolean;
+    disk: boolean;
+    volatile: boolean;
+    sawRepo?: boolean;
+    sawToken?: boolean;
+    ugeVars?: string[];
+  } = { github: false, disk: false, volatile: false },
   status = '',
 ): string {
   const rows = items
@@ -269,6 +291,7 @@ export function feedbackPage(
   .warn { background:#3a2c15; border:1px solid #7a5a20; color:#f0d9a8; border-radius:12px;
           padding:0.7rem 0.9rem; margin:0; line-height:1.45; }
   .ok { color:#8fd6a6; margin:0; }
+  .vars { font-family:ui-monospace,monospace; font-size:0.78rem; opacity:0.85; }
   code { background:#0b0d11; padding:0.05rem 0.3rem; border-radius:5px; }
   .tag { display:inline-block; margin-top:0.5rem; font-size:0.78rem; border-radius:999px;
          padding:0.15rem 0.6rem; text-decoration:none; }
@@ -280,9 +303,20 @@ export function feedbackPage(
 <h1>UGE feedback</h1>
 ${
   durability.volatile
-    ? `<p class="warn">⚠ This brain keeps feedback in memory${durability.disk ? ' and on a disk that a deploy wipes' : ' only'} —
-       it is lost on the next deploy or restart. Set <code>UGE_FEEDBACK_REPO</code> and
-       <code>UGE_FEEDBACK_TOKEN</code> to file each entry as a GitHub issue. Until then, copy it out.</p>`
+    ? `<p class="warn">⚠ Feedback is kept in memory${durability.disk ? ' and on a disk a deploy wipes' : ' only'} —
+       lost on the next deploy or restart. Copy it out.<br />
+       <b>${
+         durability.sawRepo && durability.sawToken
+           ? 'Both variables are set but the repo is not in "owner/repo" form.'
+           : durability.sawRepo || durability.sawToken
+             ? `This process can see ${durability.sawRepo ? 'UGE_FEEDBACK_REPO' : 'UGE_FEEDBACK_TOKEN'} but not ${durability.sawRepo ? 'UGE_FEEDBACK_TOKEN' : 'UGE_FEEDBACK_REPO'}.`
+             : 'This process cannot see UGE_FEEDBACK_REPO or UGE_FEEDBACK_TOKEN at all.'
+       }</b><br />
+       <span class="vars">UGE_* variables it can see: ${
+         durability.ugeVars && durability.ugeVars.length > 0
+           ? esc(durability.ugeVars.join(', '))
+           : '(none)'
+       }</span></p>`
     : status.startsWith('ok')
       ? `<p class="ok">✓ GitHub: ${esc(status)}</p>`
       : `<p class="warn">⚠ GitHub is configured but not working: <b>${esc(status)}</b>.
