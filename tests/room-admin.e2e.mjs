@@ -41,9 +41,14 @@ await host.waitForSelector('.tile:has-text("Dana")', { timeout: 10000 });
 console.log('ok: they can rejoin on purpose');
 
 // ---------- feedback ----------
+// the app bar 💬 is the way in that friends will actually find; the room
+// panel keeps its link too, so check both reach the same sheet
 await host.click('button:has-text("Add people")');
 await host.waitForSelector('.feedback-link', { timeout: 5000 });
 await host.click('.feedback-link');
+await host.waitForSelector('.feedback-text', { timeout: 5000 });
+await host.click('.sheet-close');
+await host.click('.appbar button[aria-label="send feedback"]');
 await host.waitForSelector('.feedback-text', { timeout: 5000 });
 await host.fill('.feedback-text', 'the dice are too small on my phone');
 await host.click('button:has-text("Send feedback")');
@@ -55,7 +60,7 @@ if (!stored.some((f) => f.text.includes('dice are too small') && f.from === 'Nim
 }
 const page = await (await fetch('http://localhost:8000/feedback')).text();
 if (!page.includes('dice are too small')) fail('feedback page does not show the entry');
-console.log('ok: feedback sent, stored, and readable at /feedback');
+console.log('ok: feedback sent from the app bar, stored, and readable at /feedback');
 
 await browser.close();
 console.log('ALL ROOM-ADMIN TESTS PASSED');

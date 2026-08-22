@@ -844,3 +844,6 @@ body.landing-page .center-screen { padding: 1.2rem; }
 .pick-text .muted { font-size: 0.8rem; }
 .pick-card .role-row { margin-top: 0; justify-content: center; }
 .pick-card .role-row:empty { display: none; }
+
+/* a feedback send that failed: say so, and keep the words */
+.bad-note { color: #e9a8a8; }

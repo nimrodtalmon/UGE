@@ -180,15 +180,28 @@ function InviteSheet(props: {
 function FeedbackSheet(props: { name: string; game: string | null; onClose: () => void }) {
   const [text, setText] = useState('');
   const [sent, setSent] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [sending, setSending] = useState(false);
   const send = async () => {
-    if (!text.trim()) return;
-    await fetch(api('/api/feedback'), {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ text: text.trim(), from: props.name, game: props.game }),
-    }).catch(() => {});
-    setSent(true);
-    setTimeout(props.onClose, 1200);
+    if (!text.trim() || sending) return;
+    setSending(true);
+    setFailed(false);
+    // Never claim it landed when it didn't: the whole point of this box is
+    // that a report is not lost, and the text is the only copy.
+    try {
+      const r = await fetch(api('/api/feedback'), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ text: text.trim(), from: props.name, game: props.game }),
+      });
+      if (!r.ok) throw new Error(String(r.status));
+      setSent(true);
+      setTimeout(props.onClose, 1200);
+    } catch {
+      setFailed(true); // keep the text so they can hit Send again
+    } finally {
+      setSending(false);
+    }
   };
   return (
     <Sheet title="Tell us what you think" onClose={props.onClose}>
@@ -205,11 +218,15 @@ function FeedbackSheet(props: { name: string; game: string | null; onClose: () =
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
-          <p className="muted hint">
-            {props.game ? `sent along with: ${props.game}` : 'sent from the lobby'}
+          <p className={failed ? 'hint bad-note' : 'muted hint'}>
+            {failed
+              ? "couldn't reach the brain — your words are still here, try again"
+              : props.game
+                ? `sent along with: ${props.game}`
+                : 'sent from the lobby'}
           </p>
-          <button className="primary wide" disabled={!text.trim()} onClick={send}>
-            Send feedback
+          <button className="primary wide" disabled={!text.trim() || sending} onClick={send}>
+            {sending ? 'Sending…' : failed ? 'Try again' : 'Send feedback'}
           </button>
         </>
       )}
@@ -534,6 +551,16 @@ export function App({ host = false }: { host?: boolean }) {
               {profile.name}
             </button>
           )}
+          {/* the same 💬 the game screen carries: friends hit something annoying
+              in the lobby too, and it was buried in the room panel */}
+          <button
+            className="pill icon"
+            onClick={() => setSheet('feedback')}
+            aria-label="send feedback"
+            title="Send feedback"
+          >
+            💬
+          </button>
           <button className="pill icon" onClick={() => setSheet('invite')} aria-label="invite">
             ＋
           </button>
